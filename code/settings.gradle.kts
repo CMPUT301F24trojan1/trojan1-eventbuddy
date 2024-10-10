@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "EventBuddy"
+rootProject.name = "TrojanPlanner"
 include(":app")
  
