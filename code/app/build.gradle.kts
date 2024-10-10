@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.eventbuddy"
+    namespace = "com.example.trojanplanner"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.eventbuddy"
+        applicationId = "com.example.trojanplanner"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -43,6 +43,8 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
+    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     testImplementation(libs.junit)

@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:493189729120:android:1887c79840cd9562522c05",
+        "mobilesdk_app_id": "1:493189729120:android:110c2bcfe37fd583522c05",
         "android_client_info": {
-          "package_name": "com.example.eventbuddy"
+          "package_name": "com.example.trojanplanner"
         }
       },
       "oauth_client": [],

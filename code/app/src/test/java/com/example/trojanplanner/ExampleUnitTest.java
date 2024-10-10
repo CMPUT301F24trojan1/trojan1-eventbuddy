@@ -1,4 +1,4 @@
-package com.example.eventbuddy;
+package com.example.trojanplanner;
 
 import org.junit.Test;
 
