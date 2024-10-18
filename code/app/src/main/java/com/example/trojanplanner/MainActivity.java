@@ -1,4 +1,4 @@
-package com.example.trojaneventplanner;
+package com.example.trojanplanner;
 
 import android.os.Bundle;
 
@@ -10,7 +10,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.example.trojaneventplanner.databinding.ActivityMainBinding;
+import com.example.trojanplanner.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 

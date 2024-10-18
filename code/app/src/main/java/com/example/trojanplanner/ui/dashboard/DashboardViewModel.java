@@ -1,4 +1,4 @@
-package com.example.trojaneventplanner.ui.dashboard;
+package com.example.trojanplanner.ui.dashboard;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
