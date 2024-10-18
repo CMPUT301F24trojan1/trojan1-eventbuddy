@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.trojaneventplanner"
+    namespace = "com.example.trojanplanner"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.trojaneventplanner"
+        applicationId = "com.example.trojanplanner"
         minSdk = 27
         targetSdk = 34
         versionCode = 1
