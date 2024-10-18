@@ -1,16 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.gms.google-services")
-    id("androidx.navigation.safeargs")
 }
 
 android {
-    namespace = "com.example.trojanplanner"
+    namespace = "com.example.trojaneventplanner"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.trojanplanner"
-        minSdk = 24
+        applicationId = "com.example.trojaneventplanner"
+        minSdk = 27
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -37,8 +35,6 @@ android {
 }
 
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
-    implementation("com.google.firebase:firebase-firestore")
 
     implementation(libs.appcompat)
     implementation(libs.material)
