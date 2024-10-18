@@ -1,4 +1,4 @@
-package com.example.trojanplanner;
+package com.example.trojaneventplanner;
 
 import org.junit.Test;
 
