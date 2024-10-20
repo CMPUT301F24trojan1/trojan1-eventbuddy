@@ -1,3 +1,6 @@
+# HIDE API KEY FILE
+app/google-services.json
+
 *.iml
 .gradle
 /local.properties
