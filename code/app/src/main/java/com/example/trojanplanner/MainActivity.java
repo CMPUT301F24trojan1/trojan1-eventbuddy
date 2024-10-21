@@ -1,6 +1,8 @@
 package com.example.trojanplanner;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.widget.Button;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -15,6 +17,10 @@ import com.example.trojanplanner.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private static Context context;
+
+    private Button tempButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +28,10 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        context = getApplicationContext();
+
+        tempButton = findViewById(R.id.tempButton);
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -32,6 +42,24 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        tempButton.setOnClickListener(v -> {
+            Database database = new Database();
+            User user = new User("", "", "", "", "1234567890", "", false, false);
+            database.uploadImage(user);
+        });
+
+
+    }
+
+
+    /**
+     * Gets the application context. This is a static method so any other class is able to call this function
+     * in order to get the application context itself
+     * @return The application context
+     */
+    public static Context getAppContext() {
+        return context;
     }
 
 }
