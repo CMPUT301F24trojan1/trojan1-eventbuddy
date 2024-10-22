@@ -32,6 +32,28 @@ public class User implements UserProfile {
         this.firstName = firstName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.deviceId = deviceId;
+        this.role = role;
+        this.isOrganizer = isOrganizer;
+        this.isAdmin = isAdmin;
+    }
+
+    /**
+     * User method using deviceID differently
+     * @author Madelaine Dalangin
+     * @param lastName
+     * @param firstName
+     * @param email
+     * @param phoneNumber
+     * @param role
+     * @param isOrganizer
+     * @param isAdmin
+     */
+    public User(String lastName, String firstName, String email, String phoneNumber, String role, boolean isOrganizer, boolean isAdmin){
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
         this.deviceId = Settings.Secure.ANDROID_ID;
         this.role = role;
         this.isOrganizer = isOrganizer;
