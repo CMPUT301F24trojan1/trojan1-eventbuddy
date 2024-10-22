@@ -1,11 +1,13 @@
 package com.example.trojanplanner;
 
 
+import java.util.ArrayList;
 
 public class Participant extends User{
 
-    private Event event;
+
     private boolean checkInStatus;
+    private ArrayList<Event> currentEventsRegistered;
 
     /**
      * Constructor Method for User
@@ -22,16 +24,22 @@ public class Participant extends User{
      */
     public Participant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, Event event, boolean checkInStatus) {
         super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
-        this.event = event;
         this.checkInStatus = checkInStatus;
+        this.currentEventsRegistered = new ArrayList<Event>();
     }
 
-    public Event getEvent() {
-        return event;
+    public void addEvent(Event event){
+        if(!currentEventsRegistered.contains(event)) {
+            currentEventsRegistered.add(event);
+        }
+        throw new IllegalArgumentException("Participant is already registered to event");
     }
 
-    public void setEvent(Event event) {
-        this.event = event;
+    public void removeEvent(Event event){
+        if(currentEventsRegistered.contains(event)){
+            currentEventsRegistered.remove(event);
+        }
+        throw new IllegalArgumentException("Event doesn't exist in the list.");
     }
 
     public boolean isCheckInStatus() {
