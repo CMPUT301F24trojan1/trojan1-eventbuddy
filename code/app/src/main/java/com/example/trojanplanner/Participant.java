@@ -75,7 +75,7 @@ public class Participant extends User{
         if(currentJoinedEvents.contains(event)){
             currentJoinedEvents.remove(event);
         }
-        throw new IllegalArgumentException("Participant already opted out of event.");
+        throw new IllegalArgumentException("Event doesn't exist in Participant's joined events.");
     }
 
     /**
@@ -99,7 +99,7 @@ public class Participant extends User{
         if(currentPendingEvents.contains(event)){
             currentPendingEvents.remove(event);
         }
-        throw new IllegalArgumentException("Event does not exist in pending list.");
+        throw new IllegalArgumentException("Event does not exist in Participant's pending events list.");
     }
 
 
