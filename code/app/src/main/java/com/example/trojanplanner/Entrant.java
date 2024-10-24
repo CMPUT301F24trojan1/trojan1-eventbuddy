@@ -15,7 +15,7 @@ public class Entrant extends User{
     private ArrayList<Event> currentPendingEvents;
 
     /**
-     * Constructor Method for User
+     * Constructor Method for Entrant
      *
      * @param lastName    String
      * @param firstName   String
@@ -47,7 +47,7 @@ public class Entrant extends User{
     }
 
     /**
-     * Method for removing an event a participant registered in
+     * Method for removing an event an entrant registered in
      * @author Madelaine Dalangin
      * @param event
      */
