@@ -5,12 +5,11 @@ import java.util.ArrayList;
 
 /**
  * Entrant class that is extended from User class that stores information relating to events
- * a participant is tied in and tracks participant's behavior while engaging in eventbuddy's events.
+ * an Entrant is tied in and tracks participant's behavior while engaging in eventbuddy's events.
  * @author Madelaine Dalangin
  */
 public class Entrant extends User{
 
-    private boolean checkInStatus;
     private ArrayList<Event> currentRegisteredEvents;
     private ArrayList<Event> currentJoinedEvents;
     private ArrayList<Event> currentPendingEvents;
@@ -28,10 +27,11 @@ public class Entrant extends User{
      * @param isAdmin     boolean
      * @author Madelaine Dalangin
      */
-    public Entrant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, Event event, boolean checkInStatus) {
+    public Entrant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin) {
         super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
-        this.checkInStatus = checkInStatus;
         this.currentRegisteredEvents = new ArrayList<Event>();
+        this.currentJoinedEvents = new ArrayList<Event>();
+        this.currentPendingEvents = new ArrayList<Event>();
     }
 
     /**
