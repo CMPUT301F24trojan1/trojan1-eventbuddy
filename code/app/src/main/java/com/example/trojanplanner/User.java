@@ -5,7 +5,7 @@ import android.provider.Settings;
  * user class contains and stores information tied to a user.
  * @author Madelaine Dalangin
  */
-public class User {
+public abstract class User implements UserProfile {
     private String lastName;
     private String firstName;
     private String email;
@@ -28,6 +28,28 @@ public class User {
      * @param isAdmin boolean
      */
     public User(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin){
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.deviceId = deviceId;
+        this.role = role;
+        this.isOrganizer = isOrganizer;
+        this.isAdmin = isAdmin;
+    }
+
+    /**
+     * User method using deviceID differently
+     * @author Madelaine Dalangin
+     * @param lastName
+     * @param firstName
+     * @param email
+     * @param phoneNumber
+     * @param role
+     * @param isOrganizer
+     * @param isAdmin
+     */
+    public User(String lastName, String firstName, String email, String phoneNumber, String role, boolean isOrganizer, boolean isAdmin){
         this.lastName = lastName;
         this.firstName = firstName;
         this.email = email;
