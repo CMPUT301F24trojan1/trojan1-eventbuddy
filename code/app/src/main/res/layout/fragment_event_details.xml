@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/eventImage"
+            android:layout_width="match_parent"
+            android:layout_height="125dp"
+            android:contentDescription="Event Image"
+            android:scaleType="centerCrop"
+            android:src="@drawable/event_image" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="125dp"
+            android:orientation="vertical"
+            android:background="@android:color/holo_red_dark"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/eventTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Battle Royale"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/eventDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Starts: Oct.07, Ends: Oct.11\nLocation: The Colosseum, Italy"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/eventDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Capitol of Panem maintains its hold on its 12 districts by forcing them each to select a boy and a girl, called Tributes..."
+                android:textColor="@android:color/white"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

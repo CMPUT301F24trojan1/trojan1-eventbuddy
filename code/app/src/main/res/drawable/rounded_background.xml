@@ -1,0 +1,19 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background color for the shape -->
+    <solid android:color="@android:color/white" />
+
+    <!-- Rounded corners for the shape -->
+    <corners android:radius="16dp" />
+
+    <!-- Stroke/border for the shape -->
+    <stroke
+        android:width="2dp"
+        android:color="@android:color/darker_gray" /> <!-- Change to your preferred border color -->
+
+    <!-- Padding inside the shape -->
+    <padding
+        android:left="16dp"
+        android:top="16dp"
+        android:right="16dp"
+        android:bottom="16dp" />
+</shape>

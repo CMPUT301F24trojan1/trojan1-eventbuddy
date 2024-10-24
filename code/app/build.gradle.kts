@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.trojanplanner"
-        minSdk = 27
+        minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -39,8 +39,7 @@ android {
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-appcheck")
+    implementation("com.google.android.material:material:1.4.0")
 
     implementation(libs.appcompat)
     implementation(libs.material)

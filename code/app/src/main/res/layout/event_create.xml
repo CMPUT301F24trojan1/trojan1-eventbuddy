@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header Section with Back and Save Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/back_button"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:scaleType="centerInside"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Edit"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center" />
+
+            <ImageButton
+                android:id="@+id/saveButton"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/save_button"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Save"
+                android:scaleType="centerInside"/>
+        </LinearLayout>
+
+        <!-- Event Image with Upload Button -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/eventImage"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/event_image"
+                android:contentDescription="Event Image"
+                app:shapeAppearanceOverlay="@style/RoundedImageStyle" />
+
+            <Button
+                android:id="@+id/uploadPosterButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|top"
+                android:layout_margin="8dp"
+                android:backgroundTint="@android:color/black"
+                android:text="Upload Poster"
+                android:textColor="@android:color/white" />
+        </FrameLayout>
+
+        <!-- Event Name Input Field -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Event Name" />
+
+        <EditText
+            android:id="@+id/eventNameInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Battle Royale"
+            android:inputType="text"
+            android:background="@drawable/textbox_inner_shadow"
+            android:padding="12dp" />
+
+        <!-- Location Input Field -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Location" />
+
+        <EditText
+            android:id="@+id/locationInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="The Colosseum, Italy"
+            android:inputType="text"
+            android:background="@drawable/textbox_inner_shadow"
+            android:padding="12dp" />
+
+        <!-- Date Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Date" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/dateInput"
+                android:layout_width="76dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/textbox_inner_shadow"
+                android:hint="Mon, October 7, 2024"
+                android:inputType="date"
+                android:padding="12dp" />
+
+            <EditText
+                android:id="@+id/timeInput"
+                android:layout_width="6dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/textbox_inner_shadow"
+                android:hint="12:00 PM"
+                android:inputType="time"
+                android:padding="12dp" />
+
+            <ImageButton
+                android:id="@+id/timePickerButton"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Select Time"
+                android:src="@drawable/clock_button"
+                android:scaleType="centerInside"/>
+        </LinearLayout>
+
+        <!-- Event Description -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Event Description" />
+
+        <EditText
+            android:id="@+id/descriptionInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:inputType="textMultiLine"
+            android:minLines="4"
+            android:maxLines="6"
+            android:background="@drawable/textbox_inner_shadow"
+            android:padding="12dp" />
+
+        <!-- Attendees Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/attendeesLabel"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:text="Attendees: 10"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/textbox_inner_shadow"
+                android:padding="14dp"/>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/colorPickerButton"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/color_button"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Select Color"
+                android:scaleType="centerInside"/>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <!-- Options Button -->
+            <Button
+                android:id="@+id/optionsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/black"
+                android:drawablePadding="8dp"
+                android:text="Options"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
