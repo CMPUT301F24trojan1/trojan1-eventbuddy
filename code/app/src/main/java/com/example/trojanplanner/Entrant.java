@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * an Entrant is tied in and tracks participant's behavior while engaging in eventbuddy's events.
  * @author Madelaine Dalangin
  */
-public class Entrant extends User{
+public class Entrant extends User {
 
     private ArrayList<Event> currentRegisteredEvents;
     private ArrayList<Event> currentJoinedEvents;
