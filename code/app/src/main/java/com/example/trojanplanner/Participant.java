@@ -3,8 +3,12 @@ package com.example.trojanplanner;
 
 import java.util.ArrayList;
 
+/**
+ * Participant class that is extended from User class that stores information relating to events
+ * a participant is tied in and tracks participant's behavior while engaging in eventbuddy's events.
+ * @author Madelaine Dalangin
+ */
 public class Participant extends User{
-
 
     private boolean checkInStatus;
     private ArrayList<Event> currentRegisteredEvents;
