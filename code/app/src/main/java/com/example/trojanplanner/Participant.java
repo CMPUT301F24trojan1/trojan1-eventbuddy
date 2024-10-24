@@ -4,11 +4,11 @@ package com.example.trojanplanner;
 import java.util.ArrayList;
 
 /**
- * Participant class that is extended from User class that stores information relating to events
+ * Entrant class that is extended from User class that stores information relating to events
  * a participant is tied in and tracks participant's behavior while engaging in eventbuddy's events.
  * @author Madelaine Dalangin
  */
-public class Participant extends User{
+public class Entrant extends User{
 
     private boolean checkInStatus;
     private ArrayList<Event> currentRegisteredEvents;
@@ -28,7 +28,7 @@ public class Participant extends User{
      * @param isAdmin     boolean
      * @author Madelaine Dalangin
      */
-    public Participant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, Event event, boolean checkInStatus) {
+    public Entrant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, Event event, boolean checkInStatus) {
         super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
         this.checkInStatus = checkInStatus;
         this.currentRegisteredEvents = new ArrayList<Event>();
@@ -43,7 +43,7 @@ public class Participant extends User{
         if(!currentRegisteredEvents.contains(event)) {
             currentRegisteredEvents.add(event);
         }
-        throw new IllegalArgumentException("Participant is already registered to event");
+        throw new IllegalArgumentException("Entrant is already registered to event");
     }
 
     /**
@@ -59,7 +59,7 @@ public class Participant extends User{
     }
 
     /**
-     * Adding event to array of Participant's joined events
+     * Adding event to array of Entrant's joined events
      * @author Madelaine Dalangin
      * @param event
      */
@@ -67,11 +67,11 @@ public class Participant extends User{
         if(!currentJoinedEvents.contains(event)){
             currentJoinedEvents.add(event);
         }
-        throw new IllegalArgumentException("Participant already confirmed to join event.");
+        throw new IllegalArgumentException("Entrant already confirmed to join event.");
     }
 
     /**
-     * Method for removing an event Participant has joined in (picked on raffle and participant joined)
+     * Method for removing an event Entrant has joined in (picked on raffle and participant joined)
      * @author Madelaine Dalangin
      * @param event
      */
@@ -79,11 +79,11 @@ public class Participant extends User{
         if(currentJoinedEvents.contains(event)){
             currentJoinedEvents.remove(event);
         }
-        throw new IllegalArgumentException("Event doesn't exist in Participant's joined events.");
+        throw new IllegalArgumentException("Event doesn't exist in Entrant's joined events.");
     }
 
     /**
-     * Method for array of events participant has yet to confirm rsvp or deny
+     * Method for array of events Entrant has yet to confirm rsvp or deny
      * @author Madelaine Dalangin
      * @param event
      */
@@ -91,11 +91,11 @@ public class Participant extends User{
         if(!currentPendingEvents.contains(event)){
             currentPendingEvents.add(event);
         }
-        throw new IllegalArgumentException("Event in Participant's Pending list.");
+        throw new IllegalArgumentException("Event in Entrant's Pending list.");
     }
 
     /**
-     * Method for removing events participant was picked from but they denied to join
+     * Method for removing events Entrant was picked from but they denied to join
      * @author Madelaine Dalangin
      * @param event
      */
@@ -103,7 +103,7 @@ public class Participant extends User{
         if(currentPendingEvents.contains(event)){
             currentPendingEvents.remove(event);
         }
-        throw new IllegalArgumentException("Event does not exist in Participant's pending events list.");
+        throw new IllegalArgumentException("Event does not exist in Entrant's pending events list.");
     }
 
 
