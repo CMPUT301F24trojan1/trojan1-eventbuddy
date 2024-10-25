@@ -1,4 +1,4 @@
-package com.example.trojanplanner;
+package com.example.trojanplanner.model;
 import android.provider.Settings;
 
 /**
