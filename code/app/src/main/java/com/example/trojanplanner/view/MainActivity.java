@@ -1,12 +1,13 @@
-package com.example.trojanplanner;
+package com.example.trojanplanner.view;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.util.Log;
 import android.widget.Button;
 
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
