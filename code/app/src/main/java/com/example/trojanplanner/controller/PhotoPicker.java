@@ -1,9 +1,8 @@
-package com.example.trojanplanner;
+package com.example.trojanplanner.controller;
 
 
 import android.app.Activity;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -12,6 +11,10 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwner;
+
+import com.example.trojanplanner.App;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.User;
 
 /**
  * Class that provides the ability to open the user's photo library and select a photo
@@ -112,7 +115,7 @@ public class PhotoPicker {
 
         // Block action if photo picker is already open
         if (currentlyPicking) {
-            throw new RuntimeException("A Photopicker menu is already open");
+            return; // Prevents spam clicking button from causing problems
         }
 
         currentlyPicking = true;

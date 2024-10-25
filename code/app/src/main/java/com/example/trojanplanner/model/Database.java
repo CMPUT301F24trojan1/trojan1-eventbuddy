@@ -1,4 +1,4 @@
-package com.example.trojanplanner;
+package com.example.trojanplanner.model;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -8,6 +8,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.example.trojanplanner.App;
+import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
