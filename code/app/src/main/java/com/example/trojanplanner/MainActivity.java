@@ -1,31 +1,28 @@
 package com.example.trojanplanner;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
-import android.view.View;
-import android.view.Menu;
+import android.provider.ContactsContract;
+import android.util.Log;
+import android.widget.Button;
 
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
-    private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
+    private static Activity activity; // Important to allow non-activity classes to trigger UI components, i.e. PhotoPicker
 
-    private FirebaseFirestore db;
-    private CollectionReference eventsRef;
-
+    private Button tempButton;
 
 
     @Override
@@ -35,44 +32,46 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        db = FirebaseFirestore.getInstance();
-        eventsRef = db.collection("events");
+        activity = this;
 
+        tempButton = findViewById(R.id.tempButton);
 
-
-        setSupportActionBar(binding.appBarMain.toolbar);
-        binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null)
-                        .setAnchorView(R.id.fab).show();
-            }
-        });
-        DrawerLayout drawer = binding.drawerLayout;
-        NavigationView navigationView = binding.navView;
+        BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
-                .setOpenableLayout(drawer)
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(binding.navView, navController);
+
+
+
+
+
+
+        // temp stuff below
+        Database database = new Database();
+        database.initPhotoPicker();
+
+        tempButton.setOnClickListener(v -> {
+            User user = new Entrant("", "", "", "", "1234567890", "", false, false);
+            //database.uploadImage(user);
+            database.uploadFromPhotoPicker(user);
+        });
+
+        System.out.println("onCreate done");
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-                || super.onSupportNavigateUp();
-    }
+    /**
+     * Gets the application context. This is a static method so any other class is able to call this function
+     * in order to get the application context itself
+     * @return The application context
+     */
+//    public static Context getAppContext() {
+//        return activity.getApplicationContext();
+//    }
+//
 }
