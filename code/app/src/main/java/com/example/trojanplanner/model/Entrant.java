@@ -1,4 +1,4 @@
-package com.example.trojanplanner;
+package com.example.trojanplanner.model;
 
 
 import java.util.ArrayList;
