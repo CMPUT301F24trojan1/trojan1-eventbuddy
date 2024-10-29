@@ -2,6 +2,7 @@ package com.example.trojanplanner.model;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.widget.Toast;
@@ -114,6 +115,10 @@ public class Database {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         byte[] data = baos.toByteArray();
 
+        // Set filepath and bitmap as user attributes
+        owner.setPfpFilePath(filePath);
+        owner.setPfpBitmap(bitmap);
+
         // Upload!
         UploadTask uploadTask = refToSave.putBytes(data);
         uploadTask.addOnSuccessListener(successListener);
@@ -154,6 +159,26 @@ public class Database {
 
 
     // ===================== Download from Firebase Storage =====================
+    /**
+     * Downloads a file from Firebase Storage with the given path. Executes the function defined in
+     * successListener on success and the function defined in failureListener on failure.
+     *
+     * @param filePath The Firebase Storage path to download the image from
+     * @param successListener The action to take on successful download
+     * @param failureListener The action to take on failed download
+     */
+    public void downloadImage(String filePath, OnSuccessListener successListener, OnFailureListener failureListener) {
+//        StorageReference storageRef = storage.getReference();
+//        StorageReference pathReference = storageRef.child(filePath);
+        StorageReference imageReference = storage.getReferenceFromUrl(filePath);
+
+        final long TEN_MEGABYTES = 1024 * 1024 * 10; // Max download size
+        imageReference.getBytes(TEN_MEGABYTES).addOnSuccessListener(successListener).addOnFailureListener(failureListener);
+
+    }
+
+    // ===================== Add documents to Firestore Database =====================
+
 
 
 
