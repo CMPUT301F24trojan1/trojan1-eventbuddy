@@ -1,5 +1,7 @@
 package com.example.trojanplanner.model;
 
+import android.graphics.Bitmap;
+
 public class Facility {
     private Organizer owner;
     private Event event;
@@ -7,14 +9,18 @@ public class Facility {
     private int capacityOfEvent;
     private int maxCapacityOfFacility;
     private boolean isOccupied;
+    private String pfpFacilityFilePath;
+    private Bitmap pfpFacilityBitmap;
 
-    public Facility(Organizer owner, Event event, String dateOccupied, int capacityOfEvent, int maxCapacityOfFacility, boolean isOccupied) {
+    public Facility(Organizer owner, Event event, String dateOccupied, int capacityOfEvent, int maxCapacityOfFacility, boolean isOccupied, String pfpFacilityFilePath, Bitmap pfpFacilityBitmap) {
         this.owner = owner;
         this.event = event;
         this.dateOccupied = dateOccupied;
         this.capacityOfEvent = capacityOfEvent;
         this.maxCapacityOfFacility = maxCapacityOfFacility;
         this.isOccupied = isOccupied;
+        this.pfpFacilityFilePath = pfpFacilityFilePath;
+        this.pfpFacilityBitmap = pfpFacilityBitmap;
     }
 
     public Organizer getOwner() {
