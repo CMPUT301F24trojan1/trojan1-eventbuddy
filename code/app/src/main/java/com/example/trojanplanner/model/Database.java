@@ -13,7 +13,6 @@ import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -21,6 +20,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A class that handles adding/querying/modifying/removing documents from the Firestore Database,
@@ -28,8 +29,6 @@ import java.io.IOException;
  */
 public class Database {
     private FirebaseFirestore db;
-    private CollectionReference usersRef;
-    private CollectionReference eventsRef;
 
     private FirebaseStorage storage;
     private StorageReference storageRef;
@@ -39,13 +38,14 @@ public class Database {
     private PhotoPicker photoPicker;
 
     public Database() {
+        db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
         activity = App.activityManager.getActivity();
     }
 
-// ======================== PhotoPicker integration ========================
 
+// ======================== PhotoPicker integration ========================
     /**
      * A method that initializes the PhotoPicker if you intend to use the uploadFromPhotoPicker method.
      * THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD
@@ -114,6 +114,10 @@ public class Database {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         byte[] data = baos.toByteArray();
 
+        // Set filepath and bitmap as user attributes
+        owner.setPfpFilePath(filePath);
+        owner.setPfpBitmap(bitmap);
+
         // Upload!
         UploadTask uploadTask = refToSave.putBytes(data);
         uploadTask.addOnSuccessListener(successListener);
@@ -134,7 +138,7 @@ public class Database {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 System.out.println("SUCCESS");
-                Toast myToast = Toast.makeText(activity, R.string.firebase_upload_success, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(activity, R.string.firebase_storage_upload_success, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -142,7 +146,7 @@ public class Database {
             @Override
             public void onFailure(@NonNull Exception e) {
                 System.out.println("FAIL");
-                Toast myToast = Toast.makeText(activity, R.string.firebase_upload_fail, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(activity, R.string.firebase_storage_upload_fail, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -154,7 +158,117 @@ public class Database {
 
 
     // ===================== Download from Firebase Storage =====================
+    /**
+     * Downloads a file from Firebase Storage with the given path. Executes the function defined in
+     * successListener on success and the function defined in failureListener on failure.
+     * <br>
+     * To receive a byte array of the downloaded image, you can initialize an {@code OnSuccessListener<Byte[]>()}
+     * and use the value given. Ex.
+     * <pre>
+     * {@code
+     * OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+     *      @Override
+     *      public void onSuccess(byte[] bytes) {
+     *           Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+     *           imageView.setImageBitmap(decodedImage);
+     *           System.out.println("success!!");
+     *      }
+     * };
+     * }
+     * </pre>
+     *
+     *
+     * @param filePath The Firebase Storage path to download the image from
+     * @param successListener The action to take on successful download
+     * @param failureListener The action to take on failed download
+     */
+    public void downloadImage(String filePath, OnSuccessListener successListener, OnFailureListener failureListener) {
+        StorageReference storageRef = storage.getReference();
+        StorageReference pathReference = storageRef.child(filePath);
+
+        final long TEN_MEGABYTES = 1024 * 1024 * 10; // Max download size
+        pathReference.getBytes(TEN_MEGABYTES).addOnSuccessListener(successListener).addOnFailureListener(failureListener);
+
+    }
+
+    // ===================== Add documents to Firestore Database =====================
+
+    private Map<String, Object> initUserMap(String lastName, String firstName, String email, String phoneNumber, String deviceId, boolean isOrganizer, boolean isAdmin) {
+        Map<String, Object> user = new HashMap<>();
+        user.put("lastName", lastName);
+        user.put("firstName", firstName);
+        user.put("email", email);
+        user.put("phone", phoneNumber);
+        user.put("deviceID", deviceId);
+        user.put("hasOrganizerRights", isOrganizer);
+        user.put("hasAdminRights", isAdmin);
+        user.put("pfp", null);
+        return user;
+    }
 
 
+    /**
+     * Inserts a document into the users collection of the Firestore Database. Overwrites the previous
+     * document if one with the same device ID exists.
+     * <br>
+     * Can optionally be given a custom success and failure listener to perform a more specialized
+     * action on success or failure.
+     *
+     * @param successListener A function to execute on a successful insert
+     * @param failureListener A function to execute on an unsuccessful insert
+     * @param lastName Last name
+     * @param firstName First name
+     * @param email Email address
+     * @param phoneNumber Phone number
+     * @param deviceId The Android Device ID of the user
+     * @param isOrganizer If the user has organizer privileges
+     * @param isAdmin If the user has admin privileges
+     */
+    public void insertUserDocument(OnSuccessListener successListener, OnFailureListener failureListener, String lastName, String firstName, String email, String phoneNumber, String deviceId, boolean isOrganizer, boolean isAdmin) {
+        Map<String, Object> user = initUserMap(lastName, firstName, email, phoneNumber, deviceId, isOrganizer, isAdmin);
+
+        db.collection("users")
+            .document(deviceId)
+            .set(user)
+            .addOnSuccessListener(successListener)
+            .addOnFailureListener(failureListener);
+    }
+
+
+    /**
+     * Inserts a document into the users collection of the Firestore Database. Overwrites the previous
+     * document if one with the same device ID exists.
+     * <br>
+     * Can optionally be given a custom success and failure listener to perform a more specialized
+     * action on success or failure.
+     *
+     * @param lastName Last name
+     * @param firstName First name
+     * @param email Email address
+     * @param phoneNumber Phone number
+     * @param deviceId The Android Device ID of the user
+     * @param isOrganizer If the user has organizer privileges
+     * @param isAdmin If the user has admin privileges
+     */
+    public void insertUserDocument(String lastName, String firstName, String email, String phoneNumber, String deviceId, boolean isOrganizer, boolean isAdmin) {
+        OnSuccessListener successListener = new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                System.out.println("FIRESTORE SUCCESS");
+                Toast myToast = Toast.makeText(activity, R.string.firestore_db_upload_success, Toast.LENGTH_SHORT);
+                myToast.show();
+            }
+        };
+        OnFailureListener failureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                System.out.println("FIRESTORE FAIL");
+                Toast myToast = Toast.makeText(activity, R.string.firestore_db_upload_fail, Toast.LENGTH_SHORT);
+                myToast.show();
+            }
+        };
+
+        insertUserDocument(successListener, failureListener, lastName, firstName, email, phoneNumber, deviceId, isOrganizer, isAdmin);
+    }
 
 }

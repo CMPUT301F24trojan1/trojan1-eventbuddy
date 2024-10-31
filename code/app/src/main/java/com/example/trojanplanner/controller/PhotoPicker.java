@@ -61,6 +61,7 @@ public class PhotoPicker {
      * openPhotoPicker and THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD.
      * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
+     * @param database The database to upload to (set to null to avoid uploading)
      */
     public void initPhotoPicker(Database database) {
         // https://developer.android.com/training/data-storage/shared/photopicker#select-single-item
@@ -106,6 +107,7 @@ public class PhotoPicker {
     public void deinitPhotoPicker() {
         photoPickerLauncher.unregister();
     }
+
 
     public void openPhotoPicker(User user) {
         // Throw error if init wasn't called
