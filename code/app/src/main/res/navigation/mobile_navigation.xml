@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/eventsFragment">
 
     <activity
         android:id="@+id/qrActivity"
@@ -11,20 +11,20 @@
         android:label="QR Activity" />
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.trojanplanner.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/eventsFragment"
+        android:name="com.example.trojanplanner.events.EventsFragment"
+        android:label="@string/title_events"
+        tools:layout="@layout/fragment_events" />
 
-    <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.trojanplanner.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+    <activity
+        android:id="@+id/qrActivity"
+        android:name="com.example.trojanplanner.view.QRActivity"
+        android:label="@string/title_qr"
+        tools:layout="@layout/activity_qr" />
 
-    <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.trojanplanner.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+    <activity
+        android:id="@+id/profileActivity"
+        android:name="com.example.trojanplanner.view.ProfileActivity"
+        android:label="@string/title_profile"
+        tools:layout="@layout/activity_profile" />
 </navigation>

@@ -1,84 +1,68 @@
 package com.example.trojanplanner.view;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Size;
-import android.util.Log;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageProxy;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
-import androidx.core.content.ContextCompat;
 
-import com.google.mlkit.vision.barcode.common.Barcode;
-import com.google.mlkit.vision.barcode.BarcodeScanning;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.example.trojanplanner.R;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import com.example.trojanplanner.databinding.ActivityQrBinding;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class QRActivity extends AppCompatActivity {
-
-    private PreviewView previewView;
-    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+    private @NonNull ActivityQrBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_qr);
 
-        previewView = findViewById(R.id.previewView);
-        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        binding = ActivityQrBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        cameraProviderFuture.addListener(() -> {
-            try {
-                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                bindPreview(cameraProvider);
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            }
-        }, ContextCompat.getMainExecutor(this));
+        setupNavigation();
+
     }
 
-    private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
-        Preview preview = new Preview.Builder().build();
-        CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+    /**
+     * Sets up the navigation for the BottomNavigationView.
+     * <p>
+     * This method initializes the BottomNavigationView and sets the selected item
+     * to the QR activity. It also establishes a listener for item selection
+     * events. When the user selects an item in the navigation bar, the following
+     * actions occur:
+     * <ul>
+     *     <li>When the home navigation item is selected, the user is navigated
+     *     to {@link MainActivity}.</li>
+     *     <li>When the profile navigation item is selected, the user is navigated
+     *     to {@link ProfileActivity}.</li>
+     *     <li>When the QR activity navigation item is selected, the user remains
+     *     in the current {@link QRActivity}.</li>
+     * </ul>
+     *
+     * This method should be called during the creation of the activity to
+     * ensure that the navigation setup is complete and responsive to user
+     * interactions.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
+    private void setupNavigation() {
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        // Set the selected item to profileActivity
+        navView.setSelectedItemId(R.id.qrActivity);
 
-        preview.setSurfaceProvider(previewView.getSurfaceProvider());
-
-        ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
-                .setTargetResolution(new Size(1280, 720))
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build();
-
-        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), image -> {
-            processImageProxy(image);
+        // Set up the listener to handle Bottom Navigation item selections
+        navView.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.navigation_home) {
+                startActivity(new Intent(QRActivity.this, MainActivity.class));
+                return true;
+            } else if (item.getItemId() == R.id.profileActivity) {
+                startActivity(new Intent(QRActivity.this, ProfileActivity.class));
+                return true;
+            } else return item.getItemId() == R.id.qrActivity; // Stay in the same activity
         });
-
-        cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalysis);
     }
 
-    private void processImageProxy(ImageProxy image) {
-        @androidx.annotation.OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
-        InputImage inputImage =
-                InputImage.fromMediaImage(image.getImage(), image.getImageInfo().getRotationDegrees());
-
-        BarcodeScanning.getClient().process(inputImage)
-                .addOnSuccessListener(barcodes -> {
-                    for (Barcode barcode : barcodes) {
-                        String rawValue = barcode.getRawValue();
-                        Log.d("QRActivity", "QR Code: " + rawValue);
-                        Toast.makeText(this, "QR Code Detected: " + rawValue, Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> Log.e("QRActivity", "Barcode scanning failed", e))
-                .addOnCompleteListener(task -> image.close());
-    }
 }
