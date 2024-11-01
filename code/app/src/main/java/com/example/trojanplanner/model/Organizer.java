@@ -10,4 +10,19 @@ public class Organizer extends User{
         this.nameOfEvent = nameOfEvent;
     }
 
+    public Entrant getNameOfOrganizer() {
+        return nameOfOrganizer;
+    }
+
+    public void setNameOfOrganizer(Entrant nameOfOrganizer) {
+        this.nameOfOrganizer = nameOfOrganizer;
+    }
+
+    public Event getNameOfEvent() {
+        return nameOfEvent;
+    }
+
+    public void setNameOfEvent(Event nameOfEvent) {
+        this.nameOfEvent = nameOfEvent;
+    }
 }
