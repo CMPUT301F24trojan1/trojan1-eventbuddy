@@ -50,4 +50,20 @@ public class Facility {
     public void setOccupied(boolean occupied) {
         isOccupied = occupied;
     }
+
+    public String getPfpFacilityFilePath() {
+        return pfpFacilityFilePath;
+    }
+
+    public void setPfpFacilityFilePath(String pfpFacilityFilePath) {
+        this.pfpFacilityFilePath = pfpFacilityFilePath;
+    }
+
+    public Bitmap getPfpFacilityBitmap() {
+        return pfpFacilityBitmap;
+    }
+
+    public void setPfpFacilityBitmap(Bitmap pfpFacilityBitmap) {
+        this.pfpFacilityBitmap = pfpFacilityBitmap;
+    }
 }
