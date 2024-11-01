@@ -1,13 +1,14 @@
 package com.example.trojanplanner.view;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.widget.Button;
-import android.widget.Toast;
+
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.User;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -15,15 +16,13 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityMainBinding;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity2 extends AppCompatActivity {
+/*
     private ActivityMainBinding binding;
     private static Activity activity; // Important to allow non-activity classes to trigger UI components, i.e. PhotoPicker
-    private String deviceId;
+
     private Button tempButton;
 
 
@@ -48,17 +47,21 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-        // Get or generate the device ID
-        deviceId = getOrCreateDeviceId();
 
-        // Display the device ID to verify it's created
-        Toast.makeText(this, "Device ID: " + deviceId, Toast.LENGTH_LONG).show();
+
+
+
+
+        // temp stuff below
+        Database database = new Database();
+        database.initPhotoPicker();
 
         tempButton.setOnClickListener(v -> {
-            // Show the device ID as a Toast message
-            Toast.makeText(MainActivity.this, "Device ID: " + deviceId, Toast.LENGTH_SHORT).show();
-
+            User user = new Entrant("", "", "", "", "1234567890", "", false, false);
+            //database.uploadImage(user);
+            database.uploadFromPhotoPicker(user);
         });
+
         System.out.println("onCreate done");
     }
 
@@ -72,19 +75,4 @@ public class MainActivity extends AppCompatActivity {
 //        return activity.getApplicationContext();
 //    }
 //
-
-    @SuppressLint("HardwareIds")
-    private String getOrCreateDeviceId() {
-        // Access SharedPreferences to check if a device ID is already stored
-        SharedPreferences sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE);
-        String savedDeviceId = sharedPreferences.getString("device_id", null);
-
-        // If the device ID is not already stored, create and save it
-        if (savedDeviceId == null) {
-            savedDeviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-            sharedPreferences.edit().putString("device_id", savedDeviceId).apply();
-        }
-
-        return savedDeviceId;
-    }
 }
