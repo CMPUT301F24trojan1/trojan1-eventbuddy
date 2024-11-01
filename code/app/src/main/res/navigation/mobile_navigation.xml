@@ -5,6 +5,11 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_home">
 
+    <activity
+        android:id="@+id/qrActivity"
+        android:name="com.example.trojanplanner.view.QRActivity"
+        android:label="QR Activity" />
+
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.example.trojanplanner.ui.home.HomeFragment"

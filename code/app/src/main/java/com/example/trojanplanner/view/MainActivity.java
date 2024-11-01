@@ -3,6 +3,7 @@ package com.example.trojanplanner.view;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -57,8 +58,9 @@ public class MainActivity extends AppCompatActivity {
         tempButton.setOnClickListener(v -> {
             // Show the device ID as a Toast message
             Toast.makeText(MainActivity.this, "Device ID: " + deviceId, Toast.LENGTH_SHORT).show();
-
+            navController.navigate(R.id.qrActivity);
         });
+
         System.out.println("onCreate done");
     }
 
