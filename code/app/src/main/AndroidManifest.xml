@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -27,6 +32,7 @@
         </activity>
         <activity android:name=".view.ProfileActivity" />
         <activity android:name=".view.QRActivity" />
+        <activity android:name=".view.GenerateQRActivity" />
+        <activity android:name=".view.ScanQRActivity" />
     </application>
-
 </manifest>

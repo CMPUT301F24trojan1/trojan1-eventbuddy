@@ -40,8 +40,9 @@ dependencies {
     implementation(libs.camera.core)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
-
-    implementation("androidx.camera:camera-camera2:1.4.0")
+    implementation(libs.zxing.android.embedded)
+    implementation(libs.core)
+    implementation(libs.camera.camera2)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
