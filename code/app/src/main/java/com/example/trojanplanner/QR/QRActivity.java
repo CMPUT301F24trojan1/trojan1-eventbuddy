@@ -1,6 +1,8 @@
 package com.example.trojanplanner.QR;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -9,6 +11,8 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.trojanplanner.HelperFragments.QRHelpFragment;
 import com.example.trojanplanner.R;
@@ -29,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class QRActivity extends AppCompatActivity {
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private BarcodeView barcodeView;
     private EditText etInput;
     private @NonNull ActivityQrBinding binding;
@@ -47,7 +52,8 @@ public class QRActivity extends AppCompatActivity {
 
         helpButton.setOnClickListener(v -> openHelpFragment());
 
-        startQRScanner();
+        // Check and request camera permission
+        checkCameraPermission();
 
         // custom back press handling
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
@@ -57,6 +63,18 @@ public class QRActivity extends AppCompatActivity {
             }
         };
         getOnBackPressedDispatcher().addCallback(this, callback);
+    }
+
+    // Function to check camera permission
+    private void checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    CAMERA_PERMISSION_REQUEST_CODE);
+        } else {
+            startQRScanner(); // Start the scanner if permission is already granted
+        }
     }
 
     // Starts the continuous QR scanner
@@ -114,5 +132,19 @@ public class QRActivity extends AppCompatActivity {
                 return true;
             } else return item.getItemId() == R.id.qrActivity;
         });
+    }
+
+    // Handle the result of the permission request
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startQRScanner(); // Start the scanner if permission is granted
+            } else {
+                // Permission denied, show a message to the user
+                Toast.makeText(this, "Camera permission is required to scan QR codes.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }

@@ -18,6 +18,19 @@
         android:inputType="none"
         android:focusable="false" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/qr_help_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:contentDescription="Helper for QR Scanner"
+        app:layout_constraintBottom_toBottomOf="@id/barcode_scanner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/barcode_scanner"
+        app:layout_constraintVertical_bias="0.97"
+        app:srcCompat="@android:drawable/ic_menu_help"
+        app:tint="@android:color/black"/>
+
     <com.journeyapps.barcodescanner.BarcodeView
         android:id="@+id/barcode_scanner"
         android:layout_width="0dp"
@@ -37,15 +50,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:menu="@menu/bottom_nav_menu" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/qr_help_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:contentDescription="Helper for QR Scanner"
-        app:layout_constraintBottom_toBottomOf="@id/barcode_scanner"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/barcode_scanner"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@android:drawable/ic_menu_help" />
 </androidx.constraintlayout.widget.ConstraintLayout>
