@@ -32,7 +32,7 @@
         </activity>
         <activity android:name=".view.ProfileActivity" />
         <activity
-            android:name=".view.QRActivity">
+            android:name=".QR.QRActivity">
         </activity>
     </application>
 </manifest>

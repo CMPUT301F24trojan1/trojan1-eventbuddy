@@ -1,8 +1,7 @@
-package com.example.trojanplanner;
+package com.example.trojanplanner.QR;
 
 import android.graphics.Bitmap;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;

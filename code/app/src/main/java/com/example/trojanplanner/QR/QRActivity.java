@@ -1,10 +1,7 @@
-package com.example.trojanplanner.view;
+package com.example.trojanplanner.QR;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -13,9 +10,11 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.trojanplanner.HelperFragments.HelpFragment;
+import com.example.trojanplanner.HelperFragments.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
+import com.example.trojanplanner.view.MainActivity;
+import com.example.trojanplanner.view.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
@@ -25,7 +24,6 @@ import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.BarcodeView;
 import com.journeyapps.barcodescanner.DefaultDecoderFactory;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -85,8 +83,8 @@ public class QRActivity extends AppCompatActivity {
     }
 
     private void openHelpFragment() {
-        HelpFragment helpFragment = new HelpFragment();
-        helpFragment.show(getSupportFragmentManager(), "HelpFragment");
+        QRHelpFragment QRHelpFragment = new QRHelpFragment();
+        QRHelpFragment.show(getSupportFragmentManager(), "HelpFragment");
     }
 
     @Override

@@ -13,7 +13,7 @@
 
     <activity
         android:id="@+id/qrActivity"
-        android:name="com.example.trojanplanner.view.QRActivity"
+        android:name="com.example.trojanplanner.QR.QRActivity"
         android:label="@string/title_qr"
         tools:layout="@layout/activity_qr" />
 
