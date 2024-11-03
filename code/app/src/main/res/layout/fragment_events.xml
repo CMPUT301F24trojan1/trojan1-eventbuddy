@@ -6,6 +6,72 @@
     android:layout_height="match_parent"
     tools:context=".events.EventsFragment">
 
+    <!-- CardView to wrap the event content -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/event_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Event Image -->
+            <ImageView
+                android:id="@+id/eventImage"
+                android:layout_width="match_parent"
+                android:layout_height="125dp"
+                android:contentDescription="Event Image"
+                android:scaleType="centerCrop"
+                android:src="@drawable/event_image" />
+
+            <!-- Event Details Container -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@android:color/holo_red_dark"
+                android:padding="8dp">
+
+                <!-- Event Title -->
+                <TextView
+                    android:id="@+id/eventTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Battle Royale"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:textSize="18sp" />
+
+                <!-- Event Date and Location Details -->
+                <TextView
+                    android:id="@+id/eventDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Starts: Oct.07, Ends: Oct.11\nLocation: The Colosseum, Italy"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="4dp" />
+
+                <!-- Event Description -->
+                <TextView
+                    android:id="@+id/eventDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Capitol of Panem maintains its hold on its 12 districts by forcing them each to select a boy and a girl, called Tributes..."
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Bottom Text centered as specified in original XML -->
     <TextView
         android:id="@+id/text_home"
         android:layout_width="match_parent"
@@ -18,5 +84,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/event_card" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
