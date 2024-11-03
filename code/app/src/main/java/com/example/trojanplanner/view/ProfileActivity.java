@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.trojanplanner.HelperFragments.ProfileFragment;
+import com.example.trojanplanner.QR.QRActivity;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
