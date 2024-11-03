@@ -7,4 +7,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red_primary">#D32F2F</color> <!-- Main red color -->
+    <color name="red_dark">#C62828</color> <!-- Darker red for variants -->
+    <color name="light_red">#FFCDD2</color> <!-- Light red accent -->
+    <color name="light_red_variant">#EF9A9A</color> <!-- Slightly darker light red -->
+    <color name="light_brown">#D7CCC8</color> <!-- Light brown for background -->
+    <color name="dark_surface">#424242</color>
+    <color name="statusBarColor">#F8F8F8</color> <!-- Status Bar colour -->
 </resources>
