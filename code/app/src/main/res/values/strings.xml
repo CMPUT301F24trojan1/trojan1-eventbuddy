@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">TrojanPlanner</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_events">MyEvents</string>
+    <string name="title_qr">QR Scanner</string>
+    <string name="title_profile">Profile</string>
 
     <string name="firebase_storage_upload_success">Storage upload successful!</string>
     <string name="firebase_storage_upload_fail">Storage upload failed, try again later</string>
