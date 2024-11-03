@@ -1,4 +1,4 @@
-package com.example.trojanplanner.QRUtils;
+package com.example.trojanplanner.view;
 
 import android.Manifest;
 import android.content.Intent;
@@ -17,8 +17,6 @@ import androidx.core.content.ContextCompat;
 import com.example.trojanplanner.HelperFragments.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
-import com.example.trojanplanner.view.MainActivity;
-import com.example.trojanplanner.ProfileUtils.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;

@@ -13,13 +13,13 @@
 
     <activity
         android:id="@+id/qrActivity"
-        android:name="com.example.trojanplanner.QRUtils.QRActivity"
+        android:name="com.example.trojanplanner.view.QRActivity"
         android:label="@string/title_qr"
         tools:layout="@layout/activity_qr" />
 
     <activity
         android:id="@+id/profileActivity"
-        android:name="com.example.trojanplanner.ProfileUtils.ProfileActivity"
+        android:name="com.example.trojanplanner.view.ProfileActivity"
         android:label="@string/title_profile"
         tools:layout="@layout/activity_profile" />
 </navigation>
