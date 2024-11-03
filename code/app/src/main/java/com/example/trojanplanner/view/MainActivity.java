@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
-import com.example.trojanplanner.ProfileUtils.ProfileActivity;
-import com.example.trojanplanner.QRUtils.QRActivity;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
