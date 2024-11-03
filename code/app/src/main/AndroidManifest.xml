@@ -31,9 +31,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.ProfileActivity" />
+        <activity android:name=".ProfileUtils.ProfileActivity" />
         <activity
-            android:name=".QR.QRActivity">
+            android:name=".QRUtils.QRActivity">
         </activity>
     </application>
 </manifest>
