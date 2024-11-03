@@ -1,4 +1,4 @@
-package com.example.trojanplanner.QR;
+package com.example.trojanplanner.QRUtils;
 
 import android.Manifest;
 import android.content.Intent;
@@ -18,7 +18,7 @@ import com.example.trojanplanner.HelperFragments.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
 import com.example.trojanplanner.view.MainActivity;
-import com.example.trojanplanner.view.ProfileActivity;
+import com.example.trojanplanner.ProfileUtils.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
@@ -32,6 +32,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * QRActivity is responsible for managing the QR code scanning functionality.
+ * It initializes the camera permissions, starts the scanner, and handles
+ * the navigation within the app. This activity also includes a help feature
+ * that provides users with guidance on how to use the QR scanner.
+ *
+ * @author Dricmoy Bhattacharjee
+ */
 public class QRActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private BarcodeView barcodeView;
@@ -65,7 +73,13 @@ public class QRActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
-    // Function to check camera permission
+    /**
+     * Checks if the app has permission to use the camera. If permission is not
+     * granted, it requests the permission from the user. If permission is granted,
+     * it starts the QR code scanner.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -77,7 +91,13 @@ public class QRActivity extends AppCompatActivity {
         }
     }
 
-    // Starts the continuous QR scanner
+    /**
+     * Starts the continuous QR scanner. It sets the decoder factory to recognize
+     * QR codes and defines the behavior when a QR code is scanned. The scanned
+     * result is displayed in an EditText field and a toast message is shown.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
     private void startQRScanner() {
         Collection<BarcodeFormat> formats = Collections.singletonList(BarcodeFormat.QR_CODE);
         barcodeView.setDecoderFactory(new DefaultDecoderFactory(formats));
@@ -100,6 +120,11 @@ public class QRActivity extends AppCompatActivity {
         barcodeView.resume();
     }
 
+    /**
+     * Opens the help fragment to provide guidance to the user on using the QR scanner.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
     private void openHelpFragment() {
         QRHelpFragment QRHelpFragment = new QRHelpFragment();
         QRHelpFragment.show(getSupportFragmentManager(), "HelpFragment");
@@ -117,6 +142,28 @@ public class QRActivity extends AppCompatActivity {
         barcodeView.pause();
     }
 
+    /**
+     * Sets up the navigation for the BottomNavigationView.
+     * <p>
+     * This method initializes the BottomNavigationView and sets the selected item
+     * to the QR activity. It also establishes a listener for item selection
+     * events. When the user selects an item in the navigation bar, the following
+     * actions occur:
+     * <ul>
+     *     <li>When the home navigation item is selected, the user is navigated
+     *     to {@link MainActivity}.</li>
+     *     <li>When the profile navigation item is selected, the user is navigated
+     *     to {@link ProfileActivity}.</li>
+     *     <li>When the QR activity navigation item is selected, the user remains
+     *     in the current {@link QRActivity}.</li>
+     * </ul>
+     *
+     * This method should be called during the creation of the activity to
+     * ensure that the navigation setup is complete and responsive to user
+     * interactions.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         navView.setSelectedItemId(R.id.qrActivity);
@@ -134,7 +181,17 @@ public class QRActivity extends AppCompatActivity {
         });
     }
 
-    // Handle the result of the permission request
+    /**
+     * Handles the result of the permission request. If the camera permission is granted,
+     * it starts the QR scanner. If denied, it shows a message to the user indicating
+     * that the permission is required to scan QR codes.
+     *
+     * @param requestCode The request code for the permission.
+     * @param permissions The requested permissions.
+     * @param grantResults The results of the permission request.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

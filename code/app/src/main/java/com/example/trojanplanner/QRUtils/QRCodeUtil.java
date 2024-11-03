@@ -1,4 +1,4 @@
-package com.example.trojanplanner.QR;
+package com.example.trojanplanner.QRUtils;
 
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -11,9 +11,28 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * QRCodeUtil is a utility class for generating QR codes and hashing text.
+ * This class provides methods to hash strings using SHA-256 and to generate
+ * QR code bitmaps from text inputs.
+ *
+ * @author Dricmoy Bhattacharjee
+ */
 public class QRCodeUtil {
 
-    // Method to hash the text using SHA-256
+    /**
+     * Hashes the provided text using the SHA-256 algorithm.
+     * <p>
+     * This method uses the SHA-256 cryptographic hash function to produce
+     * a fixed-size (256-bit) hash value from the input text.
+     * For more information about the SHA-256 algorithm, visit:
+     * <a href="https://en.wikipedia.org/wiki/SHA-2">SHA-2 on Wikipedia</a>.
+     *
+     * @param text The input text to be hashed.
+     * @return A hexadecimal representation of the hashed text, or null if an error occurs.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
     public static String hashText(String text) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -31,7 +50,15 @@ public class QRCodeUtil {
         }
     }
 
-    // Method to generate a QR code bitmap from a given text
+    /**
+     * Generates a QR code bitmap from the given text.
+     *
+     * @param text The input text to be encoded into a QR code. It must not be null or empty.
+     * @return A Bitmap representation of the generated QR code, or null if the input text is invalid
+     *         or if an error occurs during generation.
+     *
+     * @author Dricmoy Bhattacharjee
+     */
     public static Bitmap generateQRCode(String text) {
         if (text == null || text.trim().isEmpty()) {
             Log.e("QRCodeUtil", "Input text for QR code generation is empty or null.");
