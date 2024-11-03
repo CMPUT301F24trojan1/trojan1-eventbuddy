@@ -1,4 +1,4 @@
-package com.example.trojanplanner.ProfileUtils;
+package com.example.trojanplanner.view;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,10 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.trojanplanner.HelperFragments.ProfileFragment;
-import com.example.trojanplanner.QRUtils.QRActivity;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
-import com.example.trojanplanner.view.MainActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {
