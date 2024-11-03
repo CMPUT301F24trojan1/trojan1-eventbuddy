@@ -5,11 +5,6 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/eventsFragment">
 
-    <activity
-        android:id="@+id/qrActivity"
-        android:name="com.example.trojanplanner.view.QRActivity"
-        android:label="QR Activity" />
-
     <fragment
         android:id="@+id/eventsFragment"
         android:name="com.example.trojanplanner.events.EventsFragment"

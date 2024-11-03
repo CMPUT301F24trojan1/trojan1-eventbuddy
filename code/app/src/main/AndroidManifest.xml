@@ -31,8 +31,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".view.ProfileActivity" />
-        <activity android:name=".view.QRActivity" />
-        <activity android:name=".view.GenerateQRActivity" />
-        <activity android:name=".view.ScanQRActivity" />
+        <activity
+            android:name=".view.QRActivity">
+        </activity>
     </application>
 </manifest>
