@@ -62,6 +62,7 @@ public class PhotoPicker {
      * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
      * @param database The database to upload to (set to null to avoid uploading)
+     * @author Jared Gourley
      */
     public void initPhotoPicker(Database database) {
         // https://developer.android.com/training/data-storage/shared/photopicker#select-single-item
@@ -93,6 +94,7 @@ public class PhotoPicker {
      * openPhotoPicker and THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD.
      * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
+     * @author Jared Gourley
      */
     public void initPhotoPicker() {
         initPhotoPicker(null);
@@ -103,12 +105,21 @@ public class PhotoPicker {
     /**
      * A method that uninitializes the PhotoPicker if initPhotoPicker was called.
      * Should be called before switching activities
+     * @author Jared Gourley
      */
     public void deinitPhotoPicker() {
         photoPickerLauncher.unregister();
     }
 
-
+    /**
+     * Creates and opens a PhotoPicker UI screen to allow choosing a photo from the user's photo album.
+     * Ensure isCurrentlyPicking() is false then use getSelectedPhoto() after this function call
+     * to check on the selection results.
+     * <br>
+     * Requires calling the initPhotoPicker function before using this one.
+     * @param user The current user of the app
+     * @author Jared Gourley
+     */
     public void openPhotoPicker(User user) {
         // Throw error if init wasn't called
         if (photoPickerLauncher == null) {
