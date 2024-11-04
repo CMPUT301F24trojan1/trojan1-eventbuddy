@@ -7,6 +7,7 @@ plugins {
 buildscript {
     repositories {
         google()
+        mavenCentral()
     }
     dependencies {
         val nav_version = "2.7.6"

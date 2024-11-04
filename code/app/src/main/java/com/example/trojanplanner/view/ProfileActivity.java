@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.trojanplanner.HelperFragments.ProfileFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -19,6 +20,14 @@ public class ProfileActivity extends AppCompatActivity {
 
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Display ProfileFragment in the fragment container
+        if (savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.profile_fragment_container, new ProfileFragment())
+                    .commit();
+        }
 
         setupNavigation();
     }
@@ -49,9 +58,11 @@ public class ProfileActivity extends AppCompatActivity {
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
                 startActivity(new Intent(ProfileActivity.this, MainActivity.class));
+                finish();
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
                 startActivity(new Intent(ProfileActivity.this, QRActivity.class));
+                finish();
                 return true;
             } else return item.getItemId() == R.id.profileActivity; // Stay in the same activity
         });
