@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:padding="16dp">
 
+    <!-- ImageView for the icon or picture -->
+    <ImageView
+        android:id="@+id/custom_image"
+        android:layout_width="wrap_content"
+        android:layout_height="500dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="60dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/scanning_barcode"/>
+
+    <!-- TextView for the instruction text -->
     <TextView
         android:id="@+id/instruction_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textAlignment="center"
-        android:padding="16dp" />
-
-</LinearLayout>
+        android:layout_gravity="center"
+        android:layout_marginTop="180dp"
+        android:textSize="35sp"
+        android:textColor="@android:color/black" />
+</FrameLayout>

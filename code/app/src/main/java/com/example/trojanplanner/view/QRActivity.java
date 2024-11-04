@@ -178,12 +178,10 @@ public class QRActivity extends AppCompatActivity {
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
                 startActivity(new Intent(QRActivity.this, MainActivity.class));
-                startActivity(new Intent(QRActivity.this, SlideShowActivity.class));
                 finish();
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 startActivity(new Intent(QRActivity.this, ProfileActivity.class));
-                startActivity(new Intent(QRActivity.this, SlideShowActivity.class));
                 finish();
                 return true;
             } else return item.getItemId() == R.id.qrActivity;
