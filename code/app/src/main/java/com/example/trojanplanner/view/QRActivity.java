@@ -56,7 +56,7 @@ public class QRActivity extends AppCompatActivity {
 
         setupNavigation();
 
-        helpButton.setOnClickListener(v -> openHelpFragment());
+        helpButton.setOnClickListener(v -> openSlideShowActivity());
 
         // Check and request camera permission
         checkCameraPermission();
@@ -71,6 +71,11 @@ public class QRActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
+    private void openSlideShowActivity() {
+        Intent intent = new Intent(QRActivity.this, SlideShowActivity.class);
+        startActivity(intent);
+    }
+
     /**
      * Checks if the app has permission to use the camera. If permission is not
      * granted, it requests the permission from the user. If permission is granted,
@@ -78,6 +83,8 @@ public class QRActivity extends AppCompatActivity {
      *
      * @author Dricmoy Bhattacharjee
      */
+
+
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -88,6 +95,8 @@ public class QRActivity extends AppCompatActivity {
             startQRScanner(); // Start the scanner if permission is already granted
         }
     }
+
+
 
     /**
      * Starts the continuous QR scanner. It sets the decoder factory to recognize
@@ -169,10 +178,12 @@ public class QRActivity extends AppCompatActivity {
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
                 startActivity(new Intent(QRActivity.this, MainActivity.class));
+                startActivity(new Intent(QRActivity.this, SlideShowActivity.class));
                 finish();
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 startActivity(new Intent(QRActivity.this, ProfileActivity.class));
+                startActivity(new Intent(QRActivity.this, SlideShowActivity.class));
                 finish();
                 return true;
             } else return item.getItemId() == R.id.qrActivity;
