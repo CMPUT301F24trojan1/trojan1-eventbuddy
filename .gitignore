@@ -1,3 +1,5 @@
 .DS_Store
 .vscode/
 .idea/
+code/app/src/google-services.json
+code/app/google-services.json
