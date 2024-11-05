@@ -29,6 +29,6 @@ public class EmptyEventsFragment extends Fragment {
     }
 
     private void showNoEventsMessage() {
-        messageTextView.setText("No events found. Swipe right to scan QR codes to join events!");
+        messageTextView.setText("No events found. Come back here to see events you've created or joined!");
     }
 }
