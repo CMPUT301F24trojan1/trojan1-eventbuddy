@@ -4,14 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".events.EventsFragment">
+    android:orientation="vertical"
+    android:gravity="center">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/eventsRecyclerView"
-        android:layout_width="392dp"
-        android:layout_height="737dp"
+    <TextView
+        android:id="@+id/messageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.487"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.308" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,10 +1,14 @@
 package com.example.trojanplanner.view;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.Button;
 
+import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -16,14 +20,14 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-
+    private FirebaseFirestore db;
     private ActivityMainBinding binding;
     private static Activity activity; // Important to allow non-activity classes to trigger UI components, i.e. PhotoPicker
-
-    private Button tempButton;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +38,33 @@ public class MainActivity extends AppCompatActivity {
 
         activity = this;
 
+        storeDeviceId();
+
+        // Load EmptyEventsFragment initially
+        loadEmptyEventsFragment();
+
         setupNavigation();
+    }
+
+    private void loadEmptyEventsFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.nav_host_fragment_activity_main, new EmptyEventsFragment())
+                .commit();
+    }
+
+    @SuppressLint("HardwareIds")
+    private void storeDeviceId() {
+        // Get the device ID
+         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        // Get SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPreferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        // Store the device ID
+        editor.putString("device_id", deviceId);
+        editor.apply(); // Save changes
     }
 
     /**
@@ -60,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.eventsFragment)
+                R.id.emptyEventsFragment, R.id.eventsFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
@@ -68,6 +98,12 @@ public class MainActivity extends AppCompatActivity {
         // Set up ActionBar and BottomNavigationView with NavController
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
+
+        // Disable the back button for EmptyEventsFragment
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            // Enable the up button for other fragments
+            Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(destination.getId() != R.id.emptyEventsFragment); // Disable the up button
+        });
 
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
@@ -85,13 +121,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
+    /*
      * Gets the application context. This is a static method so any other class is able to call this function
      * in order to get the application context itself
      * @return The application context
-     */
-//    public static Context getAppContext() {
-//        return activity.getApplicationContext();
-//    }
-//
+
+        public static Context getAppContext() {
+            return activity.getApplicationContext();
+        } */
 }
