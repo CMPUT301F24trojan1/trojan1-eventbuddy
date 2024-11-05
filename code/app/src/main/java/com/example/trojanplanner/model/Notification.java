@@ -1,6 +1,5 @@
 package com.example.trojanplanner.model;
 
-package com.example.trojanplanner.model;
 
 import java.util.List;
 
