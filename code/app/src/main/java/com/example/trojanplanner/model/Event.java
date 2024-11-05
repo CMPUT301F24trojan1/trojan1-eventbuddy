@@ -14,8 +14,9 @@ import java.util.Set;
 
 
 // facilities can have .... multiple events (facility isn't implemented yet)
-public abstract class Event {
+public class Event {
     private String name;
+    private String eventId;
     private String facility;
     private String description;
     private int daysLeftToRegister;
@@ -55,8 +56,9 @@ public abstract class Event {
     }
 
 
-    public Event(String name, String description, String facility, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureUri, ArrayList<User> waitingList, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, RecurrenceType recurrenceType, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences) {
+    public Event(String name, String eventId, String description, String facility, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureUri, ArrayList<User> waitingList, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, RecurrenceType recurrenceType, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences) {
         this.name = name;
+        this.eventId = eventId;
         this.description = description;
         this.facility = facility;
         this.daysLeftToRegister = daysLeftToRegister;
@@ -86,6 +88,14 @@ public abstract class Event {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     public String getFacility() {

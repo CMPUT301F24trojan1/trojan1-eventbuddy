@@ -1,28 +1,44 @@
 package com.example.trojanplanner.model;
 
-public class Organizer extends User{
-    private Entrant nameOfOrganizer;
-    private Event nameOfEvent; //should this be Event class and not string?
+import java.util.ArrayList;
 
-    public Organizer(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, Entrant nameOfOrganizer, Event nameOfEvent) {
+public class Organizer extends User {
+    private ArrayList<Event> createdEvents;
+
+    public Organizer(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, ArrayList<Event> createdEvents) {
         super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
-        this.nameOfOrganizer = nameOfOrganizer;
-        this.nameOfEvent = nameOfEvent;
+        this.createdEvents = createdEvents;
     }
 
-    public Entrant getNameOfOrganizer() {
-        return nameOfOrganizer;
+    public ArrayList<Event> getCreatedEvents() {
+        return createdEvents;
     }
 
-    public void setNameOfOrganizer(Entrant nameOfOrganizer) {
-        this.nameOfOrganizer = nameOfOrganizer;
+    public void addEvent(Event event) {
+        if (!createdEvents.contains(event)) {
+            createdEvents.add(event);
+        }
+        else {
+            throw new IllegalArgumentException("Event is already in organizer list");
+        }
     }
 
-    public Event getNameOfEvent() {
-        return nameOfEvent;
+    public void removeEvent(Event event) {
+        if (createdEvents.contains(event)){
+            createdEvents.remove(event);
+        }
+        else {
+            throw new IllegalArgumentException("Event doesn't exist in the list.");
+        }
     }
 
-    public void setNameOfEvent(Event nameOfEvent) {
-        this.nameOfEvent = nameOfEvent;
+    public void removeEvent(int index) {
+        if (index < createdEvents.size() && index >= 0) {
+            createdEvents.remove(index);
+        }
+        else {
+            throw new IllegalArgumentException("Invalid index on event delete");
+        }
     }
+
 }

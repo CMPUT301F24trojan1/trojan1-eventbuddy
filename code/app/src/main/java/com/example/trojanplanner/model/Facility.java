@@ -7,36 +7,49 @@ import android.graphics.Bitmap;
  * @author Madelaine Dalangin
  */
 public class Facility {
+    private String facilityId;
+    private String name;
+    private String location;
     private Organizer owner;
-    private Event event;
-    private String dateOccupied;
-    private int capacityOfEvent;
-    private int maxCapacityOfFacility;
-    private boolean isFacilityOccupied;
+    //private Event event;
+    //private String dateOccupied;
+    //private int capacityOfEvent;
+    //private int maxCapacityOfFacility;
+    //private boolean hasOwner;
     private String pfpFacilityFilePath;
     private Bitmap pfpFacilityBitmap;
 
+
     /**
      * Constructor for Facility
-     * @author Madelaine Dalangin
+     * @param name The name of the facility
+     * @param facilityId The unique ID of the facility
+     * @param location
      * @param owner
-     * @param event
-     * @param dateOccupied
-     * @param capacityOfEvent
-     * @param maxCapacityOfFacility
-     * @param isFacilityOccupied
      * @param pfpFacilityFilePath
      * @param pfpFacilityBitmap
+     * @author Madelaine Dalangin
      */
-    public Facility(Organizer owner, Event event, String dateOccupied, int capacityOfEvent, int maxCapacityOfFacility, boolean isFacilityOccupied, String pfpFacilityFilePath, Bitmap pfpFacilityBitmap) {
+    public Facility(String name, String facilityId, String location, Organizer owner, String pfpFacilityFilePath, Bitmap pfpFacilityBitmap) {
+        this.name = name;
+        this.facilityId = facilityId;
+        this.location = location;
         this.owner = owner;
-        this.event = event;
-        this.dateOccupied = dateOccupied;
-        this.capacityOfEvent = capacityOfEvent;
-        this.maxCapacityOfFacility = maxCapacityOfFacility;
-        this.isFacilityOccupied = isFacilityOccupied;
+//        this.event = event;
+//        this.dateOccupied = dateOccupied;
+//        this.capacityOfEvent = capacityOfEvent;
+//        this.maxCapacityOfFacility = maxCapacityOfFacility;
+//        this.hasOwner = hasOwner;
         this.pfpFacilityFilePath = pfpFacilityFilePath;
         this.pfpFacilityBitmap = pfpFacilityBitmap;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -48,50 +61,80 @@ public class Facility {
         return owner;
     }
 
-    /**
-     * method for getting the event
-     * @author Madelaine Dalangin
-     * @return event, Event
-     */
-    public Event getEvent() {
-        return event;
+
+    public void setOwner(Organizer owner) {
+        this.owner = owner;
     }
 
-    /**
-     * Method for getting the date facility is occupied
-     * @author Madelaine Dalangin
-     * @return dateOccupied, a String
-     */
-    public String getDateOccupied() {
-        return dateOccupied;
+    public String getFacilityId() {
+        return facilityId;
     }
 
-    /**
-     * method for getting the capacity of event
-     * @author Madelaine Dalangin
-     * @return capacityOfEvent, int
-     */
-    public int getCapacityOfEvent() {
-        return capacityOfEvent;
+    public void setFacilityId(String facilityId) {
+        this.facilityId = facilityId;
     }
 
-    /**
-     * Method for getting the max capacity of facility
-     * @author Madelaine Dalangin
-     * @return maxCapacityOfFacility, int
-     */
-    public int getMaxCapacityOfFacility() {
-        return maxCapacityOfFacility;
+    public String getLocation() {
+        return location;
     }
 
-    /**
-     * Method for checking if facility is occupied
-     * @author Madelaine Dalangin
-     * @return isFacilityOccupied, boolean
-     */
-    public boolean isFacilityOccupied() {
-        return isFacilityOccupied;
+    public void setLocation(String location) {
+        this.location = location;
     }
+//    /**
+//     * method for getting the event
+//     * @author Madelaine Dalangin
+//     * @return event, Event
+//     */
+//    public Event getEvent() {
+//        return event;
+//    }
+
+//    /**
+//     * Method for getting the date facility is occupied
+//     * @author Madelaine Dalangin
+//     * @return dateOccupied, a String
+//     */
+//    public String getDateOccupied() {
+//        return dateOccupied;
+//    }
+//
+//    /**
+//     * method for getting the capacity of event
+//     * @author Madelaine Dalangin
+//     * @return capacityOfEvent, int
+//     */
+//    public int getCapacityOfEvent() {
+//        return capacityOfEvent;
+//    }
+//
+//    /**
+//     * Method for getting the max capacity of facility
+//     * @author Madelaine Dalangin
+//     * @return maxCapacityOfFacility, int
+//     */
+//    public int getMaxCapacityOfFacility() {
+//        return maxCapacityOfFacility;
+//    }
+
+//    /**
+//     * Method for checking if facility has owner organizer
+//     * @author Madelaine Dalangin
+//     * @return isFacilityOccupied, boolean
+//     */
+//    public boolean hasOwner() {
+//        return hasOwner;
+//    }
+
+
+//    /**
+//     * Method for setting if facility has owner organizer
+//     * @param value
+//     */
+//    public void setHasOwner(boolean value) {
+//        hasOwner = value;
+//    }
+
 
     /**
      * Method for getting the facility profile photo file path
