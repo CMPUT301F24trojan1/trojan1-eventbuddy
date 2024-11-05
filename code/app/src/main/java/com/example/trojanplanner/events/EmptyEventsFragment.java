@@ -19,7 +19,7 @@ public class EmptyEventsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_empty_events, container, false);
+        View view = inflater.inflate(R.layout.fragment_empty_myevents, container, false);
         messageTextView = view.findViewById(R.id.messageTextView);
 
         // Display a message for the user
