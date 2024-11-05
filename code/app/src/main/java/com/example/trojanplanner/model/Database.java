@@ -2,7 +2,9 @@ package com.example.trojanplanner.model;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
@@ -25,6 +27,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,8 +48,21 @@ public class Database {
     private OnSuccessListener defaultSuccessListener;
     private OnFailureListener defaultFailureListener;
 
+
+    /**
+     * The default constructor which creates a working Database object
+     */
     public Database() {
-        db = FirebaseFirestore.getInstance();
+        this(FirebaseFirestore.getInstance());
+    }
+
+
+    /**
+     * An alternative constructor which explicitly states the database instance. Only really
+     * made so that making a mock database instance with things like Mockito is possible.
+     */
+    public Database(FirebaseFirestore firestore) {
+        db = firestore;
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
         activity = App.activityManager.getActivity();
@@ -289,27 +305,27 @@ public class Database {
      */
     public void insertEvent(OnSuccessListener successListener, OnFailureListener failureListener, Event event) {
         Map<String, Object> eventMap = new HashMap<>();
-        eventMap.put("eventID", event.getEventId());
-        eventMap.put("name", event.getName());
-        eventMap.put("description", event.getDescription());
-        eventMap.put("facility", event.getFacility());
-        eventMap.put("price", event.getPrice());
-        eventMap.put("status", event.getStatus());
-        eventMap.put("eventCapacity", event.getTotalSpots());
-        eventMap.put("waitlistCapacity", );
-        eventMap.put("eventPhoto", null);
-        eventMap.put("requiresGeolocation", );
-
-        eventMap.put("creationTime", System.currentTimeMillis());
-        eventMap.put("eventStart", event.getStartDateTime());
-        eventMap.put("eventEnd", event.getEndDateTime());
-        eventMap.put("waitlistOpen", );
-        eventMap.put("watlistClose", );
-
-        eventMap.put("enrolledlist", );
-        eventMap.put("waitlist", );
-        eventMap.put("pendinglist", );
-        eventMap.put("cancelledlist", );
+//        eventMap.put("eventID", event.getEventId());
+//        eventMap.put("name", event.getName());
+//        eventMap.put("description", event.getDescription());
+//        eventMap.put("facility", event.getFacility());
+//        eventMap.put("price", event.getPrice());
+//        eventMap.put("status", event.getStatus());
+//        eventMap.put("eventCapacity", event.getTotalSpots());
+//        eventMap.put("waitlistCapacity", );
+//        eventMap.put("eventPhoto", null);
+//        eventMap.put("requiresGeolocation", );
+//
+//        eventMap.put("creationTime", System.currentTimeMillis());
+//        eventMap.put("eventStart", event.getStartDateTime());
+//        eventMap.put("eventEnd", event.getEndDateTime());
+//        eventMap.put("waitlistOpen", );
+//        eventMap.put("watlistClose", );
+//
+//        eventMap.put("enrolledlist", );
+//        eventMap.put("waitlist", );
+//        eventMap.put("pendinglist", );
+//        eventMap.put("cancelledlist", );
 
         eventMap.put("isRecurring", event.isRecurring());
         if (event.isRecurring()) {
@@ -357,7 +373,7 @@ public class Database {
     public void insertQRHash(OnSuccessListener successListener, OnFailureListener failureListener, String QRHash, Event event) {
         Map<String, Object> QRMap = new HashMap<>();
         QRMap.put("eventID", event.getEventId());
-        successListener.onSuccess();
+
         db.collection("eventHashes")
                 .document(QRHash)
                 .set(QRMap)
@@ -395,10 +411,10 @@ public class Database {
     public void insertFacility(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
-        facilityMap.put("name", );
-        facilityMap.put("facilityPhoto", );
-        facilityMap.put("owner", );
-        facilityMap.put("currentEvents", );
+        facilityMap.put("name", facility.getName());
+        facilityMap.put("facilityPhoto", facility.getPfpFacilityFilePath());
+        facilityMap.put("owner", facility.getOwner());
+        //facilityMap.put("currentEvents", );
 
         db.collection("facilities")
                 .document(facility.getFacilityId())
@@ -418,7 +434,6 @@ public class Database {
      */
     public void insertFacility(Facility facility) {
         insertFacility(defaultSuccessListener, defaultFailureListener, facility);
-
     }
 
 
@@ -479,14 +494,16 @@ public class Database {
 
 
 
-    private Event unpackEventMap(Map<String, Object> eventMap) {
-        Event event = new Event();
 
-        event.setName();
+    private Event unpackEventMap(Map<String, Object> eventMap) {
+//        Event event = new Event();
+//
+//        event.setName();
         // etc etc etc
 
 
-        return event;
+//        return event;
+        return null;
     }
 
 
@@ -530,26 +547,30 @@ public class Database {
 
 
 
+
+    /**
+     * Helper function to unpack a hashmap received from the database into an Entrant object
+     *
+     * @param entrantMap The hashmap to unpack into an Entrant
+     * @return The unpacked Entrant object
+     */
     private Entrant unpackEntrantMap(Map<String, Object> entrantMap) {
-        Entrant entrant = new Entrant();
-
-        entrant.setFirstName();
-        // etc etc etc
-
+        Map<String, Object> m = entrantMap;
+        Entrant entrant = new Entrant((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Entrant", (boolean) m.get("hasOrganizerRights"), (boolean) m.get("hasAdminRights"));
 
         return entrant;
     }
 
     /**
      * Gets an entrant document from the Firestore Database if the given androidId exists. Note that
-     * admins are organizers are allowed to be queries as entrants because they also have entrant
+     * admins and organizers are allowed to be queried as entrants because they also have entrant
      * abilities. This action is asynchronous and so the class calling this must initialize a
      * QuerySuccessAction and QueryFailureAction and pass it into the function to determine what
      * action should be taken when receiving the results. On a success, the entrant object can be
      * received by downcasting the object parameter in the QuerySuccessAction.
      *
-     * @param successAction The action to take on successful event query
-     * @param failureAction The action to take on failed event query
+     * @param successAction The action to take on successful entrant query
+     * @param failureAction The action to take on failed entrant query
      * @param androidId The android ID of the entrant desired to be received
      * @author Jared Gourley
      */
@@ -562,7 +583,7 @@ public class Database {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Entrant entrant = unpackEntrantMap(document.getData());
-                        if (entrant != null) {
+                        if (entrant != null) { // TODO: query for every event reference found as well?
                             successAction.OnSuccess(entrant);
                         }
                         else {
@@ -581,6 +602,140 @@ public class Database {
 
 
 
+
+    /**
+     * Helper function to unpack a hashmap received from the database into an Organizer object
+     *
+     * @param organizerMap The hashmap to unpack into an Organizer
+     * @return The unpacked Organizer object
+     */
+    private Organizer unpackOrganizerMap(Map<String, Object> organizerMap) {
+        Map<String, Object> m = organizerMap;
+        // If hasOrganizerRights is false, this is not allowed to be set as an organizer
+        if (! (boolean) m.get("hasOrganizerRights")) {
+            return null;
+        }
+
+        Organizer organizer = new Organizer((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Organizer", true, (boolean) m.get("hasAdminRights"), (ArrayList<Event>) m.get("createdEvents"));
+
+        return organizer;
+    }
+
+    /**
+     * Gets an organizer document from the Firestore Database if the given androidId exists. Note that
+     * admins could be allowed to be queried as organizers if they also have organizer rights.
+     * <strong> If hasOrganizerRights is false on a valid document, the QueryFailureAction
+     * will be called since the requested document is not a valid organizer. </strong>
+     * This action is asynchronous and so the class calling this must initialize a
+     * QuerySuccessAction and QueryFailureAction and pass it into the function to determine what
+     * action should be taken when receiving the results. On a success, the organizer object can be
+     * received by downcasting the object parameter in the QuerySuccessAction.
+     *
+     * @param successAction The action to take on successful organizer query
+     * @param failureAction The action to take on failed organizer query
+     * @param androidId The android ID of the organizer desired to be received
+     * @author Jared Gourley
+     */
+    public void getOrganizer(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId) {
+        DocumentReference docRef = db.collection("users").document(androidId);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Organizer organizer = unpackOrganizerMap(document.getData());
+                        if (organizer != null) {
+                            successAction.OnSuccess(organizer);
+                        }
+                        else {
+                            failureAction.OnFailure();
+                        }
+                    } else {
+                        failureAction.OnFailure();
+                    }
+                } else {
+                    Log.d("WARN", "get failed with ", task.getException());
+                }
+            }
+        });
+
+    }
+
+
+
+
+    /**
+     * Helper function to unpack a hashmap received from the database into an Admin object
+     *
+     * @param adminMap The hashmap to unpack into an Admin
+     * @return The unpacked Admin object
+     */
+    private Admin unpackAdminMap(Map<String, Object> adminMap) {
+        Map<String, Object> m = adminMap;
+        // If hasAdminRights is false, this is not allowed to be set as an admin
+        if (! (boolean) m.get("hasAdminRights")) {
+            return null;
+        }
+
+        Admin admin = new Admin((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Admin", (boolean) m.get("hasOrganizerRights"), true);
+
+        return admin;
+    }
+
+
+    /**
+     * Gets an admin document from the Firestore Database if the given androidId exists.
+     * <strong> If hasAdminRights is false on a valid document, the QueryFailureAction
+     * will be called since the requested document is not a valid admin. </strong>
+     * This action is asynchronous and so the class calling this must initialize a
+     * QuerySuccessAction and QueryFailureAction and pass it into the function to determine what
+     * action should be taken when receiving the results. On a success, the admin object can be
+     * received by downcasting the object parameter in the QuerySuccessAction.
+     *
+     * @param successAction The action to take on successful admin query
+     * @param failureAction The action to take on failed admin query
+     * @param androidId The android ID of the admin desired to be received
+     * @author Jared Gourley
+     */
+    public void getAdmin(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId) {
+        DocumentReference docRef = db.collection("users").document(androidId);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Admin admin = unpackAdminMap(document.getData());
+                        if (admin != null) {
+                            successAction.OnSuccess(admin);
+                        }
+                        else {
+                            failureAction.OnFailure();
+                        }
+                    } else {
+                        failureAction.OnFailure();
+                    }
+                } else {
+                    Log.d("WARN", "get failed with ", task.getException());
+                }
+            }
+        });
+
+    }
+
+
+
+
+
+
+
+    /**
+     * Helper function to unpack a hashmap received from the database into an event ID
+     *
+     * @param QRMap The hashmap to collect the event ID from
+     * @return The unpacked event ID
+     */
     private String unpackQRMap(Map<String, Object> QRMap) {
         String eventId = (String) QRMap.get("eventID"); // TODO: should this be error checked for if it exists?
 
@@ -624,5 +779,137 @@ public class Database {
         });
 
     }
+
+
+
+
+
+
+    // ============================= TEST FUNCTIONS ==============================
+
+
+    // Must be called from a database object where initPhotoPicker was called in the onCreate function
+    public void uploadImageTest() {
+        // fake user with android id "Testfolder" (uploads to testfolder folder)
+        Entrant user = new Entrant("", "", "", "", "Testfolder", "", false, false);
+        this.uploadFromPhotoPicker(user);
+
+    }
+
+
+    public void downloadImageTest() {
+        Database database = new Database();
+        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                System.out.println("success!!");
+                System.out.println(decodedImage); // not very useful but at least it proves it works
+            }
+        };
+        OnFailureListener failureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                System.out.println("Failed :((((");
+            }
+        };
+
+        downloadImage("1234567890/1729746211299.png", successListener, failureListener);
+    }
+
+
+
+
+
+
+    /**
+     * Function to test querying an entrant. You can run this test by setting up a temp button
+     * in MainActivity to run this function
+     */
+    public void getEntrantTest() {
+        Database database = new Database();
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+            @Override
+            public void OnSuccess(Object object) {
+                Entrant entrant = (Entrant) object;
+                System.out.println("deviceId: " + entrant.getDeviceId());
+                System.out.println("email: " + entrant.getEmail());
+                System.out.println("firstName: " + entrant.getFirstName());
+                System.out.println("lastName: " + entrant.getLastName());
+                System.out.println("hasAdminRights: " + entrant.isAdmin());
+                System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
+                System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
+                System.out.println("currentPendingEvents: " + entrant.getCurrentPendingEvents());
+                System.out.println("currentWaitlistedEvents: " + entrant.getCurrentWaitlistedEvents());
+                System.out.println("currentDeclinedEvents: " + entrant.getCurrentDeclinedEvents());
+            }
+        };
+
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("Query attempt failed!");
+            }
+        };
+
+        database.getEntrant(successAction, failureAction, "testEntrant");
+    }
+
+
+
+    public void getOrganizerTest() {
+        Database database = new Database();
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+            @Override
+            public void OnSuccess(Object object) {
+                Organizer organizer = (Organizer) object;
+                System.out.println("deviceId: " + organizer.getDeviceId());
+                System.out.println("email: " + organizer.getEmail());
+                System.out.println("firstName: " + organizer.getFirstName());
+                System.out.println("lastName: " + organizer.getLastName());
+                System.out.println("hasAdminRights: " + organizer.isAdmin());
+                System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
+                System.out.println("createdEvents: " + organizer.getCreatedEvents());
+            }
+        };
+
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("Query attempt failed!");
+            }
+        };
+
+        database.getOrganizer(successAction, failureAction, "testOrganizer");
+    }
+
+
+    public void getQRTest() {
+        Database database = new Database();
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+            @Override
+            public void OnSuccess(Object object) {
+                String eventID = (String) object;
+                System.out.println("eventID: " + eventID);
+            }
+        };
+
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("Query attempt failed!");
+            }
+        };
+
+        database.getQRData(successAction, failureAction, "awoi42A(*@M#NFAOaskwlqo");
+    }
+
+
+
+
+
+
+
+
 
 }

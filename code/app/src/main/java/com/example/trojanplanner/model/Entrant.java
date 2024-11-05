@@ -10,9 +10,10 @@ import java.util.ArrayList;
  */
 public class Entrant extends User {
 
-    private ArrayList<Event> currentRegisteredEvents;
-    private ArrayList<Event> currentJoinedEvents;
+    private ArrayList<Event> currentWaitlistedEvents;
+    private ArrayList<Event> currentEnrolledEvents;
     private ArrayList<Event> currentPendingEvents;
+    private ArrayList<Event> currentDeclinedEvents;
 
     /**
      * Constructor Method for Entrant
@@ -29,9 +30,10 @@ public class Entrant extends User {
      */
     public Entrant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin) {
         super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
-        this.currentRegisteredEvents = new ArrayList<Event>();
-        this.currentJoinedEvents = new ArrayList<Event>();
+        this.currentWaitlistedEvents = new ArrayList<Event>();
+        this.currentEnrolledEvents = new ArrayList<Event>();
         this.currentPendingEvents = new ArrayList<Event>();
+        this.currentDeclinedEvents = new ArrayList<Event>();
     }
 
     /**
@@ -40,10 +42,12 @@ public class Entrant extends User {
      * @param event
      */
     private void addRegisteredEvent(Event event){
-        if(!currentRegisteredEvents.contains(event)) {
-            currentRegisteredEvents.add(event);
+        if(!currentWaitlistedEvents.contains(event)) {
+            currentWaitlistedEvents.add(event);
         }
-        throw new IllegalArgumentException("Entrant is already registered to event");
+        else {
+            throw new IllegalArgumentException("Entrant is already registered to event");
+        }
     }
 
     /**
@@ -52,10 +56,12 @@ public class Entrant extends User {
      * @param event
      */
     private void removeRegisteredEvent(Event event){
-        if(currentRegisteredEvents.contains(event)){
-            currentRegisteredEvents.remove(event);
+        if(currentWaitlistedEvents.contains(event)){
+            currentWaitlistedEvents.remove(event);
         }
-        throw new IllegalArgumentException("Event doesn't exist in the list.");
+        else {
+            throw new IllegalArgumentException("Event doesn't exist in the list.");
+        }
     }
 
     /**
@@ -64,10 +70,12 @@ public class Entrant extends User {
      * @param event
      */
     private void addJoinedEvent(Event event){
-        if(!currentJoinedEvents.contains(event)){
-            currentJoinedEvents.add(event);
+        if(!currentEnrolledEvents.contains(event)){
+            currentEnrolledEvents.add(event);
         }
-        throw new IllegalArgumentException("Entrant already confirmed to join event.");
+        else {
+            throw new IllegalArgumentException("Entrant already confirmed to join event.");
+        }
     }
 
     /**
@@ -76,10 +84,12 @@ public class Entrant extends User {
      * @param event
      */
     private void removeJoinedEvent(Event event){
-        if(currentJoinedEvents.contains(event)){
-            currentJoinedEvents.remove(event);
+        if(currentEnrolledEvents.contains(event)){
+            currentEnrolledEvents.remove(event);
         }
-        throw new IllegalArgumentException("Event doesn't exist in Entrant's joined events.");
+        else {
+            throw new IllegalArgumentException("Event doesn't exist in Entrant's joined events.");
+        }
     }
 
     /**
@@ -91,7 +101,9 @@ public class Entrant extends User {
         if(!currentPendingEvents.contains(event)){
             currentPendingEvents.add(event);
         }
-        throw new IllegalArgumentException("Event in Entrant's Pending list.");
+        else {
+            throw new IllegalArgumentException("Event in Entrant's Pending list.");
+        }
     }
 
     /**
@@ -103,8 +115,41 @@ public class Entrant extends User {
         if(currentPendingEvents.contains(event)){
             currentPendingEvents.remove(event);
         }
-        throw new IllegalArgumentException("Event does not exist in Entrant's pending events list.");
+        else {
+            throw new IllegalArgumentException("Event does not exist in Entrant's pending events list.");
+        }
     }
 
 
+    public ArrayList<Event> getCurrentWaitlistedEvents() {
+        return currentWaitlistedEvents;
+    }
+
+    public void setCurrentWaitlistedEvents(ArrayList<Event> currentWaitlistedEvents) {
+        this.currentWaitlistedEvents = currentWaitlistedEvents;
+    }
+
+    public ArrayList<Event> getCurrentEnrolledEvents() {
+        return currentEnrolledEvents;
+    }
+
+    public void setCurrentEnrolledEvents(ArrayList<Event> currentEnrolledEvents) {
+        this.currentEnrolledEvents = currentEnrolledEvents;
+    }
+
+    public ArrayList<Event> getCurrentPendingEvents() {
+        return currentPendingEvents;
+    }
+
+    public void setCurrentPendingEvents(ArrayList<Event> currentPendingEvents) {
+        this.currentPendingEvents = currentPendingEvents;
+    }
+
+    public ArrayList<Event> getCurrentDeclinedEvents() {
+        return currentDeclinedEvents;
+    }
+
+    public void setCurrentDeclinedEvents(ArrayList<Event> currentDeclinedEvents) {
+        this.currentDeclinedEvents = currentDeclinedEvents;
+    }
 }

@@ -1,6 +1,5 @@
 package com.example.trojanplanner.model;
 
-package com.example.trojanplanner.model;
 
 import android.graphics.Bitmap;
 import java.util.List;
@@ -23,11 +22,12 @@ public class Admin extends User {
      * @param pfpBitmap    Admin's profile picture bitmap
      */
     public Admin(String lastName, String firstName, String email, String phoneNumber,
-                 String deviceId, String pfpFilePath, Bitmap pfpBitmap) {
-        super(lastName, firstName, email, phoneNumber, deviceId, "Admin", false, true);
-        this.setPfpFilePath(pfpFilePath);
-        this.setPfpBitmap(pfpBitmap);
+                 String deviceId, String role, boolean isOrganizer, boolean isAdmin) {
+        super(lastName, firstName, email, phoneNumber, deviceId, "Admin", isOrganizer, true);
+//        this.setPfpFilePath(pfpFilePath); // This should be done in a User constructor since it's common to all user types
+//        this.setPfpBitmap(pfpBitmap);
     }
+
 
     /**
      * Method to create a terms and conditions agreement to users.
