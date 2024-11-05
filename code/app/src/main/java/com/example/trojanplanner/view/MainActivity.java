@@ -20,12 +20,10 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    private FirebaseFirestore db;
     private ActivityMainBinding binding;
     private static Activity activity; // Important to allow non-activity classes to trigger UI components, i.e. PhotoPicker
 

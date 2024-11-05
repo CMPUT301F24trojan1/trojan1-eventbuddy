@@ -9,13 +9,13 @@
         android:id="@+id/emptyEventsFragment"
         android:name="com.example.trojanplanner.events.EmptyEventsFragment"
         android:label="@string/title_events"
-        tools:layout="@layout/fragment_empty_events" />
+        tools:layout="@layout/fragment_empty_myevents" />
 
     <fragment
         android:id="@+id/eventsFragment"
         android:name="com.example.trojanplanner.events.EventsFragment"
         android:label="@string/title_events"
-        tools:layout="@layout/fragment_events" />
+        tools:layout="@layout/fragment_events_list" />
 
     <activity
         android:id="@+id/qrActivity"

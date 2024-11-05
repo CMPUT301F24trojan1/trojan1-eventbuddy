@@ -186,4 +186,3 @@ public abstract class User implements UserProfile {
         return isAdmin;
     }
 }
-
