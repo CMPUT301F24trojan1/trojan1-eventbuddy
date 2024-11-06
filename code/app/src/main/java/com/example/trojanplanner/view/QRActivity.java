@@ -3,15 +3,9 @@ package com.example.trojanplanner.view;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -20,37 +14,34 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.trojanplanner.HelperFragments.QRHelpFragment;
-import com.example.trojanplanner.QRUtils.QRCodeUtil;
+import com.example.trojanplanner.QRUtils.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.zxing.BarcodeFormat;
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.ChecksumException;
-import com.google.zxing.FormatException;
-import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
-import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.qrcode.QRCodeReader;
-import com.google.zxing.RGBLuminanceSource;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.BarcodeView;
 import com.journeyapps.barcodescanner.DefaultDecoderFactory;
 
-import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * QRActivity is responsible for managing the QR code scanning functionality.
+ * It initializes the camera permissions, starts the scanner, and handles
+ * the navigation within the app. This activity also includes a help feature
+ * that provides users with guidance on how to use the QR scanner.
+ *
+ * @author Dricmoy Bhattacharjee
+ */
 public class QRActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
-    private static final int DELAY_MILLIS = 3000; // 3-second delay
     private BarcodeView barcodeView;
     private EditText etInput;
-    private ImageView qrCodeImageView;
     private @NonNull ActivityQrBinding binding;
 
     @Override
@@ -61,22 +52,16 @@ public class QRActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         barcodeView = findViewById(R.id.barcode_scanner);
-        etInput = findViewById(R.id.etInput);
-        qrCodeImageView = findViewById(R.id.qrCodeImageView); // ImageView to show the generated QR code
         ImageButton helpButton = findViewById(R.id.qr_help_button);
 
         setupNavigation();
 
-        helpButton.setOnClickListener(v -> openHelpFragment());
+        helpButton.setOnClickListener(v -> openSlideShowActivity());
 
         // Check and request camera permission
         checkCameraPermission();
 
-        // Generate and display a random QR code with a delay before scanning
-        String randomText = generateRandomString(10);  // Generate a random 10-character string
-        generateQRCodeWithDelay(randomText);
-
-        // Custom back press handling
+        // custom back press handling
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -86,11 +71,20 @@ public class QRActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
+    private void openSlideShowActivity() {
+        Intent intent = new Intent(QRActivity.this, SlideShowActivity.class);
+        startActivity(intent);
+    }
+
     /**
      * Checks if the app has permission to use the camera. If permission is not
      * granted, it requests the permission from the user. If permission is granted,
      * it starts the QR code scanner.
+     *
+     * @author Dricmoy Bhattacharjee
      */
+
+
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -102,34 +96,30 @@ public class QRActivity extends AppCompatActivity {
         }
     }
 
+
+
     /**
-     * Starts the continuous QR scanner and defines the behavior when a QR code is scanned.
+     * Starts the continuous QR scanner. It sets the decoder factory to recognize
+     * QR codes and defines the behavior when a QR code is scanned. The scanned
+     * result is displayed in an EditText field and a toast message is shown.
+     *
+     * @author Dricmoy Bhattacharjee
      */
     private void startQRScanner() {
         Collection<BarcodeFormat> formats = Collections.singletonList(BarcodeFormat.QR_CODE);
         barcodeView.setDecoderFactory(new DefaultDecoderFactory(formats));
         barcodeView.decodeContinuous(new BarcodeCallback() {
-            public void barcodeResult(BarcodeResult result) {
-                if (result != null && result.getText() != null) {
-                    String qrContent = result.getText();
-
-                    // Show the scanned result in EditText
-                    etInput.setText(qrContent);
-
-                    // Check if content is a URL and redirect if true
-                    if (qrContent.startsWith("http://") || qrContent.startsWith("https://")) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(qrContent));
-                        intent.addCategory(Intent.CATEGORY_BROWSABLE); // Ensure it's handled as a URL
-                        startActivity(intent);
-                    } else {
-                        // Handle other types of content if needed
-                        Toast.makeText(QRActivity.this, "Scanned: " + qrContent, Toast.LENGTH_LONG).show();
-                    }
-
-                    // Pause the scanner to prevent multiple detections
-                    barcodeView.pause();
+            public void barcodeResult(Result result) {
+                if (result != null) {
+                    // Display the scanned result in the EditText and show a toast
+                    Toast.makeText(QRActivity.this, "Scanned: " + result.getText(), Toast.LENGTH_LONG).show();
+                    etInput.setText(result.getText());
+                    barcodeView.pause();  // Pause scanning after a successful scan
                 }
             }
+
+            @Override
+            public void barcodeResult(BarcodeResult result) { }
 
             @Override
             public void possibleResultPoints(List<ResultPoint> resultPoints) { }
@@ -138,76 +128,9 @@ public class QRActivity extends AppCompatActivity {
     }
 
     /**
-     * Generates a QR code from a random string, displays it, and then scans it after a delay.
-     *
-     * @param text The random text to be encoded as a QR code.
-     */
-    private void generateQRCodeWithDelay(String text) {
-        Bitmap qrCodeBitmap = QRCodeUtil.generateQRCode(text);
-        if (qrCodeBitmap != null) {
-            // Display the generated QR code in ImageView
-            qrCodeImageView.setImageBitmap(qrCodeBitmap);
-            qrCodeImageView.setVisibility(View.VISIBLE);
-
-            // Delay scanning by 3 seconds to allow user to see the QR code
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                // Scan the displayed QR code after delay
-                String decodedText = decodeQRCodeBitmap(qrCodeBitmap);
-                if (decodedText != null) {
-                    etInput.setText(decodedText);
-                    Toast.makeText(this, "Scanned: " + decodedText, Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(this, "Failed to decode QR code", Toast.LENGTH_SHORT).show();
-                }
-                // Hide QR code after scanning
-                qrCodeImageView.setVisibility(View.GONE);
-            }, DELAY_MILLIS);
-        } else {
-            Toast.makeText(this, "Failed to generate QR code", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * Decodes a QR code from a given Bitmap.
-     *
-     * @param bitmap The Bitmap containing the QR code.
-     * @return The decoded text from the QR code, or null if decoding fails.
-     */
-    private String decodeQRCodeBitmap(Bitmap bitmap) {
-        int[] intArray = new int[bitmap.getWidth() * bitmap.getHeight()];
-        bitmap.getPixels(intArray, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        RGBLuminanceSource source = new RGBLuminanceSource(bitmap.getWidth(), bitmap.getHeight(), intArray);
-        BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
-
-        try {
-            QRCodeReader reader = new QRCodeReader();
-            Result result = reader.decode(binaryBitmap);
-            return result.getText();
-        } catch (NotFoundException | ChecksumException | FormatException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Generates a random alphanumeric string of the specified length.
-     *
-     * @param length The desired length of the generated string.
-     * @return A random alphanumeric string.
-     */
-    private String generateRandomString(int length) {
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            sb.append(characters.charAt(random.nextInt(characters.length())));
-        }
-        return sb.toString();
-    }
-
-    /**
      * Opens the help fragment to provide guidance to the user on using the QR scanner.
+     *
+     * @author Dricmoy Bhattacharjee
      */
     private void openHelpFragment() {
         QRHelpFragment QRHelpFragment = new QRHelpFragment();
@@ -228,6 +151,25 @@ public class QRActivity extends AppCompatActivity {
 
     /**
      * Sets up the navigation for the BottomNavigationView.
+     * <p>
+     * This method initializes the BottomNavigationView and sets the selected item
+     * to the QR activity. It also establishes a listener for item selection
+     * events. When the user selects an item in the navigation bar, the following
+     * actions occur:
+     * <ul>
+     *     <li>When the home navigation item is selected, the user is navigated
+     *     to {@link MainActivity}.</li>
+     *     <li>When the profile navigation item is selected, the user is navigated
+     *     to {@link ProfileActivity}.</li>
+     *     <li>When the QR activity navigation item is selected, the user remains
+     *     in the current {@link QRActivity}.</li>
+     * </ul>
+     *
+     * This method should be called during the creation of the activity to
+     * ensure that the navigation setup is complete and responsive to user
+     * interactions.
+     *
+     * @author Dricmoy Bhattacharjee
      */
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -250,6 +192,12 @@ public class QRActivity extends AppCompatActivity {
      * Handles the result of the permission request. If the camera permission is granted,
      * it starts the QR scanner. If denied, it shows a message to the user indicating
      * that the permission is required to scan QR codes.
+     *
+     * @param requestCode The request code for the permission.
+     * @param permissions The requested permissions.
+     * @param grantResults The results of the permission request.
+     *
+     * @author Dricmoy Bhattacharjee
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
