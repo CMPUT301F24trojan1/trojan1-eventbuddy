@@ -6,13 +6,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.widget.Button;
 
+import com.example.trojanplanner.ProfileUtils.UserProfileUtil;
 import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -20,6 +22,9 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Objects;
 
@@ -37,6 +42,43 @@ public class MainActivity extends AppCompatActivity {
         activity = this;
 
         storeDeviceId();
+
+        UserProfileUtil userProfileUtil = new UserProfileUtil();
+
+        @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        // Check if user data exists in Firebase, if not create a mock user
+        userProfileUtil.getUser(deviceId, new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    // Create a mock user if not found
+                    User mockUser = new User(
+                            deviceId,                       // Device ID
+                            "johndoe@example.com",          // Email
+                            "John",                         // First Name
+                            false,                          // hasAdminRights
+                            false,                          // hasOrganizerRights
+                            "Doe",                          // Last Name
+                            "",       // Profile picture URL
+                            "123-456-7890"                  // Phone
+                    );
+                    userProfileUtil.createUser(mockUser);
+                } else {
+                    // User exists, handle as needed (e.g., update UI)
+                    User user = dataSnapshot.getValue(User.class);
+                    // Update UI or state with the existing user's data
+                    assert user != null;
+                    System.out.println("User retrieved: " + user.getFirstName() + " " + user.getLastName());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                System.out.println("Error retrieving user: " + databaseError.getMessage());
+            }
+        });
+
 
         // Load EmptyEventsFragment initially
         loadEmptyEventsFragment();
