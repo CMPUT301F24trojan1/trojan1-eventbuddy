@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import com.example.trojanplanner.R;
 
 public class OrganizerRegistrationFragment extends Fragment {
-
     public OrganizerRegistrationFragment() {
         // Required empty public constructor
     }
