@@ -4,8 +4,11 @@
     <string name="title_qr">QR Scanner</string>
     <string name="title_profile">Profile</string>
 
-    <string name="firebase_upload_success">Upload successful!</string>
-    <string name="firebase_upload_fail">Upload failed, try again later</string>
+    <string name="firebase_storage_upload_success">Storage upload successful!</string>
+    <string name="firebase_storage_upload_fail">Storage upload failed, try again later</string>
+
+    <string name="firestore_db_upload_success">Document upload successful!</string>
+    <string name="firestore_db_upload_fail">Document upload failed, try again later</string>
 
 
 </resources>
