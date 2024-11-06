@@ -12,14 +12,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.EventArrayAdapter;
-import com.example.trojanplanner.databinding.FragmentEventsBinding;
+import com.example.trojanplanner.databinding.FragmentEventsListBinding;
 import com.example.trojanplanner.model.Event;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EventsFragment extends Fragment {
 
-    private FragmentEventsBinding binding;
+    private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
     private List<Event> eventList; // Assuming Event is your model class
 
@@ -28,7 +28,7 @@ public class EventsFragment extends Fragment {
         EventsViewModel eventsViewModel =
                 new ViewModelProvider(this).get(EventsViewModel.class);
 
-        binding = FragmentEventsBinding.inflate(inflater, container, false);
+        binding = FragmentEventsListBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         // Initialize the RecyclerView
