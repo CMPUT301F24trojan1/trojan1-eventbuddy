@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 public class Organizer extends User {
     private ArrayList<Event> createdEvents;
-    private ArrayList<Facility> createdFacility;
+    private Facility facility;
 
     /**
      * Constructor for Organizer
@@ -23,12 +23,12 @@ public class Organizer extends User {
      * @param isOrganizer
      * @param isAdmin
      * @param createdEvents
-     * @param createdFacility
+     * @param facility
      */
-    public Organizer(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, ArrayList<Event> createdEvents, ArrayList<Facility> createdFacility) {
+    public Organizer(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, ArrayList<Event> createdEvents, Facility facility) {
         super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
         this.createdEvents = createdEvents;
-        this.createdFacility = createdFacility;
+        this.facility = facility;
     }
 
     /**
@@ -85,50 +85,18 @@ public class Organizer extends User {
     /**
      * Method to get a facility created by Organizer
      * @author Madelaine Dalangin
-     * @return createdFacility, ArrayList
+     * @return createdFacility, Facility
      */
-    public ArrayList<Facility> getCreatedFacility() {
-        return createdFacility;
+    public Facility getFacility() {
+        return facility;
     }
 
     /**
-     * Method for Organizer to create Facility
+     * Method to set facility by Organizer
      * @author Madelaine Dalangin
      * @param facility, Facility
      */
-    public void createFacility(Facility facility) {
-        if (!createdFacility.contains(facility)){
-            createdFacility.add(facility);
-        } else {
-            throw new IllegalArgumentException("Facility already created.");
-        }
+    public void setFacility(Facility facility) {
+        this.facility = facility;
     }
-
-    /**
-     * Method for removing Facility using the object Facility
-     * @author Madelaine Dalangin
-     * @param facility, Facility
-     */
-    public void removeFacility(Facility facility) {
-        if (createdFacility.contains(facility)){
-            createdFacility.remove(facility);
-        }
-        else {
-            throw new IllegalArgumentException("Facility doesn't exist in the list.");
-        }
-    }
-
-    /**
-     * Method to remove Facility by Organizer using its index
-     * @author Madelaine Dalangin
-     * @param index, int
-     */
-    public void removeFacility(int index){
-        if(index < createdFacility.size() && index >= 0){
-            createdFacility.remove(index);
-        } else {
-            throw new IllegalArgumentException("Facility does not exist in the list.");
-        }
-    }
-
 }
