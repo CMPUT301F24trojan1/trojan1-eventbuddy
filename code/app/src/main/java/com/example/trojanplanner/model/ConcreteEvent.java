@@ -9,6 +9,7 @@ public class ConcreteEvent extends Event {
     public ConcreteEvent(String name, String description, String facility, Date startDateTime, Date endDateTime) {
         super(
                 name,
+                null,           // eventId
                 description,
                 facility,
                 0,                      // daysLeftToRegister
