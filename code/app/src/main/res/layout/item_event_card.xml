@@ -1,0 +1,38 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/rectangle_background"
+    android:layout_margin="8dp"
+    android:padding="8dp">
+
+    <!-- Event Image -->
+    <ImageView
+        android:id="@+id/event_image"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/rectangle_background" />
+
+    <!-- Event Name -->
+    <TextView
+        android:id="@+id/event_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="event_name"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:paddingTop="8dp" />
+
+    <!-- Event Description -->
+    <TextView
+        android:id="@+id/event_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Description"
+        android:textSize="14sp"
+        android:textColor="#555555"
+        android:paddingTop="4dp" />
+</LinearLayout>
