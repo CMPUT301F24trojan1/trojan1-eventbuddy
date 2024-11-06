@@ -43,10 +43,20 @@ public class Organizer extends User {
         }
     }
 
+    /**
+     * Method to get a facility created by Organizer
+     * @author Madelaine Dalangin
+     * @return createdFacility, ArrayList
+     */
     public ArrayList<Facility> getCreatedFacility() {
         return createdFacility;
     }
 
+    /**
+     * Method for Organizer to create Facility
+     * @author Madelaine Dalangin
+     * @param facility, Facility
+     */
     public void createFacility(Facility facility) {
         if (!createdFacility.contains(facility)){
             createdFacility.add(facility);
@@ -55,6 +65,11 @@ public class Organizer extends User {
         }
     }
 
+    /**
+     * Method to remove Facility by Organizer
+     * @author Madelaine Dalangin
+     * @param index, int
+     */
     public void removeFacility(int index){
         if(index < createdFacility.size() && index >= 0){
             createdFacility.remove(index)
