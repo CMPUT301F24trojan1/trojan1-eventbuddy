@@ -15,7 +15,7 @@
         android:background="@drawable/circle_shape"
         android:contentDescription="Profile Picture"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_profile_placeholder"
+        android:src="@drawable/placeholder_avatar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
