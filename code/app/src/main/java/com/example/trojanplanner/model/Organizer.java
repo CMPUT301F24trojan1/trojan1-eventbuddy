@@ -72,7 +72,7 @@ public class Organizer extends User {
      */
     public void removeFacility(int index){
         if(index < createdFacility.size() && index >= 0){
-            createdFacility.remove(index)
+            createdFacility.remove(index);
         } else {
             throw new IllegalArgumentException("Facility does not exist in the list.");
         }
