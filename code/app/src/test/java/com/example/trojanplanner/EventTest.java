@@ -9,6 +9,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Event;
 
 public class EventTest {

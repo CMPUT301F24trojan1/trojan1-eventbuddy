@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
         Database db = new Database();
         db.getEntrantTest();
 
+
+
         setupNavigation();
     }
 

@@ -11,9 +11,15 @@
         android:label="Empty Events"
         tools:layout="@layout/fragment_empty_myevents">
         <action
-            android:id="@+id/action_emptyEventsFragment_to_organizerRegistrationFragment"
-            app:destination="@id/organizerRegistrationFragment" />
+            android:id="@+id/action_emptyEventsFragment_to_facilityRegistrationFragment"
+            app:destination="@id/facilityRegistrationFragment"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/facilityRegistrationFragment"
+        android:name="com.example.trojanplanner.events.facility.Facilityregistrationfragment"
+        android:label="Facility Registration"
+        tools:layout="@layout/fragment_facility_registration" />
 
     <fragment
         android:id="@+id/organizerRegistrationFragment"
