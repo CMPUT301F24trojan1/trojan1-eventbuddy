@@ -1,16 +1,19 @@
 package com.example.trojanplanner.model;
+import android.graphics.Bitmap;
 import android.provider.Settings;
 
 /**
  * user class contains and stores information tied to a user.
  * @author Madelaine Dalangin
  */
-public abstract class User implements UserProfile {
+public abstract class User {
     private String lastName;
     private String firstName;
     private String email;
     private String phoneNumber;
     private String deviceId;
+    private String pfpFilePath;
+    private Bitmap pfpBitmap;
     private String role; //Entrant, Organizer, Admin
     private boolean isOrganizer;
     private boolean isAdmin;
@@ -185,4 +188,21 @@ public abstract class User implements UserProfile {
     public boolean isAdmin() {
         return isAdmin;
     }
+
+    public String getPfpFilePath() {
+        return pfpFilePath;
+    }
+
+    public void setPfpFilePath(String pfpFilePath) {
+        this.pfpFilePath = pfpFilePath;
+    }
+
+    public Bitmap getPfpBitmap() {
+        return pfpBitmap;
+    }
+
+    public void setPfpBitmap(Bitmap pfpBitmap) {
+        this.pfpBitmap = pfpBitmap;
+    }
 }
+
