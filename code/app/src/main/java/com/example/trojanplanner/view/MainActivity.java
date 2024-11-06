@@ -7,15 +7,11 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
 
-import com.example.trojanplanner.ProfileUtils.UserProfileUtil;
-import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -23,9 +19,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.Objects;
 
@@ -46,22 +39,16 @@ public class MainActivity extends AppCompatActivity {
 
         @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Load EmptyEventsFragment initially
-        loadEmptyEventsFragment();
+        // Instead of manually loading the EmptyEventsFragment, use the navigation component
+        if (savedInstanceState == null) {
+            Navigation.findNavController(this, R.id.nav_host_fragment_activity_main)
+                    .navigate(R.id.emptyEventsFragment);
+        }
 
         Database db = new Database();
         db.getEntrantTest();
 
-
-
         setupNavigation();
-    }
-
-    private void loadEmptyEventsFragment() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, new EmptyEventsFragment())
-                .commit();
     }
 
     @SuppressLint("HardwareIds")
