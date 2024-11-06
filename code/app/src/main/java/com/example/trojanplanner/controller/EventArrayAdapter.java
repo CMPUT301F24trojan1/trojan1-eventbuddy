@@ -32,10 +32,10 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = eventList.get(position);
-        holder.eventName.setText(event.getEventName());
-        holder.eventDescription.setText(event.getEventDescription());
+        holder.eventName.setText(event.getName());
+        holder.eventDescription.setText(event.getDescription());
         // Assume the event has an image resource ID
-        holder.eventImage.setImageResource(event.getImageResourceId());
+        holder.eventImage.setImageBitmap(event.getPicture());
     }
 
     @Override
@@ -56,9 +56,9 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
         }
 
         public void bind(Event event) {
-            eventName.setText(event.getEventName());
-            eventDescription.setText(event.getEventDescription());
-            eventImage.setImageResource(event.getImageResourceId());
+            eventName.setText(event.getName());
+            eventDescription.setText(event.getDescription());
+            eventImage.setImageBitmap(event.getPicture());
         }
     }
 }
