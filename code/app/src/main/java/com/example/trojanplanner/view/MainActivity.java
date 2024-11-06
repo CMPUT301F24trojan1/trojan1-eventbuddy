@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("HardwareIds")
     private void storeDeviceId() {
         // Get the device ID
-         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         // Get SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("MyAppPreferences", MODE_PRIVATE);
