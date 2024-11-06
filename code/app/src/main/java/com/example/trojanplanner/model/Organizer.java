@@ -1,5 +1,7 @@
 package com.example.trojanplanner.model;
 
+import android.graphics.Bitmap;
+
 import java.util.ArrayList;
 
 /**
@@ -83,9 +85,41 @@ public class Organizer extends User {
     }
 
     /**
-     * Method to get a facility created by Organizer
+     * Method to create Facility by the Organizer as per User story US 02.01.03 As an organizer, I want to create and manage my facility profile.
+     * @param name
+     * @param facilityId
+     * @param location
+     * @param owner
+     * @param pfpFacilityFilePath
+     * @param pfpFacilityBitmap
+     * @return
+     */
+    public Facility createFacility(String name, String facilityId, String location, Organizer owner, String pfpFacilityFilePath, Bitmap pfpFacilityBitmap){
+        if(facility == null){
+            facility = new Facility(name, facilityId, location, owner, pfpFacilityFilePath, pfpFacilityBitmap);
+            return facility;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Method to remove Facility
      * @author Madelaine Dalangin
-     * @return createdFacility, Facility
+     */
+
+    public void removeFacility(){
+        if(facility != null){
+            facility = null;
+        } else {
+            throw new IllegalArgumentException("Facility doesn't exist.");
+        }
+    }
+
+    /**
+     * method to get facility
+     * @author Madelaine Dalangin
+     * @return
      */
     public Facility getFacility() {
         return facility;
