@@ -82,6 +82,20 @@ public class Event {
 
     }
 
+    // Constructor with no image args
+    public Event(String eventName, String eventDescription) {
+        this.name = eventName;
+        this.description = eventDescription;
+    }
+
+    // Constructor with image args
+    public Event(String eventName, String eventDescription, Bitmap imageResourceId) {
+        this.name = eventName;
+        this.description = eventDescription;
+        this.picture = imageResourceId;
+    }
+
+
     public String getName() {
         return name;
     }
