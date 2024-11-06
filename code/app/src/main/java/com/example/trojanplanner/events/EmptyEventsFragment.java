@@ -9,11 +9,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.example.trojanplanner.R;
 
 public class EmptyEventsFragment extends Fragment {
-
     private TextView messageTextView;
 
     @Nullable
@@ -26,6 +26,16 @@ public class EmptyEventsFragment extends Fragment {
         showNoEventsMessage();
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Set up the button to navigate to OrganizerRegistrationFragment
+        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.organizerRegistrationFragment)
+        );
     }
 
     private void showNoEventsMessage() {
