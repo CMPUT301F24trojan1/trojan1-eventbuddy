@@ -14,4 +14,6 @@
     <color name="light_brown">#D7CCC8</color> <!-- Light brown for background -->
     <color name="dark_surface">#424242</color>
     <color name="statusBarColor">#F8F8F8</color> <!-- Status Bar colour -->
+    <color name="darkGray">#7F7F7F</color>
+
 </resources>

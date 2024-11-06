@@ -1,58 +1,64 @@
 package com.example.trojanplanner.controller;
 
-import android.content.Context;
-import android.text.NoCopySpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.trojanplanner.model.ConcreteEvent;
+import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Event;
 
-import java.util.ArrayList;
+import java.util.List;
 
+public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.EventViewHolder> {
 
-public class EventArrayAdapter extends ArrayAdapter<ConcreteEvent> {
+    private List<Event> eventList;
 
-    private ArrayList<ConcreteEvent> events;
-    private Context context;
-
-    public EventArrayAdapter(Context context, ArrayList<ConcreteEvent> events){
-        super(context, 0, events);
-        this.events = events;
-        this.context = context;
+    public EventArrayAdapter(List<Event> eventList) {
+        this.eventList = eventList;
     }
 
-
-    // TODO: Implement getView based on what an event needs (see lab 5 example)
-    // bro dis so hard
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View view = convertView;
-        if (view == null) {
-            LayoutInflater inflater = LayoutInflater.from(context);
-            view = inflater.inflate(layoutResourceId, parent, false);
+    public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_event_card, parent, false);
+        return new EventViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
+        Event event = eventList.get(position);
+        holder.eventName.setText(event.getEventName());
+        holder.eventDescription.setText(event.getEventDescription());
+        // Assume the event has an image resource ID
+        holder.eventImage.setImageResource(event.getImageResourceId());
+    }
+
+    @Override
+    public int getItemCount() {
+        return eventList.size();
+    }
+
+    static class EventViewHolder extends RecyclerView.ViewHolder {
+        private final TextView eventName;
+        private final TextView eventDescription;
+        private final ImageView eventImage;
+
+        public EventViewHolder(@NonNull View itemView) {
+            super(itemView);
+            eventName = itemView.findViewById(R.id.event_name);
+            eventDescription = itemView.findViewById(R.id.event_description);
+            eventImage = itemView.findViewById(R.id.event_image);
         }
 
-        // Get the current event
-        ConcreteEvent event = events.get(position);
-
-        // Find the views by their IDs
-        TextView eventNameTextView = view.findViewById(eventNameId); //fill out according to XML
-        TextView eventLocationTextView = view.findViewById(eventLocationId);
-        TextView eventDateTextView = view.findViewById(eventDateId);
-
-        // get event data... according to XML
-        eventNameTextView.setText(event.getName());           // Assuming `getName()` is in the Event class
-        eventLocationTextView.setText(event.getFacility());   // Assuming `getLocation()` is in the Event class
-
-
-        return view;
-
+        public void bind(Event event) {
+            eventName.setText(event.getEventName());
+            eventDescription.setText(event.getEventDescription());
+            eventImage.setImageResource(event.getImageResourceId());
+        }
     }
 }
