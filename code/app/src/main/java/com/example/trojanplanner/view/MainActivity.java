@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         // Load EmptyEventsFragment initially
         loadEmptyEventsFragment();
 
