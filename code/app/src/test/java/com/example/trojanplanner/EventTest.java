@@ -10,15 +10,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 import com.example.trojanplanner.model.Event;
-import org.junit.Before;
-import org.junit.Test;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static org.junit.Assert.*;
-
-import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.ConcreteEvent;
 
 public class EventTest {
 
