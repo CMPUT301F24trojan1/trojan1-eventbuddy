@@ -6,7 +6,7 @@ import android.provider.Settings;
  * user class contains and stores information tied to a user.
  * @author Madelaine Dalangin
  */
-public class User {
+public abstract class User {
     private String lastName;
     private String firstName;
     private String email;
