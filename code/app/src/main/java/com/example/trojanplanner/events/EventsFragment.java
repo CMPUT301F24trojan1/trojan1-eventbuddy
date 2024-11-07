@@ -13,15 +13,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
+import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Event;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class EventsFragment extends Fragment {
 
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
-    private List<Event> eventList; // Assuming Event is your model class
+    private List<ConcreteEvent> eventList; // Assuming Event is your model class
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -37,7 +40,7 @@ public class EventsFragment extends Fragment {
 
         // Initialize the event list and adapter
         eventList = new ArrayList<>(); // Populate this list with your data
-        eventsAdapter = new EventArrayAdapter(eventList); // Create the adapter
+        eventsAdapter = new EventArrayAdapter(getContext(), eventList); // Create the adapter
         recyclerView.setAdapter(eventsAdapter); // Set the adapter to RecyclerView
 
         // Example of adding data to the list
@@ -47,15 +50,28 @@ public class EventsFragment extends Fragment {
     }
 
     private void loadEvents() {
+        // Initialize a date for demonstration (today's date and time)
+        Calendar calendar = Calendar.getInstance();
+        Date startDateTime = calendar.getTime();
+        calendar.add(Calendar.HOUR, 1); // Set end time to one hour later
+        Date endDateTime = calendar.getTime();
+
         // Add dummy events for testing
-        for (int i = 0; i < 20; i++) { // Add 20 items to ensure scrolling
-            eventList.add(new Event("Event " + (i + 1), "Description for Event " + (i + 1)));
+        for (int i = 0; i < 20; i++) {
+            eventList.add(new ConcreteEvent(
+                    "Event " + (i + 1),
+                    "Description for Event " + (i + 1),
+                    "Location " + (i + 1),
+                    startDateTime,
+                    endDateTime
+            ));
         }
 
-        // Here we will load your events from a database or an API
-        eventList.add(new Event("Event 1", "Description for Event 1"));
-        eventList.add(new Event("Event 2", "Description for Event 2"));
-        eventList.add(new Event("Event 3", "Description for Event 3"));
+        // Optionally add additional events individually
+        eventList.add(new ConcreteEvent("Event 1", "Description for Event 1", "Gym", startDateTime, endDateTime));
+        eventList.add(new ConcreteEvent("Event 2", "Description for Event 2", "Library", startDateTime, endDateTime));
+        eventList.add(new ConcreteEvent("Event 3", "Description for Event 3", "Cafeteria", startDateTime, endDateTime));
+
         eventsAdapter.notifyDataSetChanged();
     }
 
