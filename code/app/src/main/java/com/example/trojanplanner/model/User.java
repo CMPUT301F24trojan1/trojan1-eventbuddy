@@ -1,23 +1,22 @@
 package com.example.trojanplanner.model;
-import android.provider.Settings;
 
 /**
- * user class contains and stores information tied to a user.
- * @author Madelaine Dalangin
+ * Contains and stores information tied to a user.
+ * @author Madelaine Dalangin modified by Dricmoy Bhattacharjee
  */
-public abstract class User implements UserProfile {
-    private String lastName;
-    private String firstName;
-    private String email;
-    private String phoneNumber;
-    private String deviceId;
-    private String role; //Entrant, Organizer, Admin
-    private boolean isOrganizer;
-    private boolean isAdmin;
+public class User implements UserProfile {
+    private String deviceId;  // Unique identifier
+    private String email;     // User's email
+    private String firstName; // User's first name
+    private boolean hasAdminRights; // Admin rights flag
+    private boolean hasOrganizerRights; // Organizer rights flag
+    private String lastName;  // User's last name
+    private String pfp;       // Profile picture URL
+    private String phone;      // User's phone number
 
     /**
      * Constructor Method for User
-     * @author Madelaine Dalangin
+     * @author Madelaine Dalangin, modified by Dricmoy Bhattacharjee
      * @param lastName String
      * @param firstName String
      * @param email String
@@ -27,163 +26,81 @@ public abstract class User implements UserProfile {
      * @param isOrganizer boolean
      * @param isAdmin boolean
      */
-    public User(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin){
-        this.lastName = lastName;
-        this.firstName = firstName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
+    public User(String deviceId, String email, String firstName, boolean hasAdminRights,
+                boolean hasOrganizerRights, String lastName, String pfp, String phone){
         this.deviceId = deviceId;
-        this.role = role;
-        this.isOrganizer = isOrganizer;
-        this.isAdmin = isAdmin;
-    }
-
-    /**
-     * User method using deviceID differently
-     * @author Madelaine Dalangin
-     * @param lastName
-     * @param firstName
-     * @param email
-     * @param phoneNumber
-     * @param role
-     * @param isOrganizer
-     * @param isAdmin
-     */
-    public User(String lastName, String firstName, String email, String phoneNumber, String role, boolean isOrganizer, boolean isAdmin){
-        this.lastName = lastName;
-        this.firstName = firstName;
         this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.deviceId = Settings.Secure.ANDROID_ID;
-        this.role = role;
-        this.isOrganizer = isOrganizer;
-        this.isAdmin = isAdmin;
-    }
-
-    /**
-     * Getter method for user's last name
-     * @author Madelaine Dalangin
-     * @return lastName string
-     */
-    public String getLastName() {
-        return lastName;
-    }
-
-    /**
-     * Setter method for user's last name
-     * @author Madelaine Dalangin
-     * @param lastName String
-     */
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    /**
-     * Getter method for user's first name
-     * @author Madelaine dalangin
-     * @return firstName String
-     */
-    public String getFirstName() {
-        return firstName;
-    }
-
-    /**
-     * Setter method for user's first name
-     * @author Madelaine Dalangin
-     * @param firstName String
-     */
-    public void setFirstName(String firstName) {
         this.firstName = firstName;
+        this.hasAdminRights = hasAdminRights;
+        this.hasOrganizerRights = hasOrganizerRights;
+        this.lastName = lastName;
+        this.pfp = pfp;
+        this.phone = phone;
     }
 
-    /**
-     * String method for User name
-     * @author Madelaine Dalangin
-     * @return email string
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Setter method for user's email address
-     * @author Madelaine Dalangin
-     * @param email String
-     */
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    /**
-     * Getter method for user's phone number
-     * @author Madelaine Dalangin
-     * @return phoneNumber string
-     */
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    /**
-     * Setter method for user's phone number
-     * @author Madelaine Dalangin
-     * @param phoneNumber String
-     */
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    /**
-     * Getter method for User's device ID
-     * @author Madelaine Dalangin
-     * @return deviceId String
-     */
+    // Getters and Setters
     public String getDeviceId() {
         return deviceId;
     }
 
-    /**
-     * Setter method for user's device ID
-     * @author Madelaine Dalangin
-     * @param deviceId String
-     */
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
     }
 
-    /**
-     * Getter method for user's role
-     * @author Madelaine Dalangin
-     * @return role String
-     */
-    public String getRole() {
-        return role;
+    public String getEmail() {
+        return email;
     }
 
-    /**
-     * Setter method for User's role
-     * @author Madelaine Dalangin
-     * @param role string
-     */
-    public void setRole(String role) {
-        this.role = role;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    /**
-     * Boolean method if user is also an organizer
-     * @author Madelaine Dalangin
-     * @return isOrganizer boolean
-     */
-    public boolean isOrganizer(){
-        return isOrganizer;
+    @Override
+    public String getPhoneNumber() {
+        return phone;
     }
 
-    /**
-     * Boolean method if user is also an admin
-     * @author Madelaine Dalangin
-     * @return isAdmin boolean
-     */
-    public boolean isAdmin() {
-        return isAdmin;
+    public void setPhoneNumber(String phone) {
+        this.phone = phone;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public boolean isHasAdminRights() {
+        return hasAdminRights;
+    }
+
+    public void setHasAdminRights(boolean hasAdminRights) {
+        this.hasAdminRights = hasAdminRights;
+    }
+
+    public boolean isHasOrganizerRights() {
+        return hasOrganizerRights;
+    }
+
+    public void setHasOrganizerRights(boolean hasOrganizerRights) {
+        this.hasOrganizerRights = hasOrganizerRights;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPfp() {
+        return pfp;
+    }
+
+    public void setPfp(String pfp) {
+        this.pfp = pfp;
     }
 }
-

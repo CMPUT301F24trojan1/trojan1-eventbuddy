@@ -1,4 +1,4 @@
-package com.example.trojanplanner.HelperFragments;
+package com.example.trojanplanner.ProfileUtils;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
