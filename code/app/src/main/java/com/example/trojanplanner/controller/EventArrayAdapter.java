@@ -1,5 +1,7 @@
 package com.example.trojanplanner.controller;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,15 +12,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.trojanplanner.R;
-import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.ConcreteEvent;
 
 import java.util.List;
 
 public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.EventViewHolder> {
 
-    private List<Event> eventList;
+    private List<ConcreteEvent> eventList;
+    private Context context;
 
-    public EventArrayAdapter(List<Event> eventList) {
+    public EventArrayAdapter(Context context, List<ConcreteEvent> eventList) {
+        this.context = context;
         this.eventList = eventList;
     }
 
@@ -31,11 +35,17 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        Event event = eventList.get(position);
+        ConcreteEvent event = eventList.get(position);
         holder.eventName.setText(event.getName());
         holder.eventDescription.setText(event.getDescription());
-        // Assume the event has an image resource ID
-        holder.eventImage.setImageBitmap(event.getPicture());
+
+        // Use context to get the picture, providing default if necessary
+        Bitmap picture = event.getPicture(context);
+        if (picture != null) {
+            holder.eventImage.setImageBitmap(picture);
+        } else {
+            holder.eventImage.setImageResource(R.drawable.default_event_pic); // Default image
+        }
     }
 
     @Override
@@ -53,12 +63,6 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
             eventName = itemView.findViewById(R.id.event_name);
             eventDescription = itemView.findViewById(R.id.event_description);
             eventImage = itemView.findViewById(R.id.event_image);
-        }
-
-        public void bind(Event event) {
-            eventName.setText(event.getName());
-            eventDescription.setText(event.getDescription());
-            eventImage.setImageBitmap(event.getPicture());
         }
     }
 }
