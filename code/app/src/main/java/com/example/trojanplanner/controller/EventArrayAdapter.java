@@ -16,7 +16,6 @@ import com.example.trojanplanner.model.Event;
 
 import java.util.List;
 
-public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.EventViewHolder> {
 
 public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.EventViewHolder> {
 
@@ -73,5 +72,5 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
 //            eventImage.setImageBitmap(event.getPicture(context));
 //        }
     }
-    }
 }
+
