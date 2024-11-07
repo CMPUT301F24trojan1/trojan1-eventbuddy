@@ -49,7 +49,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.1")
-    testImplementation("org.mockito:mockito-core:2.19.0")
+//    testImplementation("org.mockito:mockito-core:2.19.0")
+    testImplementation("org.mockito:mockito-core:4.+") // Update to the latest Mockito version
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.0.1")
 
     implementation (libs.barcode.scanning)
@@ -69,4 +70,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
 }
