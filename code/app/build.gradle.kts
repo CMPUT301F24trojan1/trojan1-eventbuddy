@@ -43,10 +43,17 @@ dependencies {
     implementation(libs.zxing.android.embedded)
     implementation(libs.core)
     implementation(libs.camera.camera2)
+    implementation(libs.firebase.database)
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.5.3")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.4.0")
+    androidTestImplementation("androidx.test:rules:1.4.0")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+    androidTestImplementation("androidx.fragment:fragment-testing:1.3.6")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.1")
 //    testImplementation("org.mockito:mockito-core:2.19.0")
     testImplementation("org.mockito:mockito-core:4.+") // Update to the latest Mockito version
@@ -54,10 +61,10 @@ dependencies {
 
     implementation (libs.barcode.scanning)
     implementation (libs.common)
-    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-appcheck")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.appcheck)
 
     implementation(libs.appcompat)
     implementation(libs.material)

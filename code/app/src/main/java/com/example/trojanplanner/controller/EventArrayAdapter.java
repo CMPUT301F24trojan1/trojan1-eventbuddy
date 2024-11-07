@@ -12,16 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.trojanplanner.R;
-import com.example.trojanplanner.model.ConcreteEvent;
+import com.example.trojanplanner.model.Event;
 
 import java.util.List;
 
 public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.EventViewHolder> {
 
-    private List<ConcreteEvent> eventList;
+public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.EventViewHolder> {
+
+    private List<Event> eventList;
     private Context context;
 
-    public EventArrayAdapter(Context context, List<ConcreteEvent> eventList) {
+    public EventArrayAdapter(Context context, List<Event> eventList) {
         this.context = context;
         this.eventList = eventList;
     }
@@ -35,7 +37,7 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
 
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        ConcreteEvent event = eventList.get(position);
+        Event event = eventList.get(position);
         holder.eventName.setText(event.getName());
         holder.eventDescription.setText(event.getDescription());
 
@@ -64,5 +66,12 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
             eventDescription = itemView.findViewById(R.id.event_description);
             eventImage = itemView.findViewById(R.id.event_image);
         }
+
+//        public void bind(Event event) {
+//            eventName.setText(event.getName());
+//            eventDescription.setText(event.getDescription());
+//            eventImage.setImageBitmap(event.getPicture(context));
+//        }
+    }
     }
 }

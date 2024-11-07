@@ -64,7 +64,7 @@ public class QRActivity extends AppCompatActivity {
 
         setupNavigation();
 
-        helpButton.setOnClickListener(v -> openHelpFragment());
+        helpButton.setOnClickListener(v -> openSlideShowActivity());
 
         // Check and request camera permission
         checkCameraPermission();
@@ -79,6 +79,11 @@ public class QRActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
+    private void openSlideShowActivity() {
+        Intent intent = new Intent(QRActivity.this, SlideShowActivity.class);
+        startActivity(intent);
+    }
+
     /**
      * Checks if the app has permission to use the camera. If permission is not
      * granted, it requests the permission from the user. If permission is granted,
@@ -86,6 +91,8 @@ public class QRActivity extends AppCompatActivity {
      *
      * @author Dricmoy Bhattacharjee
      */
+
+
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -96,6 +103,8 @@ public class QRActivity extends AppCompatActivity {
             startQRScanner(); // Start the scanner if permission is already granted
         }
     }
+
+
 
     /**
      * Starts the continuous QR scanner. It sets the decoder factory to recognize

@@ -4,9 +4,9 @@ package com.example.trojanplanner.model;
 import java.util.ArrayList;
 
 /**
- * Entrant class that is extended from User class that stores information relating to events
- * an Entrant is tied in and tracks participant's behavior while engaging in eventbuddy's events.
- * @author Madelaine Dalangin
+ * Entrant class that is extended from User class that stores information relating to events.
+ * An Entrant is tied in and tracks a participant's behavior while engaging in eventbuddy's events.
+ * @contributors: Madelaine Dalangin, Dricmoy Bhattacharjee
  */
 public class Entrant extends User {
 
@@ -92,30 +92,21 @@ public class Entrant extends User {
         }
     }
 
-    /**
-     * Method for array of events Entrant has yet to confirm rsvp or deny
-     * @author Madelaine Dalangin
-     * @param event
-     */
-    private void addPendingEvent(Event event){
-        if(!currentPendingEvents.contains(event)){
+    // Method for adding an event to the Pending events array (for events not confirmed yet)
+    public void addPendingEvent(Event event) {
+        if (!currentPendingEvents.contains(event)) {
             currentPendingEvents.add(event);
+        } else {
+            throw new IllegalArgumentException("Event is already in Entrant's Pending list.");
         }
-        else {
-            throw new IllegalArgumentException("Event in Entrant's Pending list.");
-        }
+        throw new IllegalArgumentException("Event in Entrant's Pending list.");
     }
 
-    /**
-     * Method for removing events Entrant was picked from but they denied to join
-     * @author Madelaine Dalangin
-     * @param event
-     */
-    private void removePendingEvent(Event event){
-        if(currentPendingEvents.contains(event)){
+    // Method for removing events Entrant was picked for but denied to join
+    public void removePendingEvent(Event event) {
+        if (currentPendingEvents.contains(event)) {
             currentPendingEvents.remove(event);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Event does not exist in Entrant's pending events list.");
         }
     }
