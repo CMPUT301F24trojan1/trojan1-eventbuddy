@@ -2,11 +2,13 @@ package com.example.trojanplanner.model;
 import android.graphics.Bitmap;
 import android.provider.Settings;
 
+import java.io.Serializable;
+
 /**
  * user class contains and stores information tied to a user.
  * @author Madelaine Dalangin
  */
-public abstract class User {
+public abstract class User implements Serializable {
     private String lastName;
     private String firstName;
     private String email;
@@ -41,27 +43,6 @@ public abstract class User {
         this.isAdmin = isAdmin;
     }
 
-    /**
-     * User method using deviceID differently
-     * @author Madelaine Dalangin
-     * @param lastName
-     * @param firstName
-     * @param email
-     * @param phoneNumber
-     * @param role
-     * @param isOrganizer
-     * @param isAdmin
-     */
-    public User(String lastName, String firstName, String email, String phoneNumber, String role, boolean isOrganizer, boolean isAdmin){
-        this.lastName = lastName;
-        this.firstName = firstName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.deviceId = Settings.Secure.ANDROID_ID;
-        this.role = role;
-        this.isOrganizer = isOrganizer;
-        this.isAdmin = isAdmin;
-    }
 
     /**
      * Getter method for user's last name
