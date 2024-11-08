@@ -1,4 +1,3 @@
-// EventsFragment.java
 package com.example.trojanplanner.events;
 
 import android.os.Bundle;
@@ -10,6 +9,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
@@ -24,7 +25,7 @@ public class EventsFragment extends Fragment {
 
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
-    private List<ConcreteEvent> eventList; // Assuming Event is your model class
+    private List<Event> eventList; // Assuming Event is your model class
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -40,7 +41,7 @@ public class EventsFragment extends Fragment {
 
         // Initialize the event list and adapter
         eventList = new ArrayList<>(); // Populate this list with your data
-        eventsAdapter = new EventArrayAdapter(getContext(), eventList); // Create the adapter
+        eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList); // Create the adapter
         recyclerView.setAdapter(eventsAdapter); // Set the adapter to RecyclerView
 
         // Example of adding data to the list

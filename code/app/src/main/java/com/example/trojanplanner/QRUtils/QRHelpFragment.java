@@ -23,7 +23,7 @@ public class QRHelpFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         // Inflate the fragment's layout
-        View view = inflater.inflate(R.layout.fragment_qr_helper, container, false);
+        View view = inflater.inflate(R.layout.activity_slide_show, container, false);
 
         // Find the close button and set its click listener
         Button closeButton = view.findViewById(R.id.close_button);

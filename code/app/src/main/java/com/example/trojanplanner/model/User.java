@@ -2,11 +2,13 @@ package com.example.trojanplanner.model;
 import android.graphics.Bitmap;
 import android.provider.Settings;
 
+import java.io.Serializable;
+
 /**
- * user class contains and stores information tied to a user.
- * @author Madelaine Dalangin
+ * Contains and stores information tied to a user.
+ * @author Madelaine Dalangin modified by Dricmoy Bhattacharjee
  */
-public abstract class User {
+public abstract class User implements Serializable {
     private String lastName;
     private String firstName;
     private String email;
@@ -20,7 +22,7 @@ public abstract class User {
 
     /**
      * Constructor Method for User
-     * @author Madelaine Dalangin
+     * @author Madelaine Dalangin, modified by Dricmoy Bhattacharjee
      * @param lastName String
      * @param firstName String
      * @param email String
@@ -42,25 +44,26 @@ public abstract class User {
     }
 
     /**
-     * User method using deviceID differently
-     * @author Madelaine Dalangin
-     * @param lastName
-     * @param firstName
+     * Alternate constructor that also sets pfp file path
+     * @param deviceId
      * @param email
-     * @param phoneNumber
-     * @param role
-     * @param isOrganizer
-     * @param isAdmin
+     * @param firstName
+     * @param hasAdminRights
+     * @param hasOrganizerRights
+     * @param lastName
+     * @param pfp
+     * @param phone
      */
-    public User(String lastName, String firstName, String email, String phoneNumber, String role, boolean isOrganizer, boolean isAdmin){
-        this.lastName = lastName;
-        this.firstName = firstName;
+    public User(String deviceId, String email, String firstName, boolean hasAdminRights,
+                boolean hasOrganizerRights, String lastName, String pfp, String phone){
+        this.deviceId = deviceId;
         this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.deviceId = Settings.Secure.ANDROID_ID;
-        this.role = role;
-        this.isOrganizer = isOrganizer;
-        this.isAdmin = isAdmin;
+        this.firstName = firstName;
+        this.isAdmin = hasAdminRights;
+        this.isOrganizer = hasOrganizerRights;
+        this.lastName = lastName;
+        this.pfpFilePath = pfp;
+        this.phoneNumber = phone;
     }
 
     /**
