@@ -21,6 +21,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * A fragment that allows the user to edit the details of an existing event.
+ * The event details such as name, available spots, description, date, time, and price
+ * can be updated. This fragment also allows viewing the event's waitlist.
+ */
 public class EventEditFragment extends Fragment {
 
     private Event event;
@@ -38,6 +43,16 @@ public class EventEditFragment extends Fragment {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a");
 
+    /**
+     * Called when the fragment's view is created. Initializes UI components
+     * and sets up listeners for buttons. Also retrieves the event details
+     * from arguments and populates the form fields with those values.
+     *
+     * @param inflater The LayoutInflater used to inflate the fragment's view.
+     * @param container The container where the fragment's view will be attached.
+     * @param savedInstanceState Any saved instance state from a previous instance of the fragment.
+     * @return The view for this fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -76,6 +91,10 @@ public class EventEditFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Populates the UI with the details of the event.
+     * This method is called after retrieving the event object.
+     */
     private void populateEventDetails() {
         eventNameEditText.setText(event.getName());
         eventSpotsAvailableEditText.setText(String.valueOf(event.getTotalSpots()));
@@ -87,6 +106,10 @@ public class EventEditFragment extends Fragment {
         eventPriceEditText.setText(String.valueOf(event.getPrice()));
     }
 
+    /**
+     * Saves the changes made to the event. Validates the input fields and
+     * updates the event object with new values.
+     */
     private void saveChanges() {
         String name = eventNameEditText.getText().toString().trim();
         String spotsAvailableText = eventSpotsAvailableEditText.getText().toString().trim();
@@ -126,12 +149,25 @@ public class EventEditFragment extends Fragment {
         }
     }
 
+    /**
+     * Combines a date and time into a single Date object.
+     * The time is added to the date, ensuring that the event's start date and time are correctly represented.
+     *
+     * @param date The date of the event.
+     * @param time The time of the event.
+     * @return A new Date object representing the combined date and time.
+     */
     private Date combineDateAndTime(Date date, Date time) {
         // Combine date and time into a single Date object
         long combinedTime = date.getTime() + time.getTime() % (24 * 60 * 60 * 1000);
         return new Date(combinedTime);
     }
 
+
+    /**
+     * Navigates to the WaitlistFragment, passing the event details to it.
+     * This allows the user to view the event's waitlist.
+     */
     private void openWaitlistFragment() {
         // Navigate to WaitlistFragment with the event
         WaitlistFragment waitlistFragment = new WaitlistFragment();
@@ -145,6 +181,9 @@ public class EventEditFragment extends Fragment {
                 .commit();
     }
 
+    /**
+     * Returns the user to the events list by popping the current fragment from the back stack.
+     */
     private void returnToEvents() {
         // Go back to the previous fragment
         getParentFragmentManager().popBackStack();
