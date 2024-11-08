@@ -1,15 +1,20 @@
 package com.example.trojanplanner.view;
 
+import static android.media.MediaSyncEvent.createEvent;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.CreateEventsFragment;
 import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
@@ -70,6 +75,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setupNavigation();
+
+        // Initialize the createEventButton
+        Button createEventButton = findViewById(R.id.createEventButton);  // Find the button in your layout
+
+        // Set an OnClickListener to handle button click
+        createEventButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Handle button click
+                navigateToCreateEventFragment();
+            }
+        });
+
+    }
+
+    // Method to navigate to CreateEventsFragment
+    private void navigateToCreateEventFragment() {
+        CreateEventsFragment createEventsFragment = new CreateEventsFragment();  // Initialize the CreateEventsFragment
+
+        // Replace the current fragment with the CreateEventsFragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.nav_host_fragment_activity_main, createEventsFragment)  // Replace the container with the fragment
+                .addToBackStack(null)  // Optional: Adds the transaction to the back stack so the user can navigate back
+                .commit();
     }
 
     @SuppressLint("HardwareIds")
@@ -102,8 +131,21 @@ public class MainActivity extends AppCompatActivity {
                  System.out.println("getEntrantFromDeviceId success! current user: " + currentUser.getFirstName() + " " + currentUser.getLastName());
                  Toast myToast = Toast.makeText(App.activityManager.getActivity(), "Hello " + currentUser.getFirstName() + "!", Toast.LENGTH_LONG);
                  myToast.show();
-                 // TODO: populate events array
-             }
+
+                // Check if the user has any events
+                if ((currentUser.getCurrentWaitlistedEvents() == null || currentUser.getCurrentWaitlistedEvents().isEmpty()) &&
+                        (currentUser.getCurrentPendingEvents() == null || currentUser.getCurrentPendingEvents().isEmpty())) {
+                    // Show the EmptyEventsFragment if no events are found
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.nav_host_fragment_activity_main, new EmptyEventsFragment())
+                            .commit();
+                } else {
+                    // Otherwise, show the EventsFragment
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+                            .commit();
+                }
+            }
         };
         Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
             @Override
@@ -120,10 +162,6 @@ public class MainActivity extends AppCompatActivity {
 
         database.getEntrant(successAction, failureAction, deviceId);
     }
-
-
-
-
 
 
     /**
