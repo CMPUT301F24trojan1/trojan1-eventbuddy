@@ -23,11 +23,23 @@
         app:popUpTo="@id/emptyEventsFragment"
         app:popUpToInclusive="true" />
 
+    <action
+        android:id="@+id/createEventsFragment_to_fragment_events_list"
+        app:destination="@id/eventsFragment"
+        app:popUpTo="@id/emptyEventsFragment"
+        app:popUpToInclusive="true" />
+
     <fragment
         android:id="@+id/facilitySetupFragment"
         android:name="com.example.trojanplanner.events.facility.FacilitySetupFragment"
         android:label="Facility Registration"
         tools:layout="@layout/fragment_facility_setup" />
+
+    <fragment
+        android:id="@+id/eventsListFragment"
+        android:name="com.example.trojanplanner.events.facility.CreateEventFragment"
+        android:label="Facility Registration"
+        tools:layout="@layout/fragment_events_list" />
 
     <fragment
         android:id="@+id/createEventsFragment"
