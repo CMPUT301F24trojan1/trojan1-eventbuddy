@@ -23,6 +23,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+
+
+/**
+ * A Fragment that displays a list of events using a RecyclerView.
+ * <p>
+ * The fragment loads events, either from a database or dummy data if none are available, and presents
+ * them in a scrollable list. When an event is clicked, the user is navigated to an editing screen.
+ */
 public class EventsFragment extends Fragment implements EventArrayAdapter.OnEventClickListener {
 
     private FragmentEventsListBinding binding;
@@ -30,6 +38,14 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
     private List<Event> eventList;
     private Database database;
 
+    /**
+     * Called to create the view for this fragment. Initializes the RecyclerView, adapter, and loads the events.
+     *
+     * @param inflater The LayoutInflater used to inflate the fragment's layout.
+     * @param container The parent view that contains the fragment's UI.
+     * @param savedInstanceState A bundle containing saved state data (if any).
+     * @return The view for the fragment.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         EventsViewModel eventsViewModel =
@@ -55,6 +71,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
 
         return root;
     }
+
 
     private void loadEventsFromDatabase() {
         eventList.clear();
@@ -86,6 +103,32 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
                     System.out.println("Unexpected data format received from database. Adding a dummy event for testing.");
                     addDummyEvent();
                 }
+                
+    /**
+     * Loads events into the list. If the list is empty, dummy events are generated and added.
+     */
+    private void loadEvents() {
+        if (eventList.isEmpty()) {
+            // Example date and time for events
+            Calendar calendar = Calendar.getInstance();
+            Date startDateTime = calendar.getTime();
+            calendar.add(Calendar.HOUR, 1); // End time one hour later
+            Date endDateTime = calendar.getTime();
+
+            // Placeholder values for Organizer fields
+            Organizer placeholderOrganizer = new Organizer("Doe", "John", "organizer@example.com",
+                    "123-456-7890", "device123", "Organizer", true, false, new ArrayList<>(), null);
+
+            // Populate with dummy events
+            for (int i = 0; i < 10; i++) {
+                eventList.add(new ConcreteEvent(
+                        "Sample Event " + (i + 1),
+                        "This is a description for sample event " + (i + 1),
+                        new Facility("Facility " + (i + 1), "facility" + (i + 1) + "_id",
+                                "Sample Address " + (i + 1), placeholderOrganizer, null, null),
+                        null,
+                        null)
+                );
             }
         };
 
@@ -119,6 +162,12 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         eventsAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Called when an event in the list is clicked. It navigates the user to the EventEditFragment where the
+     * event can be edited.
+     *
+     * @param event The event that was clicked.
+     */
     @Override
     public void onEventClick(Event event) {
         System.out.println("Event clicked: " + event.getName());
@@ -134,6 +183,9 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         navController.navigate(R.id.action_eventsFragment_to_eventEditFragment, bundle);
     }
 
+    /**
+     * Called when the fragment's view is being destroyed. This clears the binding to avoid memory leaks.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

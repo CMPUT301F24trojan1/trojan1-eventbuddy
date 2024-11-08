@@ -15,13 +15,31 @@ import com.example.trojanplanner.controller.SlidePagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * SlideShowActivity is responsible for displaying a slideshow of instructions for the user.
+ * This activity uses a ViewPager to display a series of instructional fragments,
+ * each providing guidance on how to use the QR scanner.
+ * <p>
+ * It includes slides for different stages of QR code scanning, such as positioning the camera,
+ * lighting, and reading the code. A close button is also provided to exit the slideshow.
+ * </p>
+ *
+ * @author Dricmoy Bhattacharjee
+ */
 public class SlideShowActivity extends AppCompatActivity {
 
+    /**
+     * Called when the activity is created. It sets up the layout, initializes the ViewPager,
+     * prepares the instruction slides, and sets up a click listener for the close button.
+     *
+     * @param savedInstanceState A Bundle containing the saved state of the activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_slide_show);
 
+        // Initialize ViewPager and close button
         ViewPager viewPager = findViewById(R.id.view_pager);
         Button closeButton = findViewById(R.id.close_button);
 
@@ -37,6 +55,7 @@ public class SlideShowActivity extends AppCompatActivity {
         SlidePagerAdapter adapter = new SlidePagerAdapter(getSupportFragmentManager(), slides);
         viewPager.setAdapter(adapter);
 
+        // Set up the close button to finish the activity when clicked
         closeButton.setOnClickListener(v -> finish());
     }
 }

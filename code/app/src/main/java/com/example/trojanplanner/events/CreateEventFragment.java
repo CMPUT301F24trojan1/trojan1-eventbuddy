@@ -29,6 +29,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.Date;
 
+/**
+ * A fragment for creating a new event. It collects event information
+ * from the user through input fields and creates an event in the database.
+ */
 public class CreateEventFragment extends Fragment {
 
     private EditText eventNameEditText;
@@ -38,12 +42,26 @@ public class CreateEventFragment extends Fragment {
     private Button createEventButton;
     private Database database;
 
+    /**
+     * Inflates the layout for this fragment and returns the root view.
+     *
+     * @param inflater The LayoutInflater object to inflate the view.
+     * @param container The container view to attach the fragment to.
+     * @param savedInstanceState The saved instance state for the fragment, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_events, container, false);
     }
 
+    /**
+     * Initializes the view components and sets up event listeners for user interactions.
+     *
+     * @param view The root view of the fragment.
+     * @param savedInstanceState The saved instance state for the fragment, if any.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -66,7 +84,11 @@ public class CreateEventFragment extends Fragment {
     }
 
     /**
+     * Creates a new event by collecting data from the user inputs and uploading it to the database.
+     * It ensures that all required fields are filled out and that the current user is an organizer.
      * Attempts to create the event and returns true if creation succeeds.
+     *
+     * @return True if the event was successfully created and uploaded, false otherwise.
      */
     private boolean createEvent(View view) {
         String name = eventNameEditText.getText().toString();
@@ -82,6 +104,7 @@ public class CreateEventFragment extends Fragment {
         }
 
         Entrant currentUser = ((MainActivity) App.activityManager.getActivity()).currentUser;
+        Entrant currentUser = (Entrant) ((MainActivity) App.activityManager.getActivity()).currentUser; // Ask Jared
         Organizer currentOrganizer = currentUser.returnOrganizer();
 
         if (currentUser == null) {
@@ -89,11 +112,15 @@ public class CreateEventFragment extends Fragment {
             return false;
         }
 
-        // Assuming default values for event date fields
-        Date startDateTime = new Date();
-        Date endDateTime = new Date();
+        // Set default values for event start and end time
+        Date startDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
+        Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
 
-        Event newEvent = new Event(name, description, price, null, startDateTime, endDateTime, 30, 100L, 100L);
+        // Create the event object
+        Event newEvent = new Event(name, description, price, null, startDateTime, endDateTime,
+                30, 100L, 100L); // Adjust parameters as needed
+
+        // Generate a unique event ID (simple logic)
         newEvent.setEventId(currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis());
 
         // Insert the new event into the database
@@ -102,6 +129,7 @@ public class CreateEventFragment extends Fragment {
             public void onSuccess(Void aVoid) {
                 if (isAdded()) {
                     Toast.makeText(App.activityManager.getActivity(), "Event created successfully!", Toast.LENGTH_SHORT).show();
+                    // Add the event to the organizer's list of created events
                     currentOrganizer.addEvent(newEvent);
                     database.insertUserDocument(currentOrganizer);
                     navigateToEventsListFragment(view);
@@ -119,13 +147,22 @@ public class CreateEventFragment extends Fragment {
         return true;
     }
 
+  
     private void navigateToEventsListFragment(View view) {
         if (view != null) {
             NavController navController = Navigation.findNavController(view);
             navController.navigate(R.id.eventsListFragment);
         }
     }
-
+  
+  
+  
+    /**
+     * Handles options menu item selections.
+     *
+     * @param item The menu item that was selected.
+     * @return True if the item was successfully handled, false otherwise.
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
