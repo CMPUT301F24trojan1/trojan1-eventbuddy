@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -132,26 +133,28 @@ public class Database {
 
     /**
      * Uploads an image to the Firebase Storage area tied to a given user.
-     * @param uri The uri reference to the image that should be uploaded
+     * Sets the owner's pfpFilePath and pfpBitmap attributes when called.
+     * @param bitmap The bitmap of the image that should be uploaded
      * @param owner The user who will claim ownership of the uploaded image through their device ID
+     * @param filepath The filepath to store the image as (USE CORRECT CONVENTIONS FOR THIS)
      * @param successListener The action that should be taken on a successful upload
      * @param failureListener The action that should be taken on a failed upload
      * @author Jared Gourley
      *
      */
-    public void uploadImage(Uri uri, @NonNull User owner, OnSuccessListener successListener, OnFailureListener failureListener) {
-        String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
-        StorageReference refToSave = storageRef.child(filePath);
+    public void uploadImage(Bitmap bitmap, @NonNull User owner, String filepath, OnSuccessListener successListener, OnFailureListener failureListener) {
+        //String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
+        StorageReference refToSave = storageRef.child(filepath);
 
         // Attempt to get a bitmap of the uri reference
-        Bitmap bitmap;
-        try {
-            bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
-        }
-        catch (IOException e) {
-            System.out.println("uri invalid/no permissions");
-            return;
-        }
+//        Bitmap bitmap;
+//        try {
+//            bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
+//        }
+//        catch (IOException e) {
+//            System.out.println("uri invalid/no permissions");
+//            return;
+//        }
 
         // Compress and convert to byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -159,7 +162,7 @@ public class Database {
         byte[] data = baos.toByteArray();
 
         // Set filepath and bitmap as user attributes
-        owner.setPfpFilePath(filePath);
+        owner.setPfpFilePath(filepath);
         owner.setPfpBitmap(bitmap);
 
         // Upload!
@@ -169,16 +172,7 @@ public class Database {
 
     }
 
-    /**
-     * Uploads an image to the Firebase Storage area tied to a given user.
-     * A wrapper function for the 4-parameter uploadImage designed for easier use. Sets a generic successlistener
-     * and failurelistener which should be suitable for most cases.
-     * @param uri The uri reference to the image that should be uploaded
-     * @param owner The user who will claim ownership of the uploaded image through their device ID
-     * @author Jared Gourley
-     */
-    public void uploadImage(Uri uri, User owner) {
-
+    public void uploadImage(Bitmap bitmap, User owner, String filepath) {
         OnSuccessListener successListener = new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -195,9 +189,26 @@ public class Database {
                 myToast.show();
             }
         };
+        // Cal the proper uploadImage method
+        uploadImage(bitmap, owner, filepath, successListener, failureListener);
+    }
+
+
+    /**
+     * Uploads an image to the Firebase Storage area tied to a given user.
+     * Sets the owner's pfpFilePath and pfpBitmap attributes when called.
+     * A wrapper function for the 5-parameter uploadImage designed for easier use. Uses our convention
+     * for image filepaths automatically. Sets a generic successlistener
+     * and failurelistener which should be suitable for most cases.
+     * @param bitmap The bitmap of the image that should be uploaded
+     * @param owner The user who will claim ownership of the uploaded image through their device ID
+     * @author Jared Gourley
+     */
+    public void uploadImage(Bitmap bitmap, User owner) {
+        String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
 
         // Call the proper uploadImage method
-        uploadImage(uri, owner, successListener, failureListener);
+        uploadImage(bitmap, owner, filePath);
 
     }
 
@@ -248,7 +259,7 @@ public class Database {
         userMap.put("deviceID", user.getDeviceId());
         userMap.put("hasOrganizerRights", user.isOrganizer());
         userMap.put("hasAdminRights", user.isAdmin());
-        userMap.put("pfp", null);
+        userMap.put("pfp", user.getPfpFilePath());
         return userMap;
     }
 
@@ -268,9 +279,19 @@ public class Database {
     public void insertUserDocument(OnSuccessListener successListener, OnFailureListener failureListener, User user) {
         Map<String, Object> userMap = initUserMap(user);
 
+        if (user.getClass() == Entrant.class) {
+            userMap.put("currentWaitlistedEvents", ((Entrant) user).getCurrentWaitlistedEvents());
+            userMap.put("currentEnrolledEvents", ((Entrant) user).getCurrentEnrolledEvents());
+            userMap.put("currentDeclinedEvents", ((Entrant) user).getCurrentDeclinedEvents());
+            userMap.put("currentPendingEvents", ((Entrant) user).getCurrentPendingEvents());
+        } else if (user.getClass() == Organizer.class) {
+            userMap.put("createdEvents", ((Organizer) user).getCreatedEvents());
+        } // (no special attributes for admins)
+
+
         db.collection("users")
             .document(user.getDeviceId())
-            .set(userMap)
+            .set(userMap, SetOptions.merge())
             .addOnSuccessListener(successListener)
             .addOnFailureListener(failureListener);
     }
@@ -336,7 +357,7 @@ public class Database {
 
         db.collection("events")
                 .document(event.getEventId())
-                .set(eventMap)
+                .set(eventMap, SetOptions.merge())
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
         
@@ -418,7 +439,7 @@ public class Database {
 
         db.collection("facilities")
                 .document(facility.getFacilityId())
-                .set(facilityMap)
+                .set(facilityMap, SetOptions.merge())
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
@@ -797,7 +818,7 @@ public class Database {
     }
 
 
-    public void downloadImageTest() {
+    public static void downloadImageTest() {
         Database database = new Database();
         OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
             @Override
@@ -814,7 +835,7 @@ public class Database {
             }
         };
 
-        downloadImage("1234567890/1729746211299.png", successListener, failureListener);
+        database.downloadImage("1234567890/1729746211299.png", successListener, failureListener);
     }
 
 
@@ -826,7 +847,7 @@ public class Database {
      * Function to test querying an entrant. You can run this test by setting up a temp button
      * in MainActivity to run this function
      */
-    public void getEntrantTest() {
+    public static void getEntrantTest() {
         Database database = new Database();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override
@@ -857,7 +878,7 @@ public class Database {
 
 
 
-    public void getOrganizerTest() {
+    public static void getOrganizerTest() {
         Database database = new Database();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override
@@ -884,7 +905,7 @@ public class Database {
     }
 
 
-    public void getQRTest() {
+    public static void getQRTest() {
         Database database = new Database();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override

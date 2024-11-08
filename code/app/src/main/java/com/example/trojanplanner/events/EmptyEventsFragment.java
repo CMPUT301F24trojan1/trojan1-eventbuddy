@@ -14,6 +14,7 @@ import androidx.navigation.Navigation;
 import com.example.trojanplanner.R;
 
 public class EmptyEventsFragment extends Fragment {
+
     private TextView messageTextView;
 
     @Nullable
@@ -32,10 +33,10 @@ public class EmptyEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set up the button to navigate to Facility Setup Fragment
-        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
-            Navigation.findNavController(view).navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
-        });
+        // Set up the button to navigate to OrganizerRegistrationFragment
+        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.organizerRegistrationFragment)
+        );
     }
 
     private void showNoEventsMessage() {

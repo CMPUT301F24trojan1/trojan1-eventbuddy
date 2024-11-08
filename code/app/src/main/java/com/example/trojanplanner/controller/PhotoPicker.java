@@ -2,7 +2,9 @@ package com.example.trojanplanner.controller;
 
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -15,6 +17,8 @@ import androidx.lifecycle.LifecycleOwner;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.User;
+
+import java.io.IOException;
 
 /**
  * Class that provides the ability to open the user's photo library and select a photo
@@ -74,8 +78,16 @@ public class PhotoPicker {
                     if (uri != null) {
                         Log.d("PhotoPicker", "Selected URI: " + uri);
                         selectedPhoto = uri;
+                        Bitmap bitmap;
                         if (database != null) {
-                            database.uploadImage(uri, user);
+                            try {
+                                bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
+                            }
+                            catch (IOException e) {
+                                System.out.println("uri invalid/no permissions");
+                                return;
+                            }
+                            database.uploadImage(bitmap, user);
                         }
                         currentlyPicking = false;
                     } else {

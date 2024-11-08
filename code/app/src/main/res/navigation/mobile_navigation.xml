@@ -3,51 +3,36 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/emptyEventsFragment">
+    app:startDestination="@+id/emptyEventsFragment">
 
-    <!-- Empty Events Fragment -->
     <fragment
         android:id="@+id/emptyEventsFragment"
         android:name="com.example.trojanplanner.events.EmptyEventsFragment"
         android:label="Empty Events"
         tools:layout="@layout/fragment_empty_myevents">
         <action
-            android:id="@+id/action_emptyEventsFragment_to_facilitySetupFragment"
-            app:destination="@id/facilitySetupFragment" />
+            android:id="@+id/action_emptyEventsFragment_to_organizerRegistrationFragment"
+            app:destination="@id/organizerRegistrationFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/facilitySetupFragment"
-        android:name="com.example.trojanplanner.events.facility.FacilitySetupFragment"
-        android:label="Facility Setup"
-        tools:layout="@layout/fragment_facility_setup" />
-
-    <!-- Organizer Registration Fragment -->
     <fragment
         android:id="@+id/organizerRegistrationFragment"
         android:name="com.example.trojanplanner.events.organizer.OrganizerRegistrationFragment"
         android:label="Organizer Registration"
-        tools:layout="@layout/fragment_organizer_registration">
-        <action
-            android:id="@+id/action_organizerRegistrationFragment_to_facilitySetupFragment"
-            app:destination="@id/facilitySetupFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_organizer_registration" />
 
-    <!-- Events Fragment -->
     <fragment
         android:id="@+id/eventsFragment"
         android:name="com.example.trojanplanner.events.EventsFragment"
         android:label="@string/title_events"
         tools:layout="@layout/fragment_events_list" />
 
-    <!-- QR Activity -->
     <activity
         android:id="@+id/qrActivity"
         android:name="com.example.trojanplanner.view.QRActivity"
         android:label="@string/title_qr"
         tools:layout="@layout/activity_qr" />
 
-    <!-- Profile Activity -->
     <activity
         android:id="@+id/profileActivity"
         android:name="com.example.trojanplanner.view.ProfileActivity"
