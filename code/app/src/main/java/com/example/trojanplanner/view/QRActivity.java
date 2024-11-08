@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import com.example.trojanplanner.QRUtils.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
+import com.example.trojanplanner.model.Entrant;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
@@ -44,12 +45,19 @@ public class QRActivity extends AppCompatActivity {
     private EditText etInput;
     private @NonNull ActivityQrBinding binding;
 
+    private String deviceId;
+    private Entrant currentUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityQrBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        deviceId = getIntent().getExtras().getString("deviceId");
+        currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
+
 
         barcodeView = findViewById(R.id.barcode_scanner);
         ImageButton helpButton = findViewById(R.id.qr_help_button);
@@ -177,11 +185,17 @@ public class QRActivity extends AppCompatActivity {
 
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
-                startActivity(new Intent(QRActivity.this, MainActivity.class));
+                Intent intent = new Intent(QRActivity.this, MainActivity.class);
+                intent.putExtra("deviceId", deviceId);
+                intent.putExtra("user", currentUser);
+                startActivity(intent);
                 finish();
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
-                startActivity(new Intent(QRActivity.this, ProfileActivity.class));
+                Intent intent = new Intent(QRActivity.this, ProfileActivity.class);
+                intent.putExtra("deviceId", deviceId);
+                intent.putExtra("user", currentUser);
+                startActivity(intent);
                 finish();
                 return true;
             } else return item.getItemId() == R.id.qrActivity;

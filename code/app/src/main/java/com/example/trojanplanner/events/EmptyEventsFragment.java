@@ -14,6 +14,7 @@ import androidx.navigation.Navigation;
 import com.example.trojanplanner.R;
 
 public class EmptyEventsFragment extends Fragment {
+
     private TextView messageTextView;
 
     @Nullable

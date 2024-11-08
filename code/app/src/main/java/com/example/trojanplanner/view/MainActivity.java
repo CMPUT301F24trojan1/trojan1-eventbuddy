@@ -6,11 +6,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.Button;
+import android.widget.Toast;
 
-import com.example.trojanplanner.ProfileUtils.UserProfileUtil;
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -22,15 +26,18 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
+
+import java.util.Objects;
 
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private static Activity activity; // Important to allow non-activity classes to trigger UI components, i.e. PhotoPicker
+    private Activity activity;
+
+    private Entrant currentUser = null; // The person who is using the app right now
+    private String deviceId;
+    private Database database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,51 +46,37 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Get information from other activity
+        if (getIntent().getExtras() != null) {
+            deviceId = getIntent().getExtras().getString("deviceId");
+            currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
+        }
+
+
         activity = this;
+        database = new Database();
 
-        storeDeviceId();
+        // If this is the first time opening the app, get the device ID
+        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
+        if (deviceId == null) {
+            storeDeviceId();
+            System.out.println("deviceId: " + deviceId);
 
-        UserProfileUtil userProfileUtil = new UserProfileUtil();
+            // Get/check entrant from db based on device ID (note: this is async)
+            getEntrantFromDeviceId(deviceId); // Redirects if no entrant exists!
+        }
 
-        @SuppressLint("HardwareIds") String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        // Check if user data exists in Firebase, if not create a mock user
-        userProfileUtil.getUser(deviceId, new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()) {
-                    // Create a mock user if not found
-                    User mockUser = new User(
-                            deviceId,                       // Device ID
-                            "johndoe@example.com",          // Email
-                            "John",                         // First Name
-                            false,                          // hasAdminRights
-                            false,                          // hasOrganizerRights
-                            "Doe",                          // Last Name
-                            "",       // Profile picture URL
-                            "123-456-7890"                  // Phone
-                    );
-                    userProfileUtil.createUser(mockUser);
-                } else {
-                    // User exists, handle as needed (e.g., update UI)
-                    User user = dataSnapshot.getValue(User.class);
-                    // Update UI or state with the existing user's data
-                    assert user != null;
-                    System.out.println("User retrieved: " + user.getFirstName() + " " + user.getLastName());
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                System.out.println("Error retrieving user: " + databaseError.getMessage());
-            }
-        });
 
         // Load EmptyEventsFragment initially
-        loadEmptyEventsFragment();
+        loadEmptyEventsFragment(); // TODO: In the getEntrantFromDeviceId OnSuccess operation, load actual events if entrant has them
 
         setupNavigation();
     }
+
+
+
+
+
 
     private void loadEmptyEventsFragment() {
         getSupportFragmentManager()
@@ -95,7 +88,8 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("HardwareIds")
     private void storeDeviceId() {
         // Get the device ID
-         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        this.deviceId = deviceId;
 
         // Get SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("MyAppPreferences", MODE_PRIVATE);
@@ -105,6 +99,45 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("device_id", deviceId);
         editor.apply(); // Save changes
     }
+
+    /**
+     *
+     * @param deviceId
+     * @author Jared Gourley
+     */
+    private void getEntrantFromDeviceId(String deviceId) {
+        // On success, set the entrant object and populate the events list
+        // On failure, redirect to the make profile page (for now?)
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+            @Override
+             public void OnSuccess(Object object) {
+                 currentUser = (Entrant) object;
+                 System.out.println("getEntrantFromDeviceId success! current user: " + currentUser.getFirstName() + " " + currentUser.getLastName());
+                 Toast myToast = Toast.makeText(App.activityManager.getActivity(), "Hello " + currentUser.getFirstName() + "!", Toast.LENGTH_LONG);
+                 myToast.show();
+                 // TODO: populate events array
+             }
+        };
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("getEntrantFromDeviceId failed: new user?");
+                Toast myToast = Toast.makeText(App.activityManager.getActivity(), "Hello new user! Make a profile to join events!", Toast.LENGTH_LONG);
+                myToast.show();
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                intent.putExtra("deviceId", deviceId);
+                intent.putExtra("user", currentUser);
+                startActivity(intent);
+            }
+        };
+
+        database.getEntrant(successAction, failureAction, deviceId);
+    }
+
+
+
+
+
 
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
@@ -150,22 +183,20 @@ public class MainActivity extends AppCompatActivity {
                 navController.navigate(R.id.eventsFragment);
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
-                startActivity(new Intent(MainActivity.this, QRActivity.class));
+                Intent intent = new Intent(MainActivity.this, QRActivity.class);
+                intent.putExtra("deviceId", deviceId);
+                intent.putExtra("user", currentUser);
+                startActivity(intent);
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
-                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                intent.putExtra("deviceId", deviceId);
+                intent.putExtra("user", currentUser);
+                startActivity(intent);
                 return true;
             }
             return false;
         });
     }
 
-    /*
-     * Gets the application context. This is a static method so any other class is able to call this function
-     * in order to get the application context itself
-     * @return The application context
-
-        public static Context getAppContext() {
-            return activity.getApplicationContext();
-        } */
 }
