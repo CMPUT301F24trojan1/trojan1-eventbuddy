@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-
-
 // facilities can have .... multiple events (facility isn't implemented yet)
 public class Event {
     private String name;
