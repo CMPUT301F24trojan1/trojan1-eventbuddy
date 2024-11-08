@@ -23,12 +23,6 @@
         app:popUpTo="@id/emptyEventsFragment"
         app:popUpToInclusive="true" />
 
-    <action
-        android:id="@+id/createEventsFragment_to_fragment_events_list"
-        app:destination="@id/eventsListFragment"
-        app:popUpTo="@id/emptyEventsFragment"
-        app:popUpToInclusive="true" />
-
     <fragment
         android:id="@+id/facilitySetupFragment"
         android:name="com.example.trojanplanner.events.facility.FacilitySetupFragment"
@@ -40,21 +34,6 @@
         android:name="com.example.trojanplanner.events.CreateEventFragment"
         android:label="Facility Registration"
         tools:layout="@layout/fragment_events_list" />
-<!--    <fragment-->
-<!--        android:id="@+id/organizerRegistrationFragment"-->
-<!--        android:name="com.example.trojanplanner.organizer.OrganizerRegistrationFragment"-->
-<!--        android:label="Organizer Registration"-->
-<!--        tools:layout="@layout/fragment_organizer_options" />-->
-
-<!--    <fragment-->
-<!--        android:id="@+id/emptyEventsFragment"-->
-<!--        android:name="com.example.trojanplanner.events.EmptyEventsFragment"-->
-<!--        android:label="Empty Events">-->
-<!--        <action-->
-<!--            android:id="@+id/action_emptyEventsFragment_to_organizerRegistrationFragment"-->
-<!--            app:destination="@id/organizerRegistrationFragment" />-->
-<!--    </fragment>-->
-
 
     <fragment
         android:id="@+id/eventEditFragment"
@@ -72,7 +51,13 @@
         android:id="@+id/createEventsFragment"
         android:name="com.example.trojanplanner.events.CreateEventFragment"
         android:label="Facility Registration"
-        tools:layout="@layout/fragment_create_events" />
+        tools:layout="@layout/fragment_create_events" >
+        <action
+            android:id="@+id/createEventsFragment_to_fragment_events_list"
+            app:destination="@id/eventsListFragment"
+            app:popUpTo="@id/emptyEventsFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <!-- Update the action to navigate from eventsFragment to eventEditFragment -->
     <action

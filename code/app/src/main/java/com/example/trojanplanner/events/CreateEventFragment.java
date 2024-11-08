@@ -85,7 +85,7 @@ public class CreateEventFragment extends Fragment {
         }
 
         //Organizer currentUser = (Organizer) getActivity().getIntent().getSerializableExtra("user"); // TODO access the MainActivity currentUser attribute directly
-        Entrant currentUser = (Entrant) ((MainActivity) App.activityManager.getActivity()).currentUser; // ASK JARED
+        Entrant currentUser = ((MainActivity) App.activityManager.getActivity()).currentUser; // ASK JARED
         Organizer currentOrganizer = currentUser.returnOrganizer();
 
         System.out.println("name:" + currentOrganizer.getFirstName() + " " + currentOrganizer.getLastName());
@@ -122,7 +122,9 @@ public class CreateEventFragment extends Fragment {
                 // Add that the event is a created event for the organizer
                 currentOrganizer.addEvent(newEvent);
                 database.insertUserDocument(currentOrganizer);
-                requireActivity().onBackPressed(); // Or navigate to another fragment
+                NavController navController = NavHostFragment.findNavController(CreateEventFragment.this);
+                navController.navigate(R.id.createEventsFragment_to_fragment_events_list);
+                //requireActivity().onBackPressed(); // Or navigate to another fragment
             }
         }, new OnFailureListener() {
             @Override
