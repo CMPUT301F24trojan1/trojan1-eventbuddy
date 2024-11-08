@@ -27,7 +27,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.text.SimpleDateFormat;
 import java.util.Set;
 
-
+//NOTE THIS IS FOR THE ENTRANT NOT ORGANIZER, same with event_details_fragment.xml
 public class EventDetailsFragment extends Fragment {
     private Event event;
     private Entrant entrant;
