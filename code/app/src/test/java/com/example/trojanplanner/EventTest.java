@@ -13,6 +13,17 @@ import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
 
+/**
+ * Unit tests for the {@link Event} class.
+ * This class includes tests for different functionalities and behaviors related to the {@link Event} class,
+ * such as recurring events, participant management, and status updates.
+ * <p>
+ * The tests in this class ensure that the logic for handling recurring events, adding/removing participants,
+ * checking waitlist status, and handling registration deadlines is working as expected.
+ * </p>
+ *
+ * @author Dricmoy Bhattacharjee
+ */
 public class EventTest {
 
     private SimpleDateFormat dateFormat;
@@ -20,6 +31,10 @@ public class EventTest {
     private Date endDateTime;
     private Facility facility;
 
+    /**
+     * Setup method that initializes required fields before each test.
+     * It creates the necessary date objects, and sets up a test facility.
+     */
     @Before
     public void setup() {
         dateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm a");
@@ -36,9 +51,12 @@ public class EventTest {
         facility = new Facility("Gym", "1", "34.0522,-118.2437", null, null, null);
     }
 
+    /**
+     * Test case for checking the occurrence of a daily recurring event with end date and occurrences.
+     * Verifies that both the recurrence end date and total occurrences match for two different recurrence setups.
+     */
     @Test
     public void testDailyRecurringEventWithEndDateAndOccurrences() {
-        // Initialize two instances of the same recurring event, with different recurrence settings
         Event dailyEventWithEndDate = new Event("Daily Workout", "Gym session", 0.0f, facility, startDateTime, endDateTime, 2, 100L, 100L);
         Event dailyEventWithOccurrences = new Event("Daily Workout", "Gym session", 0.0f, facility, startDateTime, endDateTime, 2, 100L, 100L);
 
@@ -76,6 +94,10 @@ public class EventTest {
         assertEquals("Recurrence types do not match", dailyEventWithEndDate.getRecurrenceType(), dailyEventWithOccurrences.getRecurrenceType());
     }
 
+    /**
+     * Test case to add and remove a participant from the event's waiting list.
+     * Verifies that a participant can be added to and removed from the waiting list correctly.
+     */
     @Test
     public void testAddAndRemoveParticipant() {
         Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
@@ -92,6 +114,10 @@ public class EventTest {
         assertFalse("Participant should not be in the waiting list", event.getWaitingList().contains(entrant));
     }
 
+    /**
+     * Test case for recurring event that specifies a total number of occurrences.
+     * Verifies that the event generates the correct number of occurrences.
+     */
     @Test
     public void testRecurringEventWithTotalOccurrences() {
         Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
@@ -108,6 +134,10 @@ public class EventTest {
         assertEquals("Event should have 10 occurrences", 10, occurrences.size());
     }
 
+    /**
+     * Test case for updating the event's status based on the current date.
+     * Verifies that the event status changes to "ongoing" when the current date is within the event's start and end time.
+     */
     @Test
     public void testStatusUpdateBasedOnDates() {
         // Set specific times for start, end, and current dates
@@ -134,6 +164,11 @@ public class EventTest {
         // Assert that the status is "ongoing" when currentDate is between start and end times
         assertEquals("Status should be 'ongoing'", "ongoing", event.getStatus());
     }
+
+    /**
+     * Test case to check if the event's waitlist is full.
+     * Verifies that the event can correctly identify when the waitlist is full.
+     */
     @Test
     public void testIsWaitlistFull() {
         // Assume the maximum capacity of the waitlist is set to 2 for testing
@@ -143,6 +178,10 @@ public class EventTest {
         assertTrue("Waitlist should be full", event.isWaitlistFull(2));
     }
 
+    /**
+     * Test case for checking if event registration is open based on the deadline.
+     * Verifies that the event can correctly determine whether registration is open or closed based on the current date.
+     */
     @Test
     public void testIsRegistrationOpen() {
         Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
@@ -162,6 +201,10 @@ public class EventTest {
         assertFalse("Registration should be closed", event.isRegistrationOpen());
     }
 
+    /**
+     * Test case for recurring events with a specified end date.
+     * Verifies that occurrences do not extend beyond the specified end date for recurring events.
+     */
     @Test
     public void testRecurringEventWithEndDate() {
         Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
