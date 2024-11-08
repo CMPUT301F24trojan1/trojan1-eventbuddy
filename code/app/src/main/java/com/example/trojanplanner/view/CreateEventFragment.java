@@ -1,6 +1,5 @@
 package com.example.trojanplanner.view;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,20 +16,22 @@ import androidx.fragment.app.Fragment;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 
 public class CreateEventFragment extends Fragment {
 
     private EditText eventNameEditText;
     private EditText eventDescriptionEditText;
-    private String eventFacilityEditText; // Temporarily using a string for facility
-    private EditText eventDateEditText;
     private Button createEventButton;
     private Database database;
 
@@ -49,10 +50,7 @@ public class CreateEventFragment extends Fragment {
 
         eventNameEditText = view.findViewById(R.id.eventNameEditText);
         eventDescriptionEditText = view.findViewById(R.id.eventDescriptionEditText);
-        eventDateEditText = view.findViewById(R.id.eventDateEditText);
         createEventButton = view.findViewById(R.id.createEventButton);
-
-        eventFacilityEditText = "Test Facility"; // Temporary hardcoded value for testing
 
         createEventButton.setOnClickListener(v -> createEvent());
     }
@@ -62,43 +60,74 @@ public class CreateEventFragment extends Fragment {
 
         String name = eventNameEditText.getText().toString();
         String description = eventDescriptionEditText.getText().toString();
-        String facilityName = eventFacilityEditText; // Use the temporary value for facility
-        String facilityId = "facility_" + System.currentTimeMillis(); // Generate a unique facility ID
-        String location = "Test Location"; // Example location
-        Organizer owner = (Organizer) getActivity().getIntent().getSerializableExtra("user");
 
-        // Validate the input
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(description) || TextUtils.isEmpty(facilityName)) {
+        // Validate input
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(description)) {
             Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (owner == null) {
-            Toast.makeText(getContext(), "User not found", Toast.LENGTH_SHORT).show();
+        // Retrieve the user and check its type
+        Object userObj = getActivity().getIntent().getSerializableExtra("user");
+        Organizer owner = null;
+
+        if (userObj instanceof Organizer) {
+            owner = (Organizer) userObj;
+        } else if (userObj instanceof Entrant) {
+            Entrant entrant = (Entrant) userObj;
+            owner = new Organizer(
+                    entrant.getLastName(),
+                    entrant.getFirstName(),
+                    entrant.getEmail(),
+                    entrant.getPhoneNumber(),
+                    entrant.getDeviceId(),
+                    "Entrant", // Set role
+                    true, // Is organizer
+                    false, // Is admin
+                    new ArrayList<>(), // No created events
+                    null // No facility linked
+            );
+        } else {
+            Toast.makeText(getContext(), "User not found or invalid.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Date startDateTime = new Date(); // Placeholder for the start date
-        Date endDateTime = new Date(); // Placeholder for the end date
+        // Create the new Event object with required fields
+        String eventId = owner.getDeviceId() + "_" + System.currentTimeMillis(); // Set event ID
+        String eventName = owner.getDeviceId() + "_" + System.currentTimeMillis(); // Set event name
 
-        // Initialize the Facility object
-        Facility facilityObj = new Facility(facilityName, facilityId, location, owner, null, null);
+        // Define the event start and end dates
+        Date eventStart = new Date(); // Set to the current date/time for simplicity
+        Date eventEnd = new Date(eventStart.getTime() + 86400000); // End time: 1 day later
 
-        // Create the new Event object
-        Event newEvent = new Event(name, description, 0.0f, facilityObj, startDateTime, endDateTime, 30, 100L, 100L);
+        // Create the new Event object using the constructor
+        Event newEvent = new Event(eventName, description, 12.99f, null, eventStart, eventEnd, 10, 100L, 100L);
+        newEvent.setEventId(eventId); // Set event ID
+        newEvent.setRequiresGeolocation(true); // Set geolocation requirement
+        newEvent.setStatus("active"); // Set status
+        newEvent.setEnrolledList(new ArrayList<>()); // Set enrolled list
+        newEvent.setPendingList(new ArrayList<>()); // Set pending list
+        newEvent.setCancelledList(new ArrayList<>()); // Set cancelled list
+        newEvent.setWaitingList(new ArrayList<>()); // Set waitlist
+        newEvent.setWaitlistCapacity(100); // Set waitlist capacity
+        newEvent.setWaitlistOpen(new Date()); // Example date for waitlist open
+        newEvent.setWaitlistClose(new Date()); // Example date for waitlist close
+        newEvent.setRecurrenceType(Event.RecurrenceType.AFTER_OCCURRENCES); // Set recurrence type
+        newEvent.setRecurrenceDays(new HashSet<>(List.of("M", "W", "F"))); // Example recurrence days
+        newEvent.setRecurrenceEndDate(new Date(eventStart.getTime() + 2592000000L)); // Set the end date for the recurrence (30 days later)
 
-        newEvent.setEventId("event_" + System.currentTimeMillis()); // Generate a unique event ID
-
-        // Insert the new event into the database
+        // Insert the new event into the database using the provided method
         database.insertEvent(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
+                Log.d("CreateEventFragment", "Event created successfully in Firestore.");
                 Toast.makeText(getContext(), "Event created successfully!", Toast.LENGTH_SHORT).show();
                 requireActivity().onBackPressed();
             }
         }, new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                Log.e("CreateEventFragment", "Failed to create event: " + e.getMessage(), e);
                 Toast.makeText(getContext(), "Failed to create event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }, newEvent);
