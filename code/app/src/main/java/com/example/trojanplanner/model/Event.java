@@ -21,7 +21,7 @@ import java.util.Set;
 public class Event {
     private String name;
     private String eventId;
-    private String facility;
+    private Facility facility;
     private String description;
     private float price;
     private int daysLeftToRegister;
@@ -38,6 +38,7 @@ public class Event {
 
     private Date waitlistOpen;
     private Date waitlistClose;
+    private int waitlistCapacity;
     private boolean requiresGeolocation;
     //is there a better way of representing this?
     private String status; // "upcoming", "ongoing", "cancelled", "finished"
@@ -107,7 +108,7 @@ public class Event {
 //        this.recurrenceType = RecurrenceType.NEVER; // I set this by default
 //    }
 
-    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime,
+    public Event(String name, String description, float price, Facility facility, Date startDateTime, Date endDateTime,
                  int daysLeftToRegister, Long totalSpots, Long availableSpots) {
         this.name = name;
         this.description = description;
@@ -199,11 +200,11 @@ public class Event {
         this.daysLeftToRegister = daysLeftToRegister;
     }
 
-    public String getFacility() {
+    public Facility getFacility() {
         return facility;
     }
 
-    public void setFacility(String facility) {
+    public void setFacility(Facility facility) {
         this.facility = facility;
     }
 
@@ -237,6 +238,14 @@ public class Event {
 
     public void setPrice(float price) {
         this.price = price;
+    }
+
+    public int getWaitlistCapacity() {
+        return waitlistCapacity;
+    }
+
+    public void setWaitlistCapacity(int waitlistCapacity) {
+        this.waitlistCapacity = waitlistCapacity;
     }
 
     public ArrayList<User> getCancelledList() {
