@@ -2,9 +2,9 @@ com.example.trojanplanner
 com.example.trojanplanner.controller
 com.example.trojanplanner.events
 com.example.trojanplanner.events.facility
-com.example.trojanplanner.events.organizer
 com.example.trojanplanner.HelperFragments
 com.example.trojanplanner.model
+com.example.trojanplanner.notifcations
 com.example.trojanplanner.ProfileUtils
 com.example.trojanplanner.QRUtils
 com.example.trojanplanner.view
