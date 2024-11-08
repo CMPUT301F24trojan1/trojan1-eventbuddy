@@ -13,7 +13,16 @@
         <action
             android:id="@+id/action_emptyEventsFragment_to_organizerRegistrationFragment"
             app:destination="@id/organizerRegistrationFragment" />
+        <action
+            android:id="@+id/action_emptyEventsFragment_to_createEventFragment"
+            app:destination="@id/createEventFragment" /> <!-- New action to navigate to CreateEventFragment -->
     </fragment>
+
+    <fragment
+        android:id="@+id/createEventFragment"
+        android:name="com.example.trojanplanner.view.CreateEventFragment"
+        android:label="Create Event"
+        tools:layout="@layout/fragment_create_events" /> <!-- Layout for the new fragment -->
 
     <fragment
         android:id="@+id/organizerRegistrationFragment"
