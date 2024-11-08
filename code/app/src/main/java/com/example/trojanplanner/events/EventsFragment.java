@@ -62,6 +62,7 @@ public class EventsFragment extends Fragment {
             eventList.add(new ConcreteEvent(
                     "Event " + (i + 1),
                     "Description for Event " + (i + 1),
+                    0,
                     "Location " + (i + 1),
                     startDateTime,
                     endDateTime
@@ -69,9 +70,9 @@ public class EventsFragment extends Fragment {
         }
 
         // Optionally add additional events individually
-        eventList.add(new ConcreteEvent("Event 1", "Description for Event 1", "Gym", startDateTime, endDateTime));
-        eventList.add(new ConcreteEvent("Event 2", "Description for Event 2", "Library", startDateTime, endDateTime));
-        eventList.add(new ConcreteEvent("Event 3", "Description for Event 3", "Cafeteria", startDateTime, endDateTime));
+        eventList.add(new ConcreteEvent("Event 1", "Description for Event 1", 0, "Gym", startDateTime, endDateTime));
+        eventList.add(new ConcreteEvent("Event 2", "Description for Event 2", 0, "Library", startDateTime, endDateTime));
+        eventList.add(new ConcreteEvent("Event 3", "Description for Event 3", 0, "Cafeteria", startDateTime, endDateTime));
 
         eventsAdapter.notifyDataSetChanged();
     }

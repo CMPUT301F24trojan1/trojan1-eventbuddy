@@ -41,7 +41,7 @@ public class EventInstrumentedTest {
     @Test
     public void testDefaultImageForEvent() {
         // Create an instance of ConcreteEvent without setting a custom picture
-        ConcreteEvent event = new ConcreteEvent("Morning Yoga", "Relaxing session", "Gym", startDateTime, endDateTime);
+        ConcreteEvent event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
 
         // Call getPicture() with the application context
         Bitmap picture = event.getPicture(context);
