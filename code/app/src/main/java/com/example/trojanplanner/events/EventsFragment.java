@@ -6,7 +6,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,7 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class EventsFragment extends Fragment {
+public class EventsFragment extends Fragment implements EventArrayAdapter.OnEventClickListener  {
 
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
@@ -44,7 +47,7 @@ public class EventsFragment extends Fragment {
 
         // Initialize the event list and adapter
         eventList = new ArrayList<>();
-        eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList);
+        eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList, this);
         recyclerView.setAdapter(eventsAdapter);
 
         // Load events (real or dummy if empty)
@@ -62,10 +65,30 @@ public class EventsFragment extends Fragment {
             calendar.add(Calendar.HOUR, 1); // End time one hour later
             Date endDateTime = calendar.getTime();
 
-            // Placeholder organizer for demonstration
+            // Placeholder values for Organizer fields
+            String lastName = "Doe";
+            String firstName = "John";
+            String email = "organizer@example.com";
+            String phoneNumber = "123-456-7890";
+            String deviceId = "device123";
+            String role = "Organizer";
+            boolean isOrganizer = true;
+            boolean isAdmin = false;
+            ArrayList<Event> createdEvents = new ArrayList<>(); // Empty list for demonstration
+            Facility organizerFacility = null; // Assuming no facility is associated with the organizer initially
+
+            // Create the Organizer object
             Organizer placeholderOrganizer = new Organizer(
-                    "Organizer Name", "organizerId", "organizer@example.com"
-                    // Add other fields here if needed by Organizer constructor
+                    lastName,
+                    firstName,
+                    email,
+                    phoneNumber,
+                    deviceId,
+                    role,
+                    isOrganizer,
+                    isAdmin,
+                    createdEvents,
+                    organizerFacility
             );
 
             // Populate with dummy events
@@ -73,25 +96,35 @@ public class EventsFragment extends Fragment {
                 eventList.add(new ConcreteEvent(
                         "Sample Event " + (i + 1),
                         "This is a description for sample event " + (i + 1),
-                        0.0f,
                         new Facility(
                                 "Facility " + (i + 1),
                                 "facility" + (i + 1) + "_id",
                                 "Sample Address " + (i + 1),
-                                placeholderOrganizer,        // Owner
-                                null,                        // Profile picture file path
-                                null                         // Profile picture bitmap
-                        ),
-                        startDateTime,
-                        endDateTime,
-                        50,         // Capacity
-                        20L,        // Spots filled
-                        30L         // Available spots
-                ));
+                                placeholderOrganizer,   // Owner, no image args used
+                                null,
+                                null),
+                        null,
+                        null)
+                );
             }
 
             eventsAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onEventClick(Event event) {
+        System.out.println("Event clicked: " + event.getName());
+
+        // Use NavController to navigate
+        NavController navController = Navigation.findNavController(requireView());
+
+        // Prepare the arguments
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("event", event);  // Pass the event data to the fragment
+
+        // Navigate to EventDetailsFragment
+        navController.navigate(R.id.action_eventsFragment_to_eventDetailsFragment, bundle);
     }
 
     @Override

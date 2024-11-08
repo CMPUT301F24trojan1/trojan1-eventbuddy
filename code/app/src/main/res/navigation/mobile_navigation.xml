@@ -72,4 +72,22 @@
         tools:layout="@layout/fragment_waitlist" />
 
 
+    <!-- Define EventDetailsFragment -->
+    <fragment
+        android:id="@+id/eventDetailsFragment"
+        android:name="com.example.trojanplanner.events.EventDetailsFragment"
+        android:label="Event Details"
+        tools:layout="@layout/fragment_event_details">
+        <!-- Action to navigate to this fragment -->
+        <argument
+            android:name="event"
+            app:argType="com.example.trojanplanner.model.Event" />
+    </fragment>
+
+    <!-- Example of an action navigating from eventsFragment to eventDetailsFragment -->
+    <action
+        android:id="@+id/action_eventsFragment_to_eventDetailsFragment"
+        app:destination="@id/eventDetailsFragment"
+        app:popUpTo="@id/eventsFragment"
+        app:popUpToInclusive="true" />
 </navigation>
