@@ -5,26 +5,27 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.facility.FacilitySetupFragment;
 
 public class EmptyEventsFragment extends Fragment {
-
     private TextView messageTextView;
-    private Button createEventButton; // Declare the button
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_empty_myevents, container, false);
         messageTextView = view.findViewById(R.id.messageTextView);
-        createEventButton = view.findViewById(R.id.createEventButton); // Initialize the button
 
         // Display a message for the user
         showNoEventsMessage();
@@ -36,15 +37,13 @@ public class EmptyEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set up the button to navigate to OrganizerRegistrationFragment
-        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.organizerRegistrationFragment)
-        );
+        // Set up the NavController
+        NavController navController = NavHostFragment.findNavController(this);
 
-        // Set up the button to navigate to CreateEventFragment
-        createEventButton.setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.createEventFragment) // Navigate to CreateEventFragment
-        );
+        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
+            // Navigate to FacilitySetupFragment using the action defined in nav_graph.xml
+            navController.navigate(R.id.facilitySetupFragment);
+        });
     }
 
     private void showNoEventsMessage() {

@@ -419,13 +419,13 @@ public class Database {
      * @param facility The facility to store in the database
      * @author Jared Gourley
      */
-    public void insertFacility(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
+    // Renamed method: insertFacilityWithListeners for custom success/failure handling
+    public void insertFacilityWithListeners(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
         facilityMap.put("facilityPhoto", facility.getPfpFacilityFilePath());
         facilityMap.put("owner", facility.getOwner());
-        //facilityMap.put("currentEvents", );
 
         db.collection("facilities")
                 .document(facility.getFacilityId())
@@ -433,6 +433,7 @@ public class Database {
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
+
 
     /**
      * Inserts a facility object into the database.
@@ -444,9 +445,8 @@ public class Database {
      * @author Jared Gourley
      */
     public void insertFacility(Facility facility) {
-        insertFacility(defaultSuccessListener, defaultFailureListener, facility);
+        insertFacilityWithListeners(defaultSuccessListener, defaultFailureListener, facility);
     }
-
 
     // ===================== Get documents from Firestore Database =====================
 

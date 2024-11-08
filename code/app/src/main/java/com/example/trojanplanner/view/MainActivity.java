@@ -6,19 +6,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.trojanplanner.App;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.events.facility.FacilitySetupFragment;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -29,15 +29,16 @@ import com.example.trojanplanner.databinding.ActivityMainBinding;
 
 import java.util.Objects;
 
-import java.util.Objects;
-
 public class MainActivity extends AppCompatActivity {
+    public Entrant CurrentUser;
     private ActivityMainBinding binding;
     private Activity activity;
 
     private Entrant currentUser = null; // The person who is using the app right now
     private String deviceId;
     private Database database;
+    public PhotoPicker photoPicker;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
             currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
         }
 
+        photoPicker = new PhotoPicker();
+        photoPicker.initPhotoPicker();
 
         activity = this;
         database = new Database();
@@ -66,23 +69,7 @@ public class MainActivity extends AppCompatActivity {
             getEntrantFromDeviceId(deviceId); // Redirects if no entrant exists!
         }
 
-
-        // Load EmptyEventsFragment initially
-        loadEmptyEventsFragment(); // TODO: In the getEntrantFromDeviceId OnSuccess operation, load actual events if entrant has them
-
         setupNavigation();
-    }
-
-
-
-
-
-
-    private void loadEmptyEventsFragment() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, new EmptyEventsFragment())
-                .commit();
     }
 
     @SuppressLint("HardwareIds")
