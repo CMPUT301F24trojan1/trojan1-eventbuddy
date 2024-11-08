@@ -21,14 +21,14 @@ import java.util.Set;
 public class Event {
     private String name;
     private String eventId;
-    private String facility;
+    private Facility facility;
     private String description;
     private float price;
     private int daysLeftToRegister;
     private String qrCodePath;
     private Bitmap qrCodeBitmap;
     private Bitmap picture; // New attribute to store the event picture
-    private String pictureUri; //uhhh
+    private String pictureFilePath; //uhhh
 
     //participant lists
     private ArrayList<User> waitingList;
@@ -38,6 +38,7 @@ public class Event {
 
     private Date waitlistOpen;
     private Date waitlistClose;
+    private int waitlistCapacity;
     private boolean requiresGeolocation;
     //is there a better way of representing this?
     private String status; // "upcoming", "ongoing", "cancelled", "finished"
@@ -72,7 +73,7 @@ public class Event {
 
 
 
-//    public Event(String name, String eventId, String facility, String description, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureUri, ArrayList<User> pendingList, ArrayList<User> waitingList, ArrayList<User> cancelledList, ArrayList<User> enrolledList, Date waitlistOpen, Date waitlistClose, boolean requiresGeolocation, String status, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences, RecurrenceType recurrenceType) {
+//    public Event(String name, String eventId, String facility, String description, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureFilePath, ArrayList<User> pendingList, ArrayList<User> waitingList, ArrayList<User> cancelledList, ArrayList<User> enrolledList, Date waitlistOpen, Date waitlistClose, boolean requiresGeolocation, String status, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences, RecurrenceType recurrenceType) {
 //        this.name = name;
 //        this.eventId = eventId;
 //        this.facility = facility;
@@ -81,7 +82,7 @@ public class Event {
 //        this.qrCodePath = qrCodePath;
 //        this.qrCodeBitmap = qrCodeBitmap;
 //        this.picture = picture;
-//        this.pictureUri = pictureUri;
+//        this.pictureFilePath = pictureFilePath;
 //
 //        //make these new ArrayList<>();?
 //        this.pendingList = pendingList;
@@ -107,7 +108,7 @@ public class Event {
 //        this.recurrenceType = RecurrenceType.NEVER; // I set this by default
 //    }
 
-    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime,
+    public Event(String name, String description, float price, Facility facility, Date startDateTime, Date endDateTime,
                  int daysLeftToRegister, Long totalSpots, Long availableSpots) {
         this.name = name;
         this.description = description;
@@ -123,7 +124,7 @@ public class Event {
         this.qrCodePath = null;
         this.qrCodeBitmap = null;
         this.picture = null;
-        this.pictureUri = null;
+        this.pictureFilePath = null;
         this.waitingList = new ArrayList<>();
         this.notifications = new ArrayList<>();
         this.registrationDeadline = null;
@@ -167,12 +168,12 @@ public class Event {
         this.pendingList = pendingList;
     }
 
-    public String getPictureUri() {
-        return pictureUri;
+    public String getPictureFilePath() {
+        return pictureFilePath;
     }
 
-    public void setPictureUri(String pictureUri) {
-        this.pictureUri = pictureUri;
+    public void setPictureFilePath(String pictureFilePath) {
+        this.pictureFilePath = pictureFilePath;
     }
 
     public Bitmap getQrCodeBitmap() {
@@ -199,11 +200,11 @@ public class Event {
         this.daysLeftToRegister = daysLeftToRegister;
     }
 
-    public String getFacility() {
+    public Facility getFacility() {
         return facility;
     }
 
-    public void setFacility(String facility) {
+    public void setFacility(Facility facility) {
         this.facility = facility;
     }
 
@@ -237,6 +238,14 @@ public class Event {
 
     public void setPrice(float price) {
         this.price = price;
+    }
+
+    public int getWaitlistCapacity() {
+        return waitlistCapacity;
+    }
+
+    public void setWaitlistCapacity(int waitlistCapacity) {
+        this.waitlistCapacity = waitlistCapacity;
     }
 
     public ArrayList<User> getCancelledList() {
