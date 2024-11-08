@@ -23,6 +23,7 @@ public class Event {
     private String eventId;
     private String facility;
     private String description;
+    private float price;
     private int daysLeftToRegister;
     private String qrCodePath;
     private Bitmap qrCodeBitmap;
@@ -106,10 +107,11 @@ public class Event {
 //        this.recurrenceType = RecurrenceType.NEVER; // I set this by default
 //    }
 
-    public Event(String name, String description, String facility, Date startDateTime, Date endDateTime,
+    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime,
                  int daysLeftToRegister, Long totalSpots, Long availableSpots) {
         this.name = name;
         this.description = description;
+        this.price = price;
         this.facility = facility;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
@@ -135,16 +137,18 @@ public class Event {
     }
 
     // Constructor with no image args
-    public Event(String eventName, String eventDescription) {
+    public Event(String eventName, String eventDescription, float price) {
         this.name = eventName;
         this.description = eventDescription;
+        this.price = price;
     }
 
     // Constructor with image args
-    public Event(String eventName, String eventDescription, Bitmap imageResourceId) {
+    public Event(String eventName, String eventDescription, float price, Bitmap imageBitmap) {
         this.name = eventName;
         this.description = eventDescription;
-        this.picture = imageResourceId;
+        this.price = price;
+        this.picture = imageBitmap;
     }
 
     public ArrayList<User> getWaitingList() {
@@ -225,6 +229,14 @@ public class Event {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
     }
 
     public ArrayList<User> getCancelledList() {

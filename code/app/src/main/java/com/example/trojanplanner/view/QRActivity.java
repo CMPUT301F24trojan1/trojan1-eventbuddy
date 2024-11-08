@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import com.example.trojanplanner.QRUtils.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
+import com.example.trojanplanner.model.Entrant;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
@@ -44,6 +45,9 @@ public class QRActivity extends AppCompatActivity {
     private EditText etInput;
     private @NonNull ActivityQrBinding binding;
 
+    private String deviceId;
+    private Entrant currentUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,12 +55,16 @@ public class QRActivity extends AppCompatActivity {
         binding = ActivityQrBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        deviceId = getIntent().getExtras().getString("deviceId");
+        currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
+
+
         barcodeView = findViewById(R.id.barcode_scanner);
         ImageButton helpButton = findViewById(R.id.qr_help_button);
 
         setupNavigation();
 
-        helpButton.setOnClickListener(v -> openHelpFragment());
+        helpButton.setOnClickListener(v -> openSlideShowActivity());
 
         // Check and request camera permission
         checkCameraPermission();
@@ -71,6 +79,11 @@ public class QRActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
+    private void openSlideShowActivity() {
+        Intent intent = new Intent(QRActivity.this, SlideShowActivity.class);
+        startActivity(intent);
+    }
+
     /**
      * Checks if the app has permission to use the camera. If permission is not
      * granted, it requests the permission from the user. If permission is granted,
@@ -78,6 +91,8 @@ public class QRActivity extends AppCompatActivity {
      *
      * @author Dricmoy Bhattacharjee
      */
+
+
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -88,6 +103,8 @@ public class QRActivity extends AppCompatActivity {
             startQRScanner(); // Start the scanner if permission is already granted
         }
     }
+
+
 
     /**
      * Starts the continuous QR scanner. It sets the decoder factory to recognize
@@ -168,11 +185,17 @@ public class QRActivity extends AppCompatActivity {
 
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
-                startActivity(new Intent(QRActivity.this, MainActivity.class));
+                Intent intent = new Intent(QRActivity.this, MainActivity.class);
+                intent.putExtra("deviceId", deviceId);
+                intent.putExtra("user", currentUser);
+                startActivity(intent);
                 finish();
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
-                startActivity(new Intent(QRActivity.this, ProfileActivity.class));
+                Intent intent = new Intent(QRActivity.this, ProfileActivity.class);
+                intent.putExtra("deviceId", deviceId);
+                intent.putExtra("user", currentUser);
+                startActivity(intent);
                 finish();
                 return true;
             } else return item.getItemId() == R.id.qrActivity;
