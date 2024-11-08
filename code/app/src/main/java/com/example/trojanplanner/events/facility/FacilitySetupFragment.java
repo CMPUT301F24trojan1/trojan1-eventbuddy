@@ -119,7 +119,7 @@ public class FacilitySetupFragment extends Fragment {
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.organizerRegistrationFragment);
+            navController.navigate(R.id.facilitySetupFragment);
         } else {
             // If the photo was selected, proceed as usual
             try {

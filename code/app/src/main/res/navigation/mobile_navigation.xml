@@ -22,10 +22,10 @@
         tools:layout="@layout/fragment_facility_setup" />
 
     <fragment
-        android:id="@+id/organizerRegistrationFragment"
-        android:name="com.example.trojanplanner.events.organizer.OrganizerRegistrationFragment"
-        android:label="Organizer Registration"
-        tools:layout="@layout/fragment_organizer_registration" />
+        android:id="@+id/createEventsFragment"
+        android:name="com.example.trojanplanner.events.facility.createEventsFragment"
+        android:label="Facility Registration"
+        tools:layout="@layout/fragment_create_events" />
 
     <fragment
         android:id="@+id/eventsFragment"
