@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
@@ -74,12 +75,10 @@ public class CreateEventFragment extends Fragment {
         eventDateEditText = view.findViewById(R.id.eventDateEditText); // Add other fields as needed
         createEventButton = view.findViewById(R.id.createEventButton);
 
-        view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
-            // Ensure we are navigating from the correct fragment
-            boolean ret = createEvent();
+        createEventButton.setOnClickListener(v -> {
+            boolean ret = createEvent(view);
             if (ret) {
-                NavController navController = NavHostFragment.findNavController(this);
-                navController.navigate(R.id.createEventsFragment_to_fragment_events_list);
+                navigateToEventsListFragment(view);
             }
         });
     }
@@ -87,10 +86,11 @@ public class CreateEventFragment extends Fragment {
     /**
      * Creates a new event by collecting data from the user inputs and uploading it to the database.
      * It ensures that all required fields are filled out and that the current user is an organizer.
+     * Attempts to create the event and returns true if creation succeeds.
      *
      * @return True if the event was successfully created and uploaded, false otherwise.
      */
-    private boolean createEvent() {
+    private boolean createEvent(View view) {
         String name = eventNameEditText.getText().toString();
         String description = eventDescriptionEditText.getText().toString();
         String facility = eventFacilityEditText; // Use the temporary test string
@@ -103,13 +103,12 @@ public class CreateEventFragment extends Fragment {
             return false;
         }
 
-        // Get current user
+        Entrant currentUser = ((MainActivity) App.activityManager.getActivity()).currentUser;
         Entrant currentUser = (Entrant) ((MainActivity) App.activityManager.getActivity()).currentUser; // Ask Jared
         Organizer currentOrganizer = currentUser.returnOrganizer();
 
         if (currentUser == null) {
             Toast.makeText(getContext(), "Organizer not found", Toast.LENGTH_SHORT).show();
-            System.out.println("Organizer not found");
             return false;
         }
 
@@ -128,22 +127,36 @@ public class CreateEventFragment extends Fragment {
         database.insertEvent(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(getContext(), "Event created successfully!", Toast.LENGTH_SHORT).show();
-                // Add the event to the organizer's list of created events
-                currentOrganizer.addEvent(newEvent);
-                database.insertUserDocument(currentOrganizer);
-                requireActivity().onBackPressed(); // Or navigate to another fragment
+                if (isAdded()) {
+                    Toast.makeText(App.activityManager.getActivity(), "Event created successfully!", Toast.LENGTH_SHORT).show();
+                    // Add the event to the organizer's list of created events
+                    currentOrganizer.addEvent(newEvent);
+                    database.insertUserDocument(currentOrganizer);
+                    navigateToEventsListFragment(view);
+                }
             }
         }, new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Failed to create event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(App.activityManager.getActivity(), "Failed to create event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         }, newEvent);
 
         return true;
     }
 
+  
+    private void navigateToEventsListFragment(View view) {
+        if (view != null) {
+            NavController navController = Navigation.findNavController(view);
+            navController.navigate(R.id.eventsListFragment);
+        }
+    }
+  
+  
+  
     /**
      * Handles options menu item selections.
      *
@@ -152,13 +165,10 @@ public class CreateEventFragment extends Fragment {
      */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                // Handle back press to return to the previous fragment or Activity
-                requireActivity().onBackPressed(); // Or use NavController to navigate back
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            requireActivity().onBackPressed();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 }
