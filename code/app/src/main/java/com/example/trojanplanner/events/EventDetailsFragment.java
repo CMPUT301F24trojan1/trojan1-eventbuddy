@@ -56,7 +56,6 @@ public class EventDetailsFragment extends Fragment {
      *
      * @param event   The event to be displayed.
      * @param entrant The entrant associated with the event.
-     * @return A new instance of EventDetailsFragment.
      */
     // Constructor with parameters
     public EventDetailsFragment(ConcreteEvent event, Entrant entrant) {

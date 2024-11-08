@@ -12,13 +12,22 @@ import com.example.trojanplanner.R;
 
 import java.io.Serializable;
 
-//organizer
+/**
+ * A DialogFragment that provides a set of options for an event. The options include actions like
+ * sending an announcement, viewing attendees, viewing the event's map, showing a check-in code,
+ * generating an event code, or deleting the event.
+ */
 public class EventOptionsDialogFragment extends DialogFragment {
 
     private static final String ARG_EVENT = "event";
     private Event event;
 
-    // This method creates a new instance of the dialog with the event passed as argument.
+    /**
+     * Creates a new instance of the EventOptionsDialogFragment with the given event passed as an argument.
+     *
+     * @param event The event object for which options are to be displayed.
+     * @return A new instance of EventOptionsDialogFragment.
+     */
     public static EventOptionsDialogFragment newInstance(Event event) {
         EventOptionsDialogFragment fragment = new EventOptionsDialogFragment();
         Bundle args = new Bundle();
@@ -27,6 +36,11 @@ public class EventOptionsDialogFragment extends DialogFragment {
         return fragment;
     }
 
+    /**
+     * Called when the fragment is created. Retrieves the event from the fragment arguments.
+     *
+     * @param savedInstanceState The saved instance state (if any).
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +50,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
         }
     }
 
+    /**
+     * Creates the dialog that displays event options.
+     *
+     * @param savedInstanceState The saved instance state (if any).
+     * @return The dialog to be shown to the user.
+     */
     @Override
     public android.app.Dialog onCreateDialog(Bundle savedInstanceState) {
         // Create an AlertDialog to show the event options
@@ -52,7 +72,11 @@ public class EventOptionsDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    // Handle the user's selection from the dialog
+    /**
+     * Handles the selection of an option from the event options dialog.
+     *
+     * @param optionIndex The index of the selected option.
+     */
     private void handleOptionSelection(int optionIndex) {
         switch (optionIndex) {
             case 0:
@@ -78,39 +102,51 @@ public class EventOptionsDialogFragment extends DialogFragment {
         }
     }
 
-    // Logic for sending an announcement
+    /**
+     * Logic to send an announcement for the event.
+     */
     private void sendAnnouncement() {
         // Add your logic to send an announcement
         Toast.makeText(getContext(), "Send Announcement clicked", Toast.LENGTH_SHORT).show();
     }
 
-    // Logic for viewing attendees
+    /**
+     * Logic to view attendees of the event.
+     */
     private void viewAttendees() {
         // Add your logic to view attendees
         Toast.makeText(getContext(), "View Attendees clicked", Toast.LENGTH_SHORT).show();
     }
 
-    // Logic for viewing map
+    /**
+     * Logic to view the event location on a map.
+     */
     private void viewMap() {
         // Add your logic to view the event location on a map
         Toast.makeText(getContext(), "View Map clicked", Toast.LENGTH_SHORT).show();
     }
 
-    // Logic for showing check-in code
+    /**
+     * Logic to show the event's check-in code (e.g., generating a QR code).
+     */
     private void showCheckinCode() {
-        // Add your logic to show check-in code (e.g., generating QR code)
+        // Add your logic to show check-in code
         Toast.makeText(getContext(), "Check-in Code clicked", Toast.LENGTH_SHORT).show();
     }
 
-    // Logic for generating event code
+    /**
+     * Logic to generate an event code for the event.
+     */
     private void generateEventCode() {
         // Add your logic to generate an event code
         Toast.makeText(getContext(), "Generate Event Code clicked", Toast.LENGTH_SHORT).show();
     }
 
-    // Logic for deleting the event
+    /**
+     * Logic to delete the event, potentially by calling an API or updating the database.
+     */
     private void deleteEvent() {
-        // Add your logic to delete the event (e.g., calling an API, updating database)
+        // Add your logic to delete the event
         Toast.makeText(getContext(), "Delete Event clicked", Toast.LENGTH_SHORT).show();
     }
 }
