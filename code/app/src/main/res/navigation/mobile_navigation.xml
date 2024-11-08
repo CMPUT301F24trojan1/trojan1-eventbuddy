@@ -11,21 +11,33 @@
         android:label="Empty Events"
         tools:layout="@layout/fragment_empty_myevents">
         <action
-            android:id="@+id/action_emptyEventsFragment_to_organizerRegistrationFragment"
-            app:destination="@id/organizerRegistrationFragment" />
+            android:id="@+id/action_emptyEventsFragment_to_facilityRegistrationFragment"
+            app:destination="@id/facilityRegistrationFragment"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/facilityRegistrationFragment"
+        android:name="com.example.trojanplanner.events.facility.Facilityregistrationfragment"
+        android:label="Facility Registration"
+        tools:layout="@layout/fragment_facility_registration" />
 
     <fragment
         android:id="@+id/organizerRegistrationFragment"
         android:name="com.example.trojanplanner.events.organizer.OrganizerRegistrationFragment"
         android:label="Organizer Registration"
-        tools:layout="@layout/fragment_organizer_registration" />
+        tools:layout="@layout/fragment_organizer_options" />
 
     <fragment
         android:id="@+id/eventsFragment"
         android:name="com.example.trojanplanner.events.EventsFragment"
         android:label="@string/title_events"
         tools:layout="@layout/fragment_events_list" />
+
+    <fragment
+        android:id="@+id/eventDetailsFragment"
+        android:name="com.example.trojanplanner.events.EventDetailsFragment"
+        android:label="Event Details"
+        tools:layout="@layout/fragment_event_details" />
 
     <activity
         android:id="@+id/qrActivity"

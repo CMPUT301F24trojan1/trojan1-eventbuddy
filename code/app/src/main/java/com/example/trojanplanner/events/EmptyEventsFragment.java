@@ -14,7 +14,6 @@ import androidx.navigation.Navigation;
 import com.example.trojanplanner.R;
 
 public class EmptyEventsFragment extends Fragment {
-
     private TextView messageTextView;
 
     @Nullable
@@ -35,7 +34,7 @@ public class EmptyEventsFragment extends Fragment {
 
         // Set up the button to navigate to OrganizerRegistrationFragment
         view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.organizerRegistrationFragment)
+                Navigation.findNavController(v).navigate(R.id.facilityRegistrationFragment)
         );
     }
 
