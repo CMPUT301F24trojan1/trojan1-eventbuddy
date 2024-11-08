@@ -21,11 +21,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static org.hamcrest.Matchers.containsString;
 
 import android.os.Bundle;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
+
 import androidx.test.core.app.ActivityScenario;
 
 
+import com.example.trojanplanner.HelperFragments.WaitlistFragment;
+;
 
 @RunWith(AndroidJUnit4.class)
 public class WaitlistFragmentTest {
@@ -54,20 +55,24 @@ public class WaitlistFragmentTest {
 
         testEvent.setWaitingList(new ArrayList<>(waitlistEntrants));
     }
-    //TO DO: make mcok filrebase
+
     @Test
     public void testWaitlistDisplay() {
-        // Launch MainActivity
-        ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class);
+        // Launch EmptyFragmentActivity
+        ActivityScenario<EmptyFragmentActivity> scenario = ActivityScenario.launch(EmptyFragmentActivity.class);
 
         scenario.onActivity(activity -> {
             // Prepare fragment arguments
             Bundle bundle = new Bundle();
             bundle.putSerializable("event", testEvent);
 
-            // Navigate to waitlistFragment using NavController
-            NavController navController = Navigation.findNavController(R.id.nav_host_fragment_activity_main, );
-            navController.navigate(R.id.waitlistFragment, bundle);
+            WaitlistFragment waitlistFragment = new WaitlistFragment();
+            waitlistFragment.setArguments(bundle);
+
+            // Add WaitlistFragment to EmptyFragmentActivity
+            activity.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, waitlistFragment)
+                    .commitNow();
         });
 
         // Verify each waitlist entrant's name and device ID is displayed
