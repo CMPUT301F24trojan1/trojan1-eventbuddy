@@ -40,5 +40,11 @@
             android:name=".view.QRActivity">
         </activity>
         <activity android:name=".view.SlideShowActivity" />
+
+        <!-- Add EmptyFragmentActivity specifically for testing -->
+        <activity
+            android:name="androidx.fragment.app.testing.EmptyFragmentActivity"
+            android:exported="true" />
+
     </application>
 </manifest>

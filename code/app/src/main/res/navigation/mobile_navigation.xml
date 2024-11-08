@@ -45,4 +45,5 @@
         android:label="Waitlist"
         tools:layout="@layout/fragment_waitlist" />
 
+
 </navigation>
