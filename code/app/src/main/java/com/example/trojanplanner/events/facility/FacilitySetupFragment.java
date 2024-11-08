@@ -18,7 +18,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
@@ -79,7 +81,7 @@ public class FacilitySetupFragment extends Fragment {
     }
 
     private void openImagePicker() {
-        mainActivity.photoPicker.openPhotoPicker(mainActivity.CurrentUser);
+        mainActivity.photoPicker.openPhotoPicker(mainActivity.currentUser);
     }
 
     @Override
@@ -116,7 +118,8 @@ public class FacilitySetupFragment extends Fragment {
             db.insertFacility(facility);
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(requireView()).navigateUp();
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.facilitySetupFragment);
         } else {
             // If the photo was selected, proceed as usual
             try {
