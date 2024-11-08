@@ -1,5 +1,6 @@
 package com.example.trojanplanner.events;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,13 +8,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.trojanplanner.HelperFragments.WaitlistFragment;
+import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Event;
 
@@ -34,7 +38,9 @@ public class EventEditFragment extends Fragment {
     private Button saveChangesButton;
     private Button viewWaitlistButton;
     private Button returnToEventsButton;
-
+    private Button generateQRCodeButton;
+    private Button sendAnnouncementButton;
+    private Button viewMapButton;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a");
 
@@ -53,6 +59,9 @@ public class EventEditFragment extends Fragment {
         saveChangesButton = view.findViewById(R.id.saveChangesButton);
         viewWaitlistButton = view.findViewById(R.id.viewWaitlistButton);
         returnToEventsButton = view.findViewById(R.id.returnToEventsButton);
+        generateQRCodeButton = view.findViewById(R.id.generateQRCodeButton);
+        sendAnnouncementButton = view.findViewById(R.id.sendAnnouncementButton);
+        viewMapButton = view.findViewById(R.id.viewMapButton);
 
         // Retrieve the Event object from arguments
         if (getArguments() != null) {
@@ -72,7 +81,9 @@ public class EventEditFragment extends Fragment {
         saveChangesButton.setOnClickListener(v -> saveChanges());
         viewWaitlistButton.setOnClickListener(v -> openWaitlistFragment());
         returnToEventsButton.setOnClickListener(v -> returnToEvents());
-
+        generateQRCodeButton.setOnClickListener(v -> generateQRCode());
+        sendAnnouncementButton.setOnClickListener(v -> sendAnnouncement());
+        viewMapButton.setOnClickListener(v -> viewEventMap());
         return view;
     }
 
@@ -148,5 +159,57 @@ public class EventEditFragment extends Fragment {
     private void returnToEvents() {
         // Go back to the previous fragment
         getParentFragmentManager().popBackStack();
+    }
+
+    private void generateQRCode() {
+        if (event == null || event.getEventId() == null) {
+            Toast.makeText(getContext(), "Event ID is missing", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Hash the eventID using SHA-256
+        String hashedEventID = QRCodeUtil.hashText(event.getEventId());
+
+        if (hashedEventID == null) {
+            Toast.makeText(getContext(), "Failed to hash Event ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Use the hashed event ID to generate the QR code
+        Bitmap qrCodeBitmap = QRCodeUtil.generateQRCode(hashedEventID);
+
+        if (qrCodeBitmap != null) {
+            // Show the QR code in a popup
+            showQRCodeDialog(qrCodeBitmap);
+        } else {
+            Toast.makeText(getContext(), "Failed to generate QR Code", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void showQRCodeDialog(Bitmap qrCodeBitmap) {
+        // Create an ImageView to display the QR code
+        ImageView qrCodeImageView = new ImageView(getContext());
+        qrCodeImageView.setImageBitmap(qrCodeBitmap);
+
+        // Create an AlertDialog to display the QR code
+        new AlertDialog.Builder(getContext())
+                .setTitle("Event QR Code")
+                .setMessage("Scan the QR code below:")
+                .setView(qrCodeImageView) // Set the QR code image as the content of the dialog
+                .setPositiveButton("Close", null) // Close the dialog when the button is pressed
+                .create()
+                .show();
+    }
+
+
+    private void sendAnnouncement() {
+        // Implement the logic for sending an announcement about the event
+        Toast.makeText(getContext(), "Send announcement logic goes here", Toast.LENGTH_SHORT).show();
+    }
+
+    private void viewEventMap() {
+        // Implement the logic for viewing the event's location on a map
+        Toast.makeText(getContext(), "View event map logic goes here", Toast.LENGTH_SHORT).show();
     }
 }

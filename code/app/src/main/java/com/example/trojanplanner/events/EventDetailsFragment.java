@@ -361,7 +361,3 @@ public class EventDetailsFragment extends Fragment {
         dialog.show();
     }
 }
-
-
-
-
