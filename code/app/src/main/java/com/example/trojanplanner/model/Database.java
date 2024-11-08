@@ -50,6 +50,7 @@ public class Database {
     private OnFailureListener defaultFailureListener;
 
 
+
     /**
      * The default constructor which creates a working Database object
      */
