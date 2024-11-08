@@ -52,6 +52,12 @@ public class CreateEventFragment extends Fragment {
         createEventButton = view.findViewById(R.id.createEventButton);
 
         createEventButton.setOnClickListener(v -> createEvent());
+
+
+        //TEMP TEST
+        Button testButton = view.findViewById(R.id.testCreateEventButton);
+        // Set click listener for the test Create Event button
+        testButton.setOnClickListener(v -> testCreateEvent());
     }
 
     private void createEvent() {
@@ -96,6 +102,18 @@ public class CreateEventFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to create event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }, newEvent);
+    }
+
+    // Test Create Event function
+    private void testCreateEvent() {
+        // Simulate the same process as createEvent() but without requiring user input
+        eventNameEditText.setText("Test Event");
+        eventDescriptionEditText.setText("This is a test event created via the test button.");
+        eventFacilityEditText = "Test Facility"; // Set to a default test value
+        eventDateEditText.setText("2024-12-01"); // Set a default date for testing
+
+        // Call the original createEvent method to simulate success
+        createEvent();
     }
 
     @Override
