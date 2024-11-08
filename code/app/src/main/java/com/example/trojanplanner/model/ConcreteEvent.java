@@ -10,8 +10,9 @@ import java.util.Date;
 import com.example.trojanplanner.model.Event;
 
 public class ConcreteEvent extends Event implements Serializable {
-    public ConcreteEvent(String name, String description, float price, String facility, Date startDateTime, Date endDateTime) {
-        super(name, description, price, facility, startDateTime, endDateTime, 0, 100L, 100L);
+
+    public ConcreteEvent(String name, String description, Facility facility, Date startDateTime, Date endDateTime) {
+        super(name, description, 0, facility, startDateTime, endDateTime, 0, 100L, 100L); // Default values for the last three parameters
     }
 }
 
