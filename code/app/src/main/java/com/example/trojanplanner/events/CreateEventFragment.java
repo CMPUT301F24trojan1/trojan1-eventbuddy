@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
@@ -51,8 +53,13 @@ public class CreateEventFragment extends Fragment {
         eventDateEditText = view.findViewById(R.id.eventDateEditText); // Add other fields as needed
         createEventButton = view.findViewById(R.id.createEventButton);
 
-        createEventButton.setOnClickListener(v -> createEvent());
+        view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
+            // Ensure we are navigating from the correct fragment
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.createEventsFragment_to_fragment_events_list);
+        });
     }
+
 
     private void createEvent() {
         String name = eventNameEditText.getText().toString();
