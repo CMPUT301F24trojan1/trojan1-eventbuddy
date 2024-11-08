@@ -2,6 +2,7 @@ package com.example.trojanplanner.events.facility;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -20,18 +21,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.Navigation;
 
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Facility;
+import com.example.trojanplanner.view.MainActivity;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class FacilitySetupFragment extends Fragment {
-
     private static final int REQUEST_IMAGE_PICK = 1;
     private ImageView facilityPhoto;
     private EditText facilityName;
     private EditText ownerName;
     private Uri facilityPhotoUri;
+    private MainActivity mainActivity;
 
     @Nullable
     @Override
@@ -49,6 +53,10 @@ public class FacilitySetupFragment extends Fragment {
         saveButton.setOnClickListener(v -> saveFacility());
         cancelButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
 
+        if (getActivity() instanceof MainActivity) {
+            mainActivity = (MainActivity) getActivity();
+        }
+
         return view;
     }
 
@@ -57,7 +65,7 @@ public class FacilitySetupFragment extends Fragment {
         super.onResume();
         // Hide the action bar for full-screen effect
         if (getActivity() instanceof AppCompatActivity) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).hide();
         }
     }
 
@@ -66,13 +74,12 @@ public class FacilitySetupFragment extends Fragment {
         super.onStop();
         // Restore the action bar visibility when leaving this fragment
         if (getActivity() instanceof AppCompatActivity) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).show();
         }
     }
 
     private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, REQUEST_IMAGE_PICK);
+        mainActivity.photoPicker.openPhotoPicker(mainActivity.CurrentUser);
     }
 
     @Override
@@ -88,25 +95,47 @@ public class FacilitySetupFragment extends Fragment {
         String name = facilityName.getText().toString().trim();
         String ownerNameText = ownerName.getText().toString().trim();
 
-        if (name.isEmpty() || ownerNameText.isEmpty() || facilityPhotoUri == null) {
+        if (name.isEmpty() || ownerNameText.isEmpty()) {
             Toast.makeText(getActivity(), "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Bitmap bitmap;
-        try {
-            bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), facilityPhotoUri);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getActivity(), "Failed to save photo", Toast.LENGTH_SHORT).show();
-            return;
+        Bitmap bitmap = null;
+
+        // If no photo is selected, use a default image from resources
+        if (facilityPhotoUri == null) {
+            // Use a default image from resources
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
+            // Optionally, use a default string path for the image (could be a placeholder URL)
+            String defaultUriString = "default_image_uri";
+            // Create the Facility with the default image URI string
+            Facility facility = new Facility(name, "generatedFacilityId", ownerNameText, null, defaultUriString, bitmap);
+
+            // Insert the facility into the database
+            Database db = new Database();
+            db.insertFacility(facility);
+
+            Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(requireView()).navigateUp();
+        } else {
+            // If the photo was selected, proceed as usual
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), facilityPhotoUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(getActivity(), "Failed to save photo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Create the Facility with the selected photo URI
+            Facility facility = new Facility(name, "generatedFacilityId", ownerNameText, null, facilityPhotoUri.toString(), bitmap);
+
+            // Insert the facility into the database
+            Database db = new Database();
+            db.insertFacility(facility);
+
+            Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(requireView()).navigateUp();
         }
-
-        Facility facility = new Facility(name, "generatedFacilityId", ownerNameText, null, facilityPhotoUri.toString(), bitmap);
-        Database db = new Database();
-        db.insertFacility(facility);
-
-        Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
-        Navigation.findNavController(requireView()).navigateUp();
     }
 }
