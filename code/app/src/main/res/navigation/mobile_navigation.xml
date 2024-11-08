@@ -25,7 +25,7 @@
 
     <action
         android:id="@+id/createEventsFragment_to_fragment_events_list"
-        app:destination="@id/eventsFragment"
+        app:destination="@id/eventsListFragment"
         app:popUpTo="@id/emptyEventsFragment"
         app:popUpToInclusive="true" />
 
@@ -42,16 +42,30 @@
         tools:layout="@layout/fragment_events_list" />
 
     <fragment
+        android:id="@+id/eventEditFragment"
+        android:name="com.example.trojanplanner.events.EventEditFragment"
+        android:label="Edit Event"
+        tools:layout="@layout/event_edit_fragment">
+        <!-- Argument to pass event data if needed -->
+        <argument
+            android:name="event"
+            app:argType="com.example.trojanplanner.model.Event" />
+    </fragment>
+
+
+    <fragment
         android:id="@+id/createEventsFragment"
         android:name="com.example.trojanplanner.events.CreateEventFragment"
         android:label="Facility Registration"
         tools:layout="@layout/fragment_create_events" />
 
-    <fragment
-        android:id="@+id/eventsFragment"
-        android:name="com.example.trojanplanner.events.EventsFragment"
-        android:label="@string/title_events"
-        tools:layout="@layout/fragment_events_list" />
+    <!-- Update the action to navigate from eventsFragment to eventEditFragment -->
+    <action
+        android:id="@+id/action_eventsFragment_to_eventEditFragment"
+        app:destination="@id/eventEditFragment"
+        app:popUpTo="@id/eventEditFragment"
+        app:popUpToInclusive="true" />
+
 
     <activity
         android:id="@+id/qrActivity"
@@ -69,7 +83,34 @@
         android:id="@+id/waitlistFragment"
         android:name="com.example.trojanplanner.HelperFragments.WaitlistFragment"
         android:label="Waitlist"
-        tools:layout="@layout/fragment_waitlist" />
+        tools:layout="@layout/fragment_waitlist">
+
+        <!-- Action to navigate back to EventEditFragment -->
+        <action
+            android:id="@+id/action_waitlistFragment_to_eventEditFragment"
+            app:destination="@id/eventEditFragment"
+            app:popUpTo="@id/eventEditFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 
+
+    <!-- Define EventDetailsFragment -->
+    <fragment
+        android:id="@+id/eventDetailsFragment"
+        android:name="com.example.trojanplanner.events.EventDetailsFragment"
+        android:label="Event Details"
+        tools:layout="@layout/fragment_event_details">
+        <!-- Action to navigate to this fragment -->
+        <argument
+            android:name="event"
+            app:argType="com.example.trojanplanner.model.Event" />
+    </fragment>
+
+    <!-- Example of an action navigating from eventsFragment to eventDetailsFragment -->
+    <action
+        android:id="@+id/action_eventsFragment_to_eventDetailsFragment"
+        app:destination="@id/eventDetailsFragment"
+        app:popUpTo="@id/eventDetailsFragment"
+        app:popUpToInclusive="true" />
 </navigation>

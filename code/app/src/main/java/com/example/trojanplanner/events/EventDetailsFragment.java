@@ -28,7 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
 
-
+//NOTE THIS IS FOR THE ENTRANT NOT ORGANIZER, same with event_details_fragment.xml
 public class EventDetailsFragment extends Fragment {
     private Event event;
     private Entrant entrant;
@@ -154,13 +154,21 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
-    public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView, TextView eventDateTextView, TextView recurringDatesTextView, TextView eventDescriptionTextView) {
+    public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView,
+                                     TextView eventDateTextView, TextView recurringDatesTextView,
+                                     TextView eventDescriptionTextView) {
+
         eventNameTextView.setText(event.getName());
         eventLocationTextView.setText(event.getFacility().getFacilityId());
 
+        // Default values for dates in case they are null
+        String defaultDate = "Not Available";  // Default date if event date is null
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String startDate = dateFormat.format(event.getStartDateTime());
-        String endDate = dateFormat.format(event.getEndDateTime());
+
+        // Assign default value if startDateTime or endDateTime is null
+        String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
+        String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
+
         eventDateTextView.setText(startDate + " - " + endDate);
 
         // Convert abbreviations in recurrenceDays to full day names
@@ -169,12 +177,11 @@ public class EventDetailsFragment extends Fragment {
                 .map(this::getFullDayName) // Convert each unique abbreviation to full day name
                 .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
                 .reduce((a, b) -> a + ", " + b) // Join with commas
-                .orElse("");
+                .orElse("No recurrence");
 
         recurringDatesTextView.setText(recurrenceDaysText);
         eventDescriptionTextView.setText(event.getDescription());
     }
-
 
     public void joinWaitlist() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirm_registration, null);
