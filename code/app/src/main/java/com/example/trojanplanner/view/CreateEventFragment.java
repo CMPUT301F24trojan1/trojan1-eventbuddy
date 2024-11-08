@@ -58,6 +58,7 @@ public class CreateEventFragment extends Fragment {
         String description = eventDescriptionEditText.getText().toString();
         String facility = eventFacilityEditText; // Use the temporary test string
         String date = eventDateEditText.getText().toString(); // Handle other fields as needed
+        float price = 0;
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(description) || TextUtils.isEmpty(facility) || TextUtils.isEmpty(date)) {
             Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
@@ -74,7 +75,7 @@ public class CreateEventFragment extends Fragment {
         Date startDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
         Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
 
-        Event newEvent = new Event(name, description, facility, startDateTime, endDateTime,
+        Event newEvent = new Event(name, description, price, facility, startDateTime, endDateTime,
                 30, 100L, 100L); // Adjust parameters as needed
 
         // Generate a unique event ID (you may want to implement this logic)
