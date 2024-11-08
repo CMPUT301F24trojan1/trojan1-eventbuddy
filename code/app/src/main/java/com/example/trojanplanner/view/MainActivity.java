@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.emptyEventsFragment, R.id.eventsFragment)
+                R.id.emptyEventsFragment, R.id.eventsListFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
@@ -201,8 +201,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.eventsFragment) {
-                navController.navigate(R.id.eventsFragment);
+            if (item.getItemId() == R.id.eventsListFragment) {
+                navController.navigate(R.id.eventsListFragment);
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
                 Intent intent = new Intent(MainActivity.this, QRActivity.class);
