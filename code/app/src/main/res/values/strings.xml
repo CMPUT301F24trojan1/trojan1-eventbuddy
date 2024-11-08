@@ -11,4 +11,12 @@
     <string name="firestore_db_upload_fail">Document upload failed, try again later</string>
 
 
+    <string-array name="event_options">
+        <item>Send Announcement</item>
+        <item>View Attendees</item>
+        <item>View Map</item>
+        <item>Show Check-in Code</item>
+        <item>Generate Event Code</item>
+        <item>Delete Event</item>
+    </string-array>
 </resources>
