@@ -22,13 +22,16 @@ import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Organizer;
-import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.MainActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.Date;
 
+/**
+ * A fragment for creating a new event. It collects event information
+ * from the user through input fields and creates an event in the database.
+ */
 public class CreateEventFragment extends Fragment {
 
     private EditText eventNameEditText;
@@ -38,12 +41,26 @@ public class CreateEventFragment extends Fragment {
     private Button createEventButton;
     private Database database;
 
+    /**
+     * Inflates the layout for this fragment and returns the root view.
+     *
+     * @param inflater The LayoutInflater object to inflate the view.
+     * @param container The container view to attach the fragment to.
+     * @param savedInstanceState The saved instance state for the fragment, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_events, container, false);
     }
 
+    /**
+     * Initializes the view components and sets up event listeners for user interactions.
+     *
+     * @param view The root view of the fragment.
+     * @param savedInstanceState The saved instance state for the fragment, if any.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -68,8 +85,10 @@ public class CreateEventFragment extends Fragment {
     }
 
     /**
+     * Creates a new event by collecting data from the user inputs and uploading it to the database.
+     * It ensures that all required fields are filled out and that the current user is an organizer.
      *
-     * @return True if all checks to upload passed, false if not
+     * @return True if the event was successfully created and uploaded, false otherwise.
      */
     private boolean createEvent() {
         String name = eventNameEditText.getText().toString();
@@ -84,42 +103,33 @@ public class CreateEventFragment extends Fragment {
             return false;
         }
 
-        //Organizer currentUser = (Organizer) getActivity().getIntent().getSerializableExtra("user"); // TODO access the MainActivity currentUser attribute directly
-        Entrant currentUser = (Entrant) ((MainActivity) App.activityManager.getActivity()).currentUser; // ASK JARED
+        // Get current user
+        Entrant currentUser = (Entrant) ((MainActivity) App.activityManager.getActivity()).currentUser; // Ask Jared
         Organizer currentOrganizer = currentUser.returnOrganizer();
 
-        System.out.println("name:" + currentOrganizer.getFirstName() + " " + currentOrganizer.getLastName());
-        System.out.println("createdEvents:" + currentOrganizer.getCreatedEvents());
-
-
-
-        if (currentUser == null) { // TODO also check that this is an organizer (after the halfway point)
+        if (currentUser == null) {
             Toast.makeText(getContext(), "Organizer not found", Toast.LENGTH_SHORT).show();
             System.out.println("Organizer not found");
             return false;
         }
 
-        // Assuming you want to set some default values for the event date fields
+        // Set default values for event start and end time
         Date startDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
         Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
 
+        // Create the event object
         Event newEvent = new Event(name, description, price, null, startDateTime, endDateTime,
                 30, 100L, 100L); // Adjust parameters as needed
 
-        // Generate a unique event ID (you may want to implement this logic)
-        newEvent.setEventId(currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis()); // Simple unique ID generation
-
-        System.out.println("event Name:" + newEvent.getName());
-        System.out.println("event Description:" + newEvent.getDescription());
-        System.out.println("event Date:" + newEvent.getStartDateTime());
-        System.out.println("event id:" + newEvent.getEventId());
+        // Generate a unique event ID (simple logic)
+        newEvent.setEventId(currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis());
 
         // Insert the new event into the database
         database.insertEvent(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(getContext(), "Event created successfully!", Toast.LENGTH_SHORT).show();
-                // Add that the event is a created event for the organizer
+                // Add the event to the organizer's list of created events
                 currentOrganizer.addEvent(newEvent);
                 database.insertUserDocument(currentOrganizer);
                 requireActivity().onBackPressed(); // Or navigate to another fragment
@@ -134,6 +144,12 @@ public class CreateEventFragment extends Fragment {
         return true;
     }
 
+    /**
+     * Handles options menu item selections.
+     *
+     * @param item The menu item that was selected.
+     * @return True if the item was successfully handled, false otherwise.
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {

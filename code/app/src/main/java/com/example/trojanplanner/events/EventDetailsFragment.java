@@ -28,6 +28,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Set;
 
+/**
+ * A fragment to display event details to an entrant. It provides functionality to join or leave
+ * the event's waitlist.
+ * <p>
+ * This fragment requires an event and entrant to be passed as arguments when being instantiated.
+ * The event's details will be displayed, and based on the entrant's current status, appropriate
+ * buttons will be shown for joining or leaving the waitlist.
+ */
 //NOTE THIS IS FOR THE ENTRANT NOT ORGANIZER, same with event_details_fragment.xml
 public class EventDetailsFragment extends Fragment {
     private Event event;
@@ -35,6 +43,21 @@ public class EventDetailsFragment extends Fragment {
     private Database database;
     private Button buttonEnterNow;
     private Button buttonLeaveWaitlist;
+
+    /**
+     * Constructor for creating an instance of this fragment with event and entrant data.
+     *
+     * @param event  The event to be displayed.
+     * @param entrant The entrant associated with the event.
+     */
+
+    /**
+     * Creates a new instance of this fragment with the given event and entrant.
+     *
+     * @param event   The event to be displayed.
+     * @param entrant The entrant associated with the event.
+     * @return A new instance of EventDetailsFragment.
+     */
     // Constructor with parameters
     public EventDetailsFragment(ConcreteEvent event, Entrant entrant) {
         this.event = event;
@@ -75,6 +98,12 @@ public class EventDetailsFragment extends Fragment {
         return fragment;
     }
 
+
+    /**
+     * Initializes the fragment with the event and entrant data passed in arguments.
+     *
+     * @param savedInstanceState The saved instance state (if any).
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +117,16 @@ public class EventDetailsFragment extends Fragment {
     // Required empty constructor
     public EventDetailsFragment() {}
 
+
+    /**
+     * Called to create the view for the fragment.
+     * Initializes UI elements and populates the event details.
+     *
+     * @param inflater           The LayoutInflater to inflate the view.
+     * @param container          The parent view group.
+     * @param savedInstanceState The saved instance state (if any).
+     * @return The view for the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -126,6 +165,11 @@ public class EventDetailsFragment extends Fragment {
 
         return view;
     }
+
+    /**
+     * Checks the current status of the entrant (whether they are in the waitlist).
+     * Based on the status, appropriate buttons (Join Waitlist or Leave Waitlist) will be displayed.
+     */
     private void checkEntrantStatus() {
         if (event != null && event.getWaitingList() != null) {
             if (event.getWaitingList().contains(entrant)) {
@@ -140,6 +184,12 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+    /**
+     * Converts a short abbreviation (e.g., "M" for Monday) to a full day name.
+     *
+     * @param abbreviation The abbreviation for the day of the week.
+     * @return The full day name (e.g., "Monday").
+     */
     // Helper method to get the full name for the day of the week based on unique abbreviation
     private String getFullDayName(String abbreviation) {
         switch (abbreviation) {
@@ -154,6 +204,16 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
+    /**
+     * Populates the event details in the respective text views.
+     * If event details are missing, default values will be shown.
+     *
+     * @param eventNameTextView        The TextView to display the event's name.
+     * @param eventLocationTextView    The TextView to display the event's location.
+     * @param eventDateTextView        The TextView to display the event's start and end date.
+     * @param recurringDatesTextView   The TextView to display the event's recurrence days.
+     * @param eventDescriptionTextView The TextView to display the event's description.
+     */
     public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView,
                                      TextView eventDateTextView, TextView recurringDatesTextView,
                                      TextView eventDescriptionTextView) {
@@ -183,6 +243,10 @@ public class EventDetailsFragment extends Fragment {
         eventDescriptionTextView.setText(event.getDescription());
     }
 
+    /**
+     * Shows a confirmation dialog for the entrant to join the event's waitlist.
+     * If confirmed, the entrant will be added to the event's waitlist.
+     */
     public void joinWaitlist() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirm_registration, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -242,6 +306,10 @@ public class EventDetailsFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Shows a confirmation dialog for the entrant to leave the event's waitlist.
+     * If confirmed, the entrant will be removed from the event's waitlist.
+     */
     public void leaveWaitlist() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirm_registration, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -361,7 +429,3 @@ public class EventDetailsFragment extends Fragment {
         dialog.show();
     }
 }
-
-
-
-

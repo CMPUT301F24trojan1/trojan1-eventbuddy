@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.trojanplanner.App;
@@ -16,6 +17,7 @@ import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;

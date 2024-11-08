@@ -31,6 +31,11 @@ import com.example.trojanplanner.view.MainActivity;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * A fragment that handles the setup of a new facility. It allows the user to input the
+ * facility's name, owner's name, and upload a photo, and then saves the facility details
+ * in the database.
+ */
 public class FacilitySetupFragment extends Fragment {
     private static final int REQUEST_IMAGE_PICK = 1;
     private ImageView facilityPhoto;
@@ -39,6 +44,14 @@ public class FacilitySetupFragment extends Fragment {
     private Uri facilityPhotoUri;
     private MainActivity mainActivity;
 
+    /**
+     * Inflates the layout for this fragment and sets up the user interface components.
+     *
+     * @param inflater The LayoutInflater object to inflate the view.
+     * @param container The container view to attach the fragment to.
+     * @param savedInstanceState The saved instance state for the fragment, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -72,15 +85,20 @@ public class FacilitySetupFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Hides the action bar when the fragment is resumed to provide a full-screen experience.
+     */
     @Override
     public void onResume() {
         super.onResume();
-        // Hide the action bar for full-screen effect
         if (getActivity() instanceof AppCompatActivity) {
             Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).hide();
         }
     }
 
+    /**
+     * Restores the action bar visibility when the fragment is stopped.
+     */
     @Override
     public void onStop() {
         super.onStop();
@@ -90,10 +108,20 @@ public class FacilitySetupFragment extends Fragment {
         }
     }
 
+    /**
+     * Opens the photo picker to allow the user to select a photo for the facility.
+     */
     private void openImagePicker() {
         mainActivity.facilityPhotoPicker.openPhotoPicker(mainActivity.currentUser);
     }
 
+    /**
+     * Handles the result from the photo picker activity and sets the selected photo URI.
+     *
+     * @param requestCode The request code passed in startActivityForResult().
+     * @param resultCode The result code returned by the photo picker activity.
+     * @param data The intent containing the result data, including the selected photo URI.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -103,6 +131,10 @@ public class FacilitySetupFragment extends Fragment {
         }
     }
 
+    /**
+     * Saves the facility data to the database. If no photo is selected, a default image is used.
+     * Displays a toast message indicating whether the facility was saved successfully or not.
+     */
     private void saveFacility() {
         String name = facilityNameEditText.getText().toString().trim();
         String location = facilityLocationEditText.getText().toString().trim();
@@ -129,7 +161,7 @@ public class FacilitySetupFragment extends Fragment {
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.facilitySetupFragment);
+            navController.navigate(R.id.facilitySetupFragment);  // Navigate after saving
         } else {
             // If the photo was selected, proceed as usual
             try {
@@ -148,7 +180,7 @@ public class FacilitySetupFragment extends Fragment {
             db.insertFacility(facility);
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(requireView()).navigateUp();
+            Navigation.findNavController(requireView()).navigateUp();  // Navigate back after saving
         }
     }
 }
