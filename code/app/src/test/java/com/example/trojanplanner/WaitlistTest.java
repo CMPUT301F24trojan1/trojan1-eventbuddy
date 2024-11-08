@@ -2,6 +2,8 @@ package com.example.trojanplanner;
 
 import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,11 +24,21 @@ public class WaitlistTest {
         // Initialize the Event with required fields
         String name = "Test Event";
         String description = "This is a test event description.";
-        String facility = "Test Facility";
+
         Date startDateTime = new Date();
         Date endDateTime = new Date(startDateTime.getTime() + 3600000);
 
-        testEvent = new ConcreteEvent(name, description, 10.0f, facility, startDateTime, endDateTime);
+        // Define test facility and event details
+
+        float price = 10.0f;
+        Facility facility = new Facility("Gym", "1", "34.0522,-118.2437", null, null, null);
+        int daysLeftToRegister = 2;
+        Long totalSpots = 30L;
+        Long availableSpots = 10L;
+
+// Create Event object using the correct constructor
+        Event testEvent = new Event(name, description, price, facility, startDateTime, endDateTime, daysLeftToRegister, totalSpots, availableSpots);
+
 
         // Add sample entrants to the waitlist
         List<Entrant> waitlistEntrants = new ArrayList<>();
