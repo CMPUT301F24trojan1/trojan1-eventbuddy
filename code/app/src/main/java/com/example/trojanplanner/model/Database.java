@@ -360,7 +360,7 @@ public class Database {
         if (event.isRecurring()) {
             eventMap.put("recurrenceFormat", event.getRecurrenceType()); // note: database uses UNTIL_DATE standard but remembers what the organizer prefers
             eventMap.put("recurringEndDate", event.getRecurrenceEndDate());
-            eventMap.put("recurringOn", event.getRecurrenceDays());
+            eventMap.put("recurringOn", (ArrayList) event.getRecurrenceDays());
         }
 
         db.collection("events")
@@ -554,7 +554,7 @@ public class Database {
         if (event.isRecurring()) {
             event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
             event.setRecurrenceEndDate((Date) m.get("recurringEndDate"));
-            event.setRecurrenceDays((Set<String>) m.get("recurringOn"));
+            event.setRecurrenceDays((ArrayList<String>) m.get("recurringOn"));
         }
 
         return event;
