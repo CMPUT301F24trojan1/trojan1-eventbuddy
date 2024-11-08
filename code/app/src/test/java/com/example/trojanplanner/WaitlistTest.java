@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
  * This test class ensures the correct handling of entrants in the waitlist,
  * verifying that entrants are added, and the list size and specific entrants are accurately recorded.
  *
- * @author Dricmoy Bhattacharjee
  */
 public class WaitlistTest {
 
