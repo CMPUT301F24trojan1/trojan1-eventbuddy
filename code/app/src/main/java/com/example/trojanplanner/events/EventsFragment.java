@@ -16,15 +16,14 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
-import com.example.trojanplanner.model.ConcreteEvent;
+import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Facility;
-import com.example.trojanplanner.model.Organizer;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+
 
 /**
  * A Fragment that displays a list of events using a RecyclerView.
@@ -37,6 +36,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
     private List<Event> eventList;
+    private Database database;
 
     /**
      * Called to create the view for this fragment. Initializes the RecyclerView, adapter, and loads the events.
@@ -63,12 +63,47 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList, this);
         recyclerView.setAdapter(eventsAdapter);
 
-        // Load events (real or dummy if empty)
-        loadEvents();
+        // Initialize database instance
+        database = new Database();
+
+        // Load events from the database
+        loadEventsFromDatabase();
 
         return root;
     }
 
+
+    private void loadEventsFromDatabase() {
+        eventList.clear();
+
+        Database.QuerySuccessAction onSuccess = new Database.QuerySuccessAction() {
+            @Override
+            public void OnSuccess(Object result) {
+                if (result instanceof List) {
+                    List<?> genericList = (List<?>) result;
+
+                    if (!genericList.isEmpty() && genericList.get(0) instanceof Event) {
+                        @SuppressWarnings("unchecked")
+                        List<Event> events = (List<Event>) genericList;
+                        eventList.addAll(events);
+
+                        // Log the events retrieved
+                        for (Event event : events) {
+                            System.out.println("Loaded event: " + event.getName());
+                        }
+
+                        eventsAdapter.notifyDataSetChanged();
+                    } else {
+                        System.out.println("No events found in the database. Adding a dummy event for testing.");
+
+                        // Adding a dummy event if no events were found
+                        addDummyEvent();
+                    }
+                } else {
+                    System.out.println("Unexpected data format received from database. Adding a dummy event for testing.");
+                    addDummyEvent();
+                }
+                
     /**
      * Loads events into the list. If the list is empty, dummy events are generated and added.
      */
@@ -95,9 +130,36 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
                         null)
                 );
             }
+        };
 
-            eventsAdapter.notifyDataSetChanged();
-        }
+        Database.QueryFailureAction onFailure = new Database.QueryFailureAction() {
+            @Override
+            public void OnFailure() {
+                System.out.println("Failed to load events from database. Adding a dummy event for testing.");
+                addDummyEvent();
+            }
+        };
+
+        String placeholderId = "all_events"; // Adjust as needed
+        database.getEvent(onSuccess, onFailure, placeholderId);
+    }
+
+    private void addDummyEvent() {
+        Event dummyEvent = new Event(
+                "Sample Event",
+                "This is a description for the sample event.",
+                0.0f, // Price
+                null, // Facility (can be null or a placeholder)
+                new Date(), // Start date
+                new Date(), // End date
+                10, // Total spots
+                10L, // Available spots
+                0L  // Registered participants
+        );
+
+        dummyEvent.setEventId("dummy_event_id");
+        eventList.add(dummyEvent);
+        eventsAdapter.notifyDataSetChanged();
     }
 
     /**
