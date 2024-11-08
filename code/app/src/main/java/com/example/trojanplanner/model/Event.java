@@ -500,7 +500,7 @@ public class Event implements Serializable {
     private String getDayOfWeek(Calendar calendar) {
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         switch (dayOfWeek) {
-            case Calendar.SUNDAY: return "S";
+            case Calendar.SUNDAY: return "U";
             case Calendar.MONDAY: return "M";
             case Calendar.TUESDAY: return "T";
             case Calendar.WEDNESDAY: return "W";
@@ -510,6 +510,7 @@ public class Event implements Serializable {
             default: return "";
         }
     }
+
     //FIREBASE, uses helper function above to change Recurrence TYPE
     public void convertToEndDateType() {
         if (recurrenceType == RecurrenceType.AFTER_OCCURRENCES && Total_Occurrences > 0) {
