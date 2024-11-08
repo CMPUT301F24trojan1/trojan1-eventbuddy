@@ -12,6 +12,7 @@ import com.example.trojanplanner.R;
 
 import java.io.Serializable;
 
+//organizer
 public class EventOptionsDialogFragment extends DialogFragment {
 
     private static final String ARG_EVENT = "event";

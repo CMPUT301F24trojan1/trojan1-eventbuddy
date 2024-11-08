@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 
 import com.example.trojanplanner.R;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -16,7 +17,7 @@ import java.util.Random;
 import java.util.Set;
 
 // facilities can have .... multiple events (facility isn't implemented yet)
-public class Event {
+public class Event implements Serializable {
     private String name;
     private String eventId;
     private Facility facility;
@@ -500,7 +501,7 @@ public class Event {
     private String getDayOfWeek(Calendar calendar) {
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         switch (dayOfWeek) {
-            case Calendar.SUNDAY: return "S";
+            case Calendar.SUNDAY: return "U";
             case Calendar.MONDAY: return "M";
             case Calendar.TUESDAY: return "T";
             case Calendar.WEDNESDAY: return "W";
@@ -510,6 +511,7 @@ public class Event {
             default: return "";
         }
     }
+
     //FIREBASE, uses helper function above to change Recurrence TYPE
     public void convertToEndDateType() {
         if (recurrenceType == RecurrenceType.AFTER_OCCURRENCES && Total_Occurrences > 0) {

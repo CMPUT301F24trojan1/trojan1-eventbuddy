@@ -2,8 +2,9 @@ package com.example.trojanplanner;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.view.MainActivity;
 
 import org.junit.Before;
@@ -24,25 +25,40 @@ import android.os.Bundle;
 
 import androidx.test.core.app.ActivityScenario;
 
-
 import com.example.trojanplanner.HelperFragments.WaitlistFragment;
-;
 
 @RunWith(AndroidJUnit4.class)
 public class WaitlistFragmentTest {
 
-    private ConcreteEvent testEvent;
+    private Event testEvent;
 
     @Before
     public void setUp() {
-        // Initialize the Event with required fields
-        String name = "Test Event";
-        String description = "This is a test event description.";
-        String facility = "Test Facility";
-        Date startDateTime = new Date();
-        Date endDateTime = new Date(startDateTime.getTime() + 3600000);
+        // Initialize the Facility and Event with required fields
+        Facility testFacility = new Facility(
+                "Test Facility",           // name
+                "F001",                    // facilityId
+                "123 Main St",             // location
+                null,                      // owner (null if no owner needed for the test)
+                "path/to/facility/image",   // pfpFacilityFilePath
+                null                       // pfpFacilityBitmap (null if no Bitmap needed)
+        );
 
-        testEvent = new ConcreteEvent(name, description, 10.0f, facility, startDateTime, endDateTime);
+        Date startDateTime = new Date();
+        Date endDateTime = new Date(startDateTime.getTime() + 3600000); // 1 hour later
+
+        // Create the Event object with the Facility
+        testEvent = new Event(
+                "Test Event",
+                "This is a test event description.",
+                10.0f,
+                testFacility,
+                startDateTime,
+                endDateTime,
+                0,
+                100L,
+                100L
+        );
 
         // Add sample entrants to the waitlist
         List<Entrant> waitlistEntrants = new ArrayList<>();
