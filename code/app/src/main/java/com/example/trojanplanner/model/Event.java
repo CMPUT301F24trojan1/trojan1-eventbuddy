@@ -28,7 +28,7 @@ public class Event {
     private String qrCodePath;
     private Bitmap qrCodeBitmap;
     private Bitmap picture; // New attribute to store the event picture
-    private String pictureUri; //uhhh
+    private String pictureFilePath; //uhhh
 
     //participant lists
     private ArrayList<User> waitingList;
@@ -73,7 +73,7 @@ public class Event {
 
 
 
-//    public Event(String name, String eventId, String facility, String description, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureUri, ArrayList<User> pendingList, ArrayList<User> waitingList, ArrayList<User> cancelledList, ArrayList<User> enrolledList, Date waitlistOpen, Date waitlistClose, boolean requiresGeolocation, String status, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences, RecurrenceType recurrenceType) {
+//    public Event(String name, String eventId, String facility, String description, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureFilePath, ArrayList<User> pendingList, ArrayList<User> waitingList, ArrayList<User> cancelledList, ArrayList<User> enrolledList, Date waitlistOpen, Date waitlistClose, boolean requiresGeolocation, String status, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences, RecurrenceType recurrenceType) {
 //        this.name = name;
 //        this.eventId = eventId;
 //        this.facility = facility;
@@ -82,7 +82,7 @@ public class Event {
 //        this.qrCodePath = qrCodePath;
 //        this.qrCodeBitmap = qrCodeBitmap;
 //        this.picture = picture;
-//        this.pictureUri = pictureUri;
+//        this.pictureFilePath = pictureFilePath;
 //
 //        //make these new ArrayList<>();?
 //        this.pendingList = pendingList;
@@ -124,7 +124,7 @@ public class Event {
         this.qrCodePath = null;
         this.qrCodeBitmap = null;
         this.picture = null;
-        this.pictureUri = null;
+        this.pictureFilePath = null;
         this.waitingList = new ArrayList<>();
         this.notifications = new ArrayList<>();
         this.registrationDeadline = null;
@@ -168,12 +168,12 @@ public class Event {
         this.pendingList = pendingList;
     }
 
-    public String getPictureUri() {
-        return pictureUri;
+    public String getPictureFilePath() {
+        return pictureFilePath;
     }
 
-    public void setPictureUri(String pictureUri) {
-        this.pictureUri = pictureUri;
+    public void setPictureFilePath(String pictureFilePath) {
+        this.pictureFilePath = pictureFilePath;
     }
 
     public Bitmap getQrCodeBitmap() {
