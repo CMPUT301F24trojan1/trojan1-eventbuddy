@@ -54,14 +54,14 @@ public class Event implements Serializable {
 
     //for recurrence settings
     private boolean isRecurring;
-    private Set<String> recurrenceDays; ///create a hash on creaton
+    private ArrayList<String> recurrenceDays; ///create a hash on creation
     private RecurrenceType recurrenceType;
     private String eventRecurrenceType;
     private Date recurrenceEndDate;
     private int Total_Occurrences;
 
-    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
-    }
+//    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
+//    }
 
     // https://www.w3schools.com/java/java_enums.asp
     public enum RecurrenceType {
@@ -131,7 +131,7 @@ public class Event implements Serializable {
         this.notifications = new ArrayList<>();
         this.registrationDeadline = null;
         this.isRecurring = false;
-        this.recurrenceDays = new HashSet<>();
+        this.recurrenceDays = new ArrayList<>();
         this.recurrenceType = RecurrenceType.NEVER;
         this.eventRecurrenceType = null;
         this.recurrenceEndDate = null;
@@ -350,11 +350,11 @@ public class Event implements Serializable {
         isRecurring = recurring;
     }
 
-    public Set<String> getRecurrenceDays() {
+    public ArrayList<String> getRecurrenceDays() {
         return recurrenceDays;
     }
 
-    public void setRecurrenceDays(Set<String> recurrenceDays) {
+    public void setRecurrenceDays(ArrayList<String> recurrenceDays) {
         this.recurrenceDays = recurrenceDays;
     }
 
