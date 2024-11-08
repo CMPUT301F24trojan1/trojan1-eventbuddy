@@ -17,6 +17,7 @@ import com.example.trojanplanner.databinding.FragmentEventsListBinding;
 import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
+import com.example.trojanplanner.model.Organizer;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,7 +28,7 @@ public class EventsFragment extends Fragment {
 
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
-    private List<Event> eventList; // Assuming Event is your model class
+    private List<Event> eventList;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -39,43 +40,58 @@ public class EventsFragment extends Fragment {
 
         // Initialize the RecyclerView
         RecyclerView recyclerView = binding.eventsRecyclerView;
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext())); // Set LayoutManager
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Initialize the event list and adapter
-        eventList = new ArrayList<>(); // Populate this list with your data
-        eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList); // Create the adapter
-        recyclerView.setAdapter(eventsAdapter); // Set the adapter to RecyclerView
+        eventList = new ArrayList<>();
+        eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList);
+        recyclerView.setAdapter(eventsAdapter);
 
-        // Example of adding data to the list
-        loadEvents(); // A method to populate the eventList
+        // Load events (real or dummy if empty)
+        loadEvents();
 
         return root;
     }
 
     private void loadEvents() {
-        // Initialize a date for demonstration (today's date and time)
-        Calendar calendar = Calendar.getInstance();
-        Date startDateTime = calendar.getTime();
-        calendar.add(Calendar.HOUR, 1); // Set end time to one hour later
-        Date endDateTime = calendar.getTime();
+        // Check if eventList is empty before populating with dummy events
+        if (eventList.isEmpty()) {
+            // Example date and time for events
+            Calendar calendar = Calendar.getInstance();
+            Date startDateTime = calendar.getTime();
+            calendar.add(Calendar.HOUR, 1); // End time one hour later
+            Date endDateTime = calendar.getTime();
 
-        // Add dummy events for testing
-//        for (int i = 0; i < 20; i++) {
-//            eventList.add(new ConcreteEvent(
-//                    "Event " + (i + 1),
-//                    "Description for Event " + (i + 1),
-//                    new Facility("name", "12345", "my house", ),
-//                    startDateTime,
-//                    endDateTime
-//            ));
-//        }
-//
-//        // Optionally add additional events individually
-//        eventList.add(new ConcreteEvent("Event 1", "Description for Event 1", "Gym", startDateTime, endDateTime));
-//        eventList.add(new ConcreteEvent("Event 2", "Description for Event 2", "Library", startDateTime, endDateTime));
-//        eventList.add(new ConcreteEvent("Event 3", "Description for Event 3", "Cafeteria", startDateTime, endDateTime));
+            // Placeholder organizer for demonstration
+            Organizer placeholderOrganizer = new Organizer(
+                    "Organizer Name", "organizerId", "organizer@example.com"
+                    // Add other fields here if needed by Organizer constructor
+            );
 
-        eventsAdapter.notifyDataSetChanged();
+            // Populate with dummy events
+            for (int i = 0; i < 10; i++) {
+                eventList.add(new ConcreteEvent(
+                        "Sample Event " + (i + 1),
+                        "This is a description for sample event " + (i + 1),
+                        0.0f,
+                        new Facility(
+                                "Facility " + (i + 1),
+                                "facility" + (i + 1) + "_id",
+                                "Sample Address " + (i + 1),
+                                placeholderOrganizer,        // Owner
+                                null,                        // Profile picture file path
+                                null                         // Profile picture bitmap
+                        ),
+                        startDateTime,
+                        endDateTime,
+                        50,         // Capacity
+                        20L,        // Spots filled
+                        30L         // Available spots
+                ));
+            }
+
+            eventsAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
