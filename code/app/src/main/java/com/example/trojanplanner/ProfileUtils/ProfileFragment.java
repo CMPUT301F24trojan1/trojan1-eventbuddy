@@ -1,10 +1,15 @@
 package com.example.trojanplanner.ProfileUtils;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +17,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.trojanplanner.App;
@@ -22,15 +33,18 @@ import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class ProfileFragment extends Fragment {
     private Database database;
-
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
     private ImageView profileImage;
     private EditText firstNameInput, lastNameInput, emailInput, phoneInput;
     private boolean changedPfp = false;
-
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private Switch notificationsSwitch;
     private User user;
+    private ActivityResultLauncher<String> requestNotificationPermissionLauncher;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -61,6 +75,37 @@ public class ProfileFragment extends Fragment {
         // Set up button click listeners
         cancelButton.setOnClickListener(v -> handleCancel());
         saveButton.setOnClickListener(v -> handleSave());
+
+        notificationsSwitch = view.findViewById(R.id.switch1);
+        // Set up switch toggle listener with proper toast notifications
+        if (notificationsSwitch != null) {
+            notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    Toast.makeText(getContext(), "Disabling notifications from Organizers and Admins...", Toast.LENGTH_SHORT).show();
+                    handleNotifications(true);
+                } else {
+                    Toast.makeText(getContext(), "Enabling notifications...", Toast.LENGTH_SHORT).show();
+                    handleNotifications(false);
+                }
+            });
+        } else {
+            // Log an error if notificationsSwitch is null
+            Log.e("ProfileFragment", "notificationsSwitch is null!");
+        }
+
+        // Initialize the ActivityResultLauncher for requesting permissions
+        requestNotificationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        // Permission granted, subscribe to notifications
+                        handleNotifications(true);
+                    } else {
+                        // Permission denied, show a message
+                        Toast.makeText(getContext(), "Notification permission denied. Cannot subscribe.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
 
         return view;
     }
@@ -136,6 +181,27 @@ public class ProfileFragment extends Fragment {
         database.insertUserDocument(user);
     }
 
+    private void handleNotifications(boolean isSubscribed) {
+        if (!isSubscribed) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                return;
+            }
+
+            FirebaseMessaging.getInstance().subscribeToTopic("default_notifications")
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully subscribed to notifications." : "Subscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("default_notifications")
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully unsubscribed from notifications." : "Unsubscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
     /**
      *
      * @param user

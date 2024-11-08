@@ -44,7 +44,7 @@ dependencies {
     implementation(libs.core)
     implementation(libs.camera.camera2)
     implementation(libs.firebase.database)
-
+    implementation("com.google.firebase:firebase-messaging:23.0.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

@@ -61,6 +61,9 @@ public class Event {
     private Date recurrenceEndDate;
     private int Total_Occurrences;
 
+    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
+    }
+
     // https://www.w3schools.com/java/java_enums.asp
     public enum RecurrenceType {
         UNTIL_DATE, AFTER_OCCURRENCES, NEVER
