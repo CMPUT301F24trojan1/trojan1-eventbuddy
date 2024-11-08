@@ -57,7 +57,8 @@
         android:id="@+id/qrActivity"
         android:name="com.example.trojanplanner.view.QRActivity"
         android:label="@string/title_qr"
-        tools:layout="@layout/activity_qr" />
+        tools:layout="@layout/activity_qr">
+    </activity>
 
     <activity
         android:id="@+id/profileActivity"
