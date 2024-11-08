@@ -37,12 +37,16 @@ public class EmptyEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set up the NavController
-        NavController navController = NavHostFragment.findNavController(this);
-
         view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
-            // Navigate to FacilitySetupFragment using the action defined in nav_graph.xml
-            navController.navigate(R.id.facilitySetupFragment);
+            // Ensure we are navigating from the correct fragment
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
+        });
+
+        view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
+            // Ensure we are navigating from the correct fragment
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_emptyEventsFragment_to_createEventsFragment);
         });
     }
 

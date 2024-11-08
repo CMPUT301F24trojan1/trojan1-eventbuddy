@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-
-
 // facilities can have .... multiple events (facility isn't implemented yet)
 public class Event implements Serializable {
     private String name;
@@ -61,6 +59,9 @@ public class Event implements Serializable {
     private String eventRecurrenceType;
     private Date recurrenceEndDate;
     private int Total_Occurrences;
+
+    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
+    }
 
     // https://www.w3schools.com/java/java_enums.asp
     public enum RecurrenceType {
