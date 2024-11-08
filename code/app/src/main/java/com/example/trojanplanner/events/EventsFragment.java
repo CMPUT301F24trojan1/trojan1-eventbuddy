@@ -1,30 +1,29 @@
 package com.example.trojanplanner.events;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
+import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
-public class EventsFragment extends Fragment implements EventArrayAdapter.OnItemClickListener {
+public class EventsFragment extends Fragment {
 
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
@@ -32,7 +31,8 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnItem
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        EventsViewModel eventsViewModel = new ViewModelProvider(this).get(EventsViewModel.class);
+        EventsViewModel eventsViewModel =
+                new ViewModelProvider(this).get(EventsViewModel.class);
 
         binding = FragmentEventsListBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -43,21 +43,37 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnItem
 
         // Initialize the event list and adapter
         eventList = new ArrayList<>(); // Populate this list with your data
-        eventsAdapter = new EventArrayAdapter(eventList, event -> showEventDetailsFragment(event)); // Set the adapter with click listener
+        eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList); // Create the adapter
         recyclerView.setAdapter(eventsAdapter); // Set the adapter to RecyclerView
 
-        // Load events
-        loadEvents();
+        // Example of adding data to the list
+        loadEvents(); // A method to populate the eventList
 
         return root;
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private void loadEvents() {
+        // Initialize a date for demonstration (today's date and time)
+        Calendar calendar = Calendar.getInstance();
+        Date startDateTime = calendar.getTime();
+        calendar.add(Calendar.HOUR, 1); // Set end time to one hour later
+        Date endDateTime = calendar.getTime();
+
         // Add dummy events for testing
-        for (int i = 0; i < 20; i++) { // Add 20 items to ensure scrolling
-            eventList.add(new Event("Event " + (i + 1), "Description for Event " + (i + 1)));
-        }
+//        for (int i = 0; i < 20; i++) {
+//            eventList.add(new ConcreteEvent(
+//                    "Event " + (i + 1),
+//                    "Description for Event " + (i + 1),
+//                    new Facility("name", "12345", "my house", ),
+//                    startDateTime,
+//                    endDateTime
+//            ));
+//        }
+//
+//        // Optionally add additional events individually
+//        eventList.add(new ConcreteEvent("Event 1", "Description for Event 1", "Gym", startDateTime, endDateTime));
+//        eventList.add(new ConcreteEvent("Event 2", "Description for Event 2", "Library", startDateTime, endDateTime));
+//        eventList.add(new ConcreteEvent("Event 3", "Description for Event 3", "Cafeteria", startDateTime, endDateTime));
 
         eventsAdapter.notifyDataSetChanged();
     }
@@ -66,21 +82,5 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnItem
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-    }
-
-    @Override
-    public void onItemClick(Event event) {
-        // Show event details in a fragment
-        showEventDetailsFragment(event);
-    }
-
-    private void showEventDetailsFragment(Event event) {
-        // Create a Bundle to pass the event data
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("event", (Serializable) event); // Make sure the event class implements Serializable
-
-        // Navigate to EventDetailsFragment using NavController
-        NavController navController = Navigation.findNavController(getActivity(), R.id.nav_host_fragment_activity_main);
-        navController.navigate(R.id.eventDetailsFragment, bundle); // Navigate to the EventDetailsFragment and pass data
     }
 }

@@ -1,33 +1,48 @@
 package com.example.trojanplanner.model;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import java.io.Serializable;
+import com.example.trojanplanner.R;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+
+
 // facilities can have .... multiple events (facility isn't implemented yet)
-public class Event implements Serializable {
+public class Event {
     private String name;
     private String eventId;
-    private String facility;
+    private Facility facility;
     private String description;
+    private float price;
     private int daysLeftToRegister;
     private String qrCodePath;
     private Bitmap qrCodeBitmap;
-
     private Bitmap picture; // New attribute to store the event picture
-    private String pictureUri;
+    private String pictureFilePath; //uhhh
 
-    //if photo attribute is null we want a default image or smht..
-    //to do 1 image for now:
+    //participant lists
     private ArrayList<User> waitingList;
+    private ArrayList<User> pendingList;
+    private ArrayList<User> cancelledList;
+    private ArrayList<User> enrolledList;
+
+    private Date waitlistOpen;
+    private Date waitlistClose;
+    private int waitlistCapacity;
+    private boolean requiresGeolocation;
+    //is there a better way of representing this?
+    private String status; // "upcoming", "ongoing", "cancelled", "finished"
+
     private Long TotalSpots;
     private Long availableSpots;
     // Calculated based on maximumAttendees - participants.size()
@@ -35,112 +50,130 @@ public class Event implements Serializable {
     private ArrayList<Notification> notifications;
 
     private Date registrationDeadline;
-
     private Date startDateTime;
     private Date endDateTime;
 
+    //for recurrence settings
     private boolean isRecurring;
     private Set<String> recurrenceDays; ///create a hash on creaton
-
     private RecurrenceType recurrenceType;
     private String eventRecurrenceType;
-
     private Date recurrenceEndDate;
     private int Total_Occurrences;
-
 
     // https://www.w3schools.com/java/java_enums.asp
     public enum RecurrenceType {
         UNTIL_DATE, AFTER_OCCURRENCES, NEVER
     }
 
+    public enum Status {
+        UPCOMING, ONGOING, CANCELLED, FINISHED
+    }
 
-    public Event(String name, String eventId, String description, String facility, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureUri, ArrayList<User> waitingList, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, RecurrenceType recurrenceType, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences) {
+
+
+
+//    public Event(String name, String eventId, String facility, String description, int daysLeftToRegister, String qrCodePath, Bitmap qrCodeBitmap, Bitmap picture, String pictureFilePath, ArrayList<User> pendingList, ArrayList<User> waitingList, ArrayList<User> cancelledList, ArrayList<User> enrolledList, Date waitlistOpen, Date waitlistClose, boolean requiresGeolocation, String status, Long totalSpots, Long availableSpots, ArrayList<Notification> notifications, Date registrationDeadline, Date startDateTime, Date endDateTime, boolean isRecurring, Set<String> recurrenceDays, String eventRecurrenceType, Date recurrenceEndDate, int total_Occurrences, RecurrenceType recurrenceType) {
+//        this.name = name;
+//        this.eventId = eventId;
+//        this.facility = facility;
+//        this.description = description;
+//        this.daysLeftToRegister = daysLeftToRegister;
+//        this.qrCodePath = qrCodePath;
+//        this.qrCodeBitmap = qrCodeBitmap;
+//        this.picture = picture;
+//        this.pictureFilePath = pictureFilePath;
+//
+//        //make these new ArrayList<>();?
+//        this.pendingList = pendingList;
+//        this.waitingList = waitingList;
+//        this.cancelledList = cancelledList;
+//        this.enrolledList = enrolledList;
+//
+//        this.waitlistOpen = waitlistOpen;
+//        this.waitlistClose = waitlistClose;
+//        this.requiresGeolocation = false; //default
+//        this.status = "upcoming";
+//        this.TotalSpots = totalSpots;
+//        this.availableSpots = availableSpots;
+//        this.notifications = notifications;
+//        this.registrationDeadline = registrationDeadline;
+//        this.startDateTime = startDateTime;
+//        this.endDateTime = endDateTime;
+//        this.isRecurring = isRecurring;
+//        this.recurrenceDays = recurrenceDays;
+//        this.eventRecurrenceType = eventRecurrenceType;
+//        this.recurrenceEndDate = recurrenceEndDate;
+//        Total_Occurrences = total_Occurrences;
+//        this.recurrenceType = RecurrenceType.NEVER; // I set this by default
+//    }
+
+    public Event(String name, String description, float price, Facility facility, Date startDateTime, Date endDateTime,
+                 int daysLeftToRegister, Long totalSpots, Long availableSpots) {
         this.name = name;
-        this.eventId = eventId;
         this.description = description;
+        this.price = price;
         this.facility = facility;
-        this.daysLeftToRegister = daysLeftToRegister;
-        this.qrCodePath = qrCodePath;
-        this.qrCodeBitmap = qrCodeBitmap;
-        this.picture = picture;
-        this.pictureUri = pictureUri;
-        this.waitingList = waitingList;
-        this.TotalSpots = totalSpots;
-        this.availableSpots = availableSpots;
-        this.notifications = notifications;
-        this.registrationDeadline = registrationDeadline;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
-        this.isRecurring = isRecurring;
-        this.recurrenceDays = recurrenceDays;
-        this.recurrenceType = recurrenceType;
-        this.eventRecurrenceType = eventRecurrenceType;
-        this.recurrenceEndDate = recurrenceEndDate;
-        Total_Occurrences = total_Occurrences;
+        this.daysLeftToRegister = daysLeftToRegister;
+        this.TotalSpots = totalSpots;
+        this.availableSpots = availableSpots;
 
+        // Initialize remaining fields with default values if necessary
+        this.qrCodePath = null;
+        this.qrCodeBitmap = null;
+        this.picture = null;
+        this.pictureFilePath = null;
+        this.waitingList = new ArrayList<>();
+        this.notifications = new ArrayList<>();
+        this.registrationDeadline = null;
+        this.isRecurring = false;
+        this.recurrenceDays = new HashSet<>();
+        this.recurrenceType = RecurrenceType.NEVER;
+        this.eventRecurrenceType = null;
+        this.recurrenceEndDate = null;
+        this.Total_Occurrences = 0;
+        this.status = "upcoming";
     }
 
     // Constructor with no image args
-    public Event(String eventName, String eventDescription) {
+    public Event(String eventName, String eventDescription, float price) {
         this.name = eventName;
         this.description = eventDescription;
+        this.price = price;
     }
 
     // Constructor with image args
-    public Event(String eventName, String eventDescription, Bitmap imageResourceId) {
+    public Event(String eventName, String eventDescription, float price, Bitmap imageBitmap) {
         this.name = eventName;
         this.description = eventDescription;
-        this.picture = imageResourceId;
+        this.price = price;
+        this.picture = imageBitmap;
     }
 
-
-    public String getName() {
-        return name;
+    public ArrayList<User> getWaitingList() {
+        return waitingList;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setWaitingList(ArrayList<User> waitingList) {
+        this.waitingList = waitingList;
     }
 
-    public String getEventId() {
-        return eventId;
+    public ArrayList<User> getPendingList() {
+        return pendingList;
     }
 
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
+    public void setPendingList(ArrayList<User> pendingList) {
+        this.pendingList = pendingList;
     }
 
-    public String getFacility() {
-        return facility;
+    public String getPictureFilePath() {
+        return pictureFilePath;
     }
 
-    public void setFacility(String facility) {
-        this.facility = facility;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getDaysLeftToRegister() {
-        return daysLeftToRegister;
-    }
-
-    public void setDaysLeftToRegister(int daysLeftToRegister) {
-        this.daysLeftToRegister = daysLeftToRegister;
-    }
-
-    public String getQrCodePath() {
-        return qrCodePath;
-    }
-
-    public void setQrCodePath(String qrCodePath) {
-        this.qrCodePath = qrCodePath;
+    public void setPictureFilePath(String pictureFilePath) {
+        this.pictureFilePath = pictureFilePath;
     }
 
     public Bitmap getQrCodeBitmap() {
@@ -151,20 +184,116 @@ public class Event implements Serializable {
         this.qrCodeBitmap = qrCodeBitmap;
     }
 
-    public String getPictureUri() {
-        return pictureUri;
+    public String getQrCodePath() {
+        return qrCodePath;
     }
 
-    public void setPictureUri(String pictureUri) {
-        this.pictureUri = pictureUri;
+    public void setQrCodePath(String qrCodePath) {
+        this.qrCodePath = qrCodePath;
     }
 
-    public ArrayList<User> getWaitingList() {
-        return waitingList;
+    public int getDaysLeftToRegister() {
+        return daysLeftToRegister;
     }
 
-    public void setWaitingList(ArrayList<User> waitingList) {
-        this.waitingList = waitingList;
+    public void setDaysLeftToRegister(int daysLeftToRegister) {
+        this.daysLeftToRegister = daysLeftToRegister;
+    }
+
+    public Facility getFacility() {
+        return facility;
+    }
+
+    public void setFacility(Facility facility) {
+        this.facility = facility;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
+    }
+
+    public int getWaitlistCapacity() {
+        return waitlistCapacity;
+    }
+
+    public void setWaitlistCapacity(int waitlistCapacity) {
+        this.waitlistCapacity = waitlistCapacity;
+    }
+
+    public ArrayList<User> getCancelledList() {
+        return cancelledList;
+    }
+
+    public void setCancelledList(ArrayList<User> cancelledList) {
+        this.cancelledList = cancelledList;
+    }
+
+    public ArrayList<User> getEnrolledList() {
+        return enrolledList;
+    }
+
+    public void setEnrolledList(ArrayList<User> enrolledList) {
+        this.enrolledList = enrolledList;
+    }
+
+    public Date getWaitlistOpen() {
+        return waitlistOpen;
+    }
+
+    public void setWaitlistOpen(Date waitlistOpen) {
+        this.waitlistOpen = waitlistOpen;
+    }
+
+    public Date getWaitlistClose() {
+        return waitlistClose;
+    }
+
+    public void setWaitlistClose(Date waitlistClose) {
+        this.waitlistClose = waitlistClose;
+    }
+
+    public boolean isRequiresGeolocation() {
+        return requiresGeolocation;
+    }
+
+    public void setRequiresGeolocation(boolean requiresGeolocation) {
+        this.requiresGeolocation = requiresGeolocation;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Long getTotalSpots() {
@@ -203,20 +332,20 @@ public class Event implements Serializable {
         this.startDateTime = startDateTime;
     }
 
-    public boolean isRecurring() {
-        return isRecurring;
-    }
-
-    public void setRecurring(boolean recurring) {
-        isRecurring = recurring;
-    }
-
     public Date getEndDateTime() {
         return endDateTime;
     }
 
     public void setEndDateTime(Date endDateTime) {
         this.endDateTime = endDateTime;
+    }
+
+    public boolean isRecurring() {
+        return isRecurring;
+    }
+
+    public void setRecurring(boolean recurring) {
+        isRecurring = recurring;
     }
 
     public Set<String> getRecurrenceDays() {
@@ -251,7 +380,10 @@ public class Event implements Serializable {
         return Total_Occurrences;
     }
 
-    ///------made functions ----////
+
+
+
+///------made functions ----////
 
     // manages random raffle to pick users who registered
     public User selectRandomEntrant() {
@@ -263,12 +395,18 @@ public class Event implements Serializable {
         return waitingList.get(index);
     }
 
+    private boolean isValidRecurrenceDay(String day) {
+        return day.equals("M") || day.equals("T") || day.equals("W") || day.equals("R") ||
+                day.equals("F") || day.equals("S");
+    }
 
 
     // adding day of the week
     public void addRecurrenceDay(String day) {
-        recurrenceDays.add(day.toUpperCase());
-        validateRecurrenceSettings();
+        if (isValidRecurrenceDay(day.toUpperCase())) {
+            recurrenceDays.add(day.toUpperCase());
+            validateRecurrenceSettings();
+        }
     }
 
     //removing the day of the week
@@ -292,6 +430,9 @@ public class Event implements Serializable {
 
     // validate and adjust recurrence end date or occurrences
     private void validateRecurrenceSettings() {
+
+        if (startDateTime == null || recurrenceDays == null || recurrenceDays.isEmpty()) return;
+
         if (!isRecurring || recurrenceType == RecurrenceType.NEVER) {
             recurrenceEndDate = null;
             Total_Occurrences = 0;
@@ -434,17 +575,18 @@ public class Event implements Serializable {
         }
     }
 
-    public Bitmap getPicture() {
+    public Bitmap getPicture(Context context) {
         if (picture == null) {
-            return getDefaultPicture();
+            picture = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_event_pic);
         }
         return picture;
     }
 
+
     // helper method to load a default picture
     private Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
-        // replace R.drawable.default_image with  actual default image resource ID TO DOOOOOO
+        // replace R.drawable.default_image with  actual default image resource ID TO DOOOOOOgit
         return BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_menu_gallery);
     }
 
@@ -474,5 +616,79 @@ public class Event implements Serializable {
         return occurrenceDates;
     }
 
+    // Checks if registration is open based on registrationDeadline
+    public boolean isRegistrationOpen() {
+        if (registrationDeadline == null) return true; // No deadline set
+        Date currentDate = new Date();
+        return currentDate.before(registrationDeadline);
+    }
+
+    // Checks if a user can be added to the waitlist
+    public boolean canAddToWaitlist() {
+        return waitingList.size() < TotalSpots && isRegistrationOpen();
+    }
+
+    // Checks if the waitlist has reached a maximum capacity (if applicable)
+    public boolean isWaitlistFull(int maxCapacity) {
+        return waitingList.size() >= maxCapacity;
+    }
+
+    // Adds a user to the waitlist if possible
+    public boolean addToWaitlist(User user) {
+        if (canAddToWaitlist() && !waitingList.contains(user)) {
+            waitingList.add(user);
+            return true;
+        }
+        return false;
+    }
+
+    // Removes a user from the waitlist
+    public boolean removeFromWaitlist(User user) {
+        return waitingList.remove(user);
+    }
+
+    public void updateStatus() {
+        updateStatus(new Date()); // Calls the overloaded method with the current date
+    }
+
+    // Overloaded method for testing with a custom date
+    public void updateStatus(Date customDate) {
+        System.out.println("Custom Date: " + customDate);
+        System.out.println("Start Date: " + startDateTime);
+        System.out.println("End Date: " + endDateTime);
+
+        if (customDate.before(startDateTime)) {
+            status = "upcoming";
+        } else if (customDate.after(endDateTime)) {
+            status = "finished";
+        } else {
+            status = "ongoing";
+        }
+        System.out.println("Updated Status: " + status);
+    }
+
+
+
+
+    // Retrieve upcoming occurrences based on recurrence settings within a specified timeframe
+    public List<Date> getUpcomingOccurrences(Date endDate) {
+        List<Date> occurrences = new ArrayList<>();
+        if (!isRecurring) {
+            occurrences.add(startDateTime);
+            return occurrences;
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDateTime);
+
+        while (calendar.getTime().before(endDate) && (recurrenceType != RecurrenceType.NEVER)) {
+            String dayOfWeek = getDayOfWeek(calendar);
+            if (recurrenceDays.contains(dayOfWeek)) {
+                occurrences.add(calendar.getTime());
+            }
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        return occurrences;
+    }
 
 }
