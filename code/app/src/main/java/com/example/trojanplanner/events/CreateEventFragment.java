@@ -1,8 +1,9 @@
-package com.example.trojanplanner.view;
+package com.example.trojanplanner.events;
 
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -95,5 +96,17 @@ public class CreateEventFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to create event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }, newEvent);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // Handle back press to return to the previous fragment or Activity
+                requireActivity().onBackPressed(); // Or use NavController to navigate back
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
