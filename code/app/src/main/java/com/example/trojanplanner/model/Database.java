@@ -29,8 +29,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A class that handles adding/querying/modifying/removing documents from the Firestore Database,
@@ -96,6 +98,11 @@ public class Database {
     public void initPhotoPicker() {
         photoPicker = new PhotoPicker();
         photoPicker.initPhotoPicker(this);
+    }
+
+    public void initPhotoPicker(PhotoPicker.PhotoPickerCallback callback) {
+        photoPicker = new PhotoPicker();
+        photoPicker.initPhotoPicker(callback, this);
     }
 
     // TODO: Is this function necessary?
@@ -327,27 +334,27 @@ public class Database {
      */
     public void insertEvent(OnSuccessListener successListener, OnFailureListener failureListener, Event event) {
         Map<String, Object> eventMap = new HashMap<>();
-//        eventMap.put("eventID", event.getEventId());
-//        eventMap.put("name", event.getName());
-//        eventMap.put("description", event.getDescription());
-//        eventMap.put("facility", event.getFacility());
-//        eventMap.put("price", event.getPrice());
-//        eventMap.put("status", event.getStatus());
-//        eventMap.put("eventCapacity", event.getTotalSpots());
-//        eventMap.put("waitlistCapacity", );
-//        eventMap.put("eventPhoto", null);
-//        eventMap.put("requiresGeolocation", );
-//
-//        eventMap.put("creationTime", System.currentTimeMillis());
-//        eventMap.put("eventStart", event.getStartDateTime());
-//        eventMap.put("eventEnd", event.getEndDateTime());
-//        eventMap.put("waitlistOpen", );
-//        eventMap.put("watlistClose", );
-//
-//        eventMap.put("enrolledlist", );
-//        eventMap.put("waitlist", );
-//        eventMap.put("pendinglist", );
-//        eventMap.put("cancelledlist", );
+        eventMap.put("eventID", event.getEventId());
+        eventMap.put("name", event.getName());
+        eventMap.put("description", event.getDescription());
+        eventMap.put("facility", event.getFacility());
+        eventMap.put("price", event.getPrice());
+        eventMap.put("status", event.getStatus());
+        eventMap.put("eventCapacity", event.getTotalSpots());
+        eventMap.put("waitlistCapacity", event.getWaitlistCapacity());
+        eventMap.put("eventPhoto", null);
+        eventMap.put("requiresGeolocation", event.isRequiresGeolocation());
+
+        eventMap.put("creationTime", System.currentTimeMillis());
+        eventMap.put("eventStart", event.getStartDateTime());
+        eventMap.put("eventEnd", event.getEndDateTime());
+        eventMap.put("waitlistOpen", event.getWaitlistOpen());
+        eventMap.put("watlistClose", event.getWaitlistClose());
+
+        eventMap.put("enrolledlist", event.getEnrolledList());
+        eventMap.put("waitlist", event.getWaitingList());
+        eventMap.put("pendinglist", event.getPendingList());
+        eventMap.put("cancelledlist", event.getCancelledList());
 
         eventMap.put("isRecurring", event.isRecurring());
         if (event.isRecurring()) {
@@ -518,14 +525,38 @@ public class Database {
 
 
     private Event unpackEventMap(Map<String, Object> eventMap) {
-//        Event event = new Event();
-//
-//        event.setName();
-        // etc etc etc
+        Map<String, Object> m = eventMap;
+        // Make a minimal event and then add in all other attributes
+        Event event = new Event((String) m.get("name"), (String) m.get("description"), (float) m.get("price"));
+
+        event.setEventId((String) m.get("eventID"));
+        event.setFacility((Facility) m.get("facility")); // TODO probably will be a string instead of an actual facility
+        event.setPictureFilePath((String) m.get("eventPhoto"));
+
+        event.setStartDateTime((Date) m.get("eventStart"));
+        event.setEndDateTime((Date) m.get("eventEnd"));
+        event.setWaitlistOpen((Date) m.get("waitlistOpen"));
+        event.setWaitlistClose((Date) m.get("waitlistClose"));
+
+        event.setRequiresGeolocation((boolean) m.get("requiresGeolocation"));
+        event.setTotalSpots((Long) m.get("eventCapacity"));
+        event.setWaitlistCapacity((int) m.get("waitlistCapacity"));
+        event.setStatus((String) m.get("status"));
 
 
-//        return event;
-        return null;
+        event.setEnrolledList((ArrayList<User>) m.get("enrolledList"));
+        event.setWaitingList((ArrayList<User>) m.get("waitlist"));
+        event.setPendingList((ArrayList<User>) m.get("pendingList"));
+        event.setCancelledList((ArrayList<User>) m.get("cancelledList"));
+
+        event.setRecurring((boolean) m.get("isRecurring"));
+        if (event.isRecurring()) {
+            event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
+            event.setRecurrenceEndDate((Date) m.get("recurringEndDate"));
+            event.setRecurrenceDays((Set<String>) m.get("recurringOn"));
+        }
+
+        return event;
     }
 
 
