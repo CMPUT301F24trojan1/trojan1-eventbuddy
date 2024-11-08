@@ -116,9 +116,11 @@ public class MainActivity extends AppCompatActivity {
                      // will show by default
                  } else {
                      // Otherwise, show the EventsFragment
-                     getSupportFragmentManager().beginTransaction()
-                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
-                             .commit();
+//                     getSupportFragmentManager().beginTransaction()
+//                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+//                             .commit();
+                     NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_activity_main);
+                     navController.navigate(R.id.eventsListFragment);
                  }
              }
         };

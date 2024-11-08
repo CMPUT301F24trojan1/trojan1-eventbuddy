@@ -46,7 +46,7 @@ public class EmptyEventsFragment extends Fragment {
         view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
             // Ensure we are navigating from the correct fragment
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_emptyEventsFragment_to_createEventsFragment);
+            navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
         });
     }
 
