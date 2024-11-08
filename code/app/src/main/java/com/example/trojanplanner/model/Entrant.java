@@ -41,7 +41,7 @@ public class Entrant extends User {
      * @author Madelaine Dalangin
      * @param event
      */
-    private void addWaitlistedEvent(Event event){
+    public void addWaitlistedEvent(Event event){
         if(!currentWaitlistedEvents.contains(event)) {
             currentWaitlistedEvents.add(event);
         }
@@ -55,7 +55,7 @@ public class Entrant extends User {
      * @author Madelaine Dalangin
      * @param event
      */
-    private void removeWaitlistedEvent(Event event){
+    public void removeWaitlistedEvent(Event event){
         if(currentWaitlistedEvents.contains(event)){
             currentWaitlistedEvents.remove(event);
         }
@@ -69,7 +69,7 @@ public class Entrant extends User {
      * @author Madelaine Dalangin
      * @param event
      */
-    private void addEnrolledEvent(Event event){
+    public void addEnrolledEvent(Event event){
         if(!currentEnrolledEvents.contains(event)){
             currentEnrolledEvents.add(event);
         }
@@ -83,7 +83,7 @@ public class Entrant extends User {
      * @author Madelaine Dalangin
      * @param event
      */
-    private void removeEnrolledEvent(Event event){
+    public void removeEnrolledEvent(Event event){
         if(currentEnrolledEvents.contains(event)){
             currentEnrolledEvents.remove(event);
         }

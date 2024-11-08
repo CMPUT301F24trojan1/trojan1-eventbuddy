@@ -29,8 +29,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A class that handles adding/querying/modifying/removing documents from the Firestore Database,
@@ -48,6 +50,7 @@ public class Database {
 
     private OnSuccessListener defaultSuccessListener;
     private OnFailureListener defaultFailureListener;
+
 
 
     /**
@@ -97,6 +100,11 @@ public class Database {
         photoPicker.initPhotoPicker(this);
     }
 
+    public void initPhotoPicker(PhotoPicker.PhotoPickerCallback callback) {
+        photoPicker = new PhotoPicker();
+        photoPicker.initPhotoPicker(callback, this);
+    }
+
     // TODO: Is this function necessary?
     /**
      * A method that uninitializes the PhotoPicker if initPhotoPicker was called.
@@ -142,7 +150,7 @@ public class Database {
      * @author Jared Gourley
      *
      */
-    public void uploadImage(Bitmap bitmap, @NonNull User owner, String filepath, OnSuccessListener successListener, OnFailureListener failureListener) {
+    public void uploadImage(@NonNull Bitmap bitmap, @NonNull User owner, String filepath, OnSuccessListener successListener, OnFailureListener failureListener) {
         //String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
         StorageReference refToSave = storageRef.child(filepath);
 
@@ -290,10 +298,10 @@ public class Database {
 
 
         db.collection("users")
-            .document(user.getDeviceId())
-            .set(userMap, SetOptions.merge())
-            .addOnSuccessListener(successListener)
-            .addOnFailureListener(failureListener);
+                .document(user.getDeviceId())
+                .set(userMap, SetOptions.merge())
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
     }
 
 
@@ -318,40 +326,50 @@ public class Database {
      * <br>
      * Can optionally be given a custom success and failure listener to perform a more specialized
      * action on success or failure.
-     * 
+     *
      * @param successListener The action to take on successful user insert
      * @param failureListener The action to take on failed user insert
      * @param event The event to insert
      * @author Jared Gourley
      */
-    public void insertEvent(OnSuccessListener<Void> successListener, OnFailureListener failureListener, Event event) {
+    public void insertEvent(OnSuccessListener successListener, OnFailureListener failureListener, Event event) {
         Map<String, Object> eventMap = new HashMap<>();
-        eventMap.put("eventID", event.getEventId()); // Uncommented
-        eventMap.put("name", event.getName()); // Uncommented
-        eventMap.put("description", event.getDescription()); // Uncommented
-        eventMap.put("facility", event.getFacility()); // Uncommented
-        eventMap.put("status", event.getStatus()); // Uncommented
-        eventMap.put("eventCapacity", event.getTotalSpots()); // Uncommented
-        eventMap.put("requiresGeolocation", event.isRequiresGeolocation()); // Uncommented
+        eventMap.put("eventID", event.getEventId());
+        eventMap.put("name", event.getName());
+        eventMap.put("description", event.getDescription());
+        eventMap.put("facility", event.getFacility());
+        eventMap.put("price", event.getPrice());
+        eventMap.put("status", event.getStatus());
+        eventMap.put("eventCapacity", event.getTotalSpots());
+        eventMap.put("waitlistCapacity", event.getWaitlistCapacity());
+        eventMap.put("eventPhoto", null);
+        eventMap.put("requiresGeolocation", event.isRequiresGeolocation());
 
-        // Optional fields can remain commented or be left out for now
-        eventMap.put("creationTime", System.currentTimeMillis()); // Uncommented if you need to track creation time
-        eventMap.put("eventStart", event.getStartDateTime()); // Uncommented if you need to track start time
-        eventMap.put("eventEnd", event.getEndDateTime()); // Uncommented if you need to track end time
+        eventMap.put("creationTime", System.currentTimeMillis());
+        eventMap.put("eventStart", event.getStartDateTime());
+        eventMap.put("eventEnd", event.getEndDateTime());
+        eventMap.put("waitlistOpen", event.getWaitlistOpen());
+        eventMap.put("watlistClose", event.getWaitlistClose());
 
-        // If you want to track waitlist or enrolled users, you can uncomment those lines as well
-        // eventMap.put("enrolledlist", event.getEnrolledList()); // Uncomment if you need to track enrolled users
-        // eventMap.put("waitlist", event.getWaitingList()); // Uncomment if you need to track waiting list users
-        // eventMap.put("pendinglist", event.getPendingList()); // Uncomment if you need to track pending users
-        // eventMap.put("cancelledlist", event.getCancelledList()); // Uncomment if you need to track cancelled users
+        eventMap.put("enrolledlist", event.getEnrolledList());
+        eventMap.put("waitlist", event.getWaitingList());
+        eventMap.put("pendinglist", event.getPendingList());
+        eventMap.put("cancelledlist", event.getCancelledList());
+
+        eventMap.put("isRecurring", event.isRecurring());
+        if (event.isRecurring()) {
+            eventMap.put("recurrenceFormat", event.getRecurrenceType()); // note: database uses UNTIL_DATE standard but remembers what the organizer prefers
+            eventMap.put("recurringEndDate", event.getRecurrenceEndDate());
+            eventMap.put("recurringOn", event.getRecurrenceDays());
+        }
 
         db.collection("events")
                 .document(event.getEventId())
                 .set(eventMap, SetOptions.merge())
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
-    }
 
+    }
 
     /**
      * Inserts a document into the users collection of the Firestore Database. Overwrites the previous
@@ -420,7 +438,7 @@ public class Database {
      * @author Jared Gourley
      */
     // Renamed method: insertFacilityWithListeners for custom success/failure handling
-    public void insertFacilityWithListeners(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
+    public void insertFacility(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
@@ -445,7 +463,7 @@ public class Database {
      * @author Jared Gourley
      */
     public void insertFacility(Facility facility) {
-        insertFacilityWithListeners(defaultSuccessListener, defaultFailureListener, facility);
+        insertFacility(defaultSuccessListener, defaultFailureListener, facility);
     }
 
     // ===================== Get documents from Firestore Database =====================
@@ -507,14 +525,38 @@ public class Database {
 
 
     private Event unpackEventMap(Map<String, Object> eventMap) {
-//        Event event = new Event();
-//
-//        event.setName();
-        // etc etc etc
+        Map<String, Object> m = eventMap;
+        // Make a minimal event and then add in all other attributes
+        Event event = new Event((String) m.get("name"), (String) m.get("description"), (float) m.get("price"));
+
+        event.setEventId((String) m.get("eventID"));
+        event.setFacility((Facility) m.get("facility")); // TODO probably will be a string instead of an actual facility
+        event.setPictureFilePath((String) m.get("eventPhoto"));
+
+        event.setStartDateTime((Date) m.get("eventStart"));
+        event.setEndDateTime((Date) m.get("eventEnd"));
+        event.setWaitlistOpen((Date) m.get("waitlistOpen"));
+        event.setWaitlistClose((Date) m.get("waitlistClose"));
+
+        event.setRequiresGeolocation((boolean) m.get("requiresGeolocation"));
+        event.setTotalSpots((Long) m.get("eventCapacity"));
+        event.setWaitlistCapacity((int) m.get("waitlistCapacity"));
+        event.setStatus((String) m.get("status"));
 
 
-//        return event;
-        return null;
+        event.setEnrolledList((ArrayList<User>) m.get("enrolledList"));
+        event.setWaitingList((ArrayList<User>) m.get("waitlist"));
+        event.setPendingList((ArrayList<User>) m.get("pendingList"));
+        event.setCancelledList((ArrayList<User>) m.get("cancelledList"));
+
+        event.setRecurring((boolean) m.get("isRecurring"));
+        if (event.isRecurring()) {
+            event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
+            event.setRecurrenceEndDate((Date) m.get("recurringEndDate"));
+            event.setRecurrenceDays((Set<String>) m.get("recurringOn"));
+        }
+
+        return event;
     }
 
 
@@ -568,6 +610,7 @@ public class Database {
     private Entrant unpackEntrantMap(Map<String, Object> entrantMap) {
         Map<String, Object> m = entrantMap;
         Entrant entrant = new Entrant((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Entrant", (boolean) m.get("hasOrganizerRights"), (boolean) m.get("hasAdminRights"));
+        entrant.setPfpFilePath((String) m.get("pfp"));
 
         return entrant;
     }
@@ -628,6 +671,7 @@ public class Database {
         }
 
         Organizer organizer = new Organizer((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Organizer", true, (boolean) m.get("hasAdminRights"), (ArrayList<Event>) m.get("createdEvents"), (Facility) m.get("facility"));
+        organizer.setPfpFilePath((String) m.get("pfp"));
 
         return organizer;
     }
@@ -690,6 +734,7 @@ public class Database {
         }
 
         Admin admin = new Admin((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Admin", (boolean) m.get("hasOrganizerRights"), true);
+        admin.setPfpFilePath((String) m.get("pfp"));
 
         return admin;
     }
@@ -831,68 +876,73 @@ public class Database {
 
 
 
+/**
+ * Function to test querying an entrant. You can run this test by setting up a temp button
+ * in MainActivity to run this function
+ */
+public static void getEntrantTest() {
+    Database database = new Database();
+    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+        @Override
+        public void OnSuccess(Object object) {
+            Entrant entrant = (Entrant) object;
+            System.out.println("deviceId: " + entrant.getDeviceId());
+            System.out.println("email: " + entrant.getEmail());
+            System.out.println("firstName: " + entrant.getFirstName());
+            System.out.println("lastName: " + entrant.getLastName());
+            System.out.println("hasAdminRights: " + entrant.isAdmin());
+            System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
+            System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
+            System.out.println("currentPendingEvents: " + entrant.getCurrentPendingEvents());
+            System.out.println("currentWaitlistedEvents: " + entrant.getCurrentWaitlistedEvents());
+            System.out.println("currentDeclinedEvents: " + entrant.getCurrentDeclinedEvents());
+        }
+    };
+
+    Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+        @Override
+        public void OnFailure() {
+            System.out.println("Query attempt failed!");
+        }
+    };
+
+    database.getEntrant(successAction, failureAction, "testEntrant");
+}
 
 
-    /**
-     * Function to test querying an entrant. You can run this test by setting up a temp button
-     * in MainActivity to run this function
-     */
-    public static void getEntrantTest() {
-        Database database = new Database();
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
-            @Override
-            public void OnSuccess(Object object) {
-                Entrant entrant = (Entrant) object;
-                System.out.println("deviceId: " + entrant.getDeviceId());
-                System.out.println("email: " + entrant.getEmail());
-                System.out.println("firstName: " + entrant.getFirstName());
-                System.out.println("lastName: " + entrant.getLastName());
-                System.out.println("hasAdminRights: " + entrant.isAdmin());
-                System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
-                System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
-                System.out.println("currentPendingEvents: " + entrant.getCurrentPendingEvents());
-                System.out.println("currentWaitlistedEvents: " + entrant.getCurrentWaitlistedEvents());
-                System.out.println("currentDeclinedEvents: " + entrant.getCurrentDeclinedEvents());
-            }
-        };
+public static void uploadEventTest() {
+    // fake user with android id "Testfolder" (uploads to testfolder folder)
+    Database database = new Database();
+    Event event = new Event("TESTEVENTNAME", "TESTEVENT DESC", 0);
+    event.setEventId("UPLOAD_EVENT_TEST");
+    database.insertEvent(event);
+}
 
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("Query attempt failed!");
-            }
-        };
+public static void getOrganizerTest() {
+    Database database = new Database();
+    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+        @Override
+        public void OnSuccess(Object object) {
+            Organizer organizer = (Organizer) object;
+            System.out.println("deviceId: " + organizer.getDeviceId());
+            System.out.println("email: " + organizer.getEmail());
+            System.out.println("firstName: " + organizer.getFirstName());
+            System.out.println("lastName: " + organizer.getLastName());
+            System.out.println("hasAdminRights: " + organizer.isAdmin());
+            System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
+            System.out.println("createdEvents: " + organizer.getCreatedEvents());
+        }
+    };
 
-        database.getEntrant(successAction, failureAction, "testEntrant");
-    }
+    Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+        @Override
+        public void OnFailure() {
+            System.out.println("Query attempt failed!");
+        }
+    };
 
-
-
-    public static void getOrganizerTest() {
-        Database database = new Database();
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
-            @Override
-            public void OnSuccess(Object object) {
-                Organizer organizer = (Organizer) object;
-                System.out.println("deviceId: " + organizer.getDeviceId());
-                System.out.println("email: " + organizer.getEmail());
-                System.out.println("firstName: " + organizer.getFirstName());
-                System.out.println("lastName: " + organizer.getLastName());
-                System.out.println("hasAdminRights: " + organizer.isAdmin());
-                System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
-                System.out.println("createdEvents: " + organizer.getCreatedEvents());
-            }
-        };
-
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("Query attempt failed!");
-            }
-        };
-
-        database.getOrganizer(successAction, failureAction, "testOrganizer");
-    }
+    database.getOrganizer(successAction, failureAction, "testOrganizer");
+}
 
 
     public static void getQRTest() {
@@ -915,12 +965,11 @@ public class Database {
         database.getQRData(successAction, failureAction, "awoi42A(*@M#NFAOaskwlqo");
     }
 
-
-
-
-
-
-
-
-
 }
+
+
+
+
+
+
+

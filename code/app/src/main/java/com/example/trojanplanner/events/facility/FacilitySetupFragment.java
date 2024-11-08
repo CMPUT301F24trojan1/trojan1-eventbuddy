@@ -81,7 +81,7 @@ public class FacilitySetupFragment extends Fragment {
     }
 
     private void openImagePicker() {
-        mainActivity.photoPicker.openPhotoPicker(mainActivity.CurrentUser);
+        mainActivity.photoPicker.openPhotoPicker(mainActivity.currentUser);
     }
 
     @Override
