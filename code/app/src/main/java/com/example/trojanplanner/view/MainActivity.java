@@ -110,20 +110,18 @@ public class MainActivity extends AppCompatActivity {
                      getUserPfp();
                  }
                  // TODO: populate events array
+                 // Check if the user has any events
+                 if ((currentUser.getCurrentWaitlistedEvents() == null || currentUser.getCurrentWaitlistedEvents().isEmpty()) &&
+                         (currentUser.getCurrentPendingEvents() == null || currentUser.getCurrentPendingEvents().isEmpty())) {
+                     // Show the EmptyEventsFragment if no events are found
+                     // will show by default
+                 } else {
+                     // Otherwise, show the EventsFragment
+                     getSupportFragmentManager().beginTransaction()
+                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+                             .commit();
+                 }
              }
-
-                // Check if the user has any events
-                if ((currentUser.getCurrentWaitlistedEvents() == null || currentUser.getCurrentWaitlistedEvents().isEmpty()) &&
-                        (currentUser.getCurrentPendingEvents() == null || currentUser.getCurrentPendingEvents().isEmpty())) {
-                    // Show the EmptyEventsFragment if no events are found
-                    // will show by default
-                } else {
-                    // Otherwise, show the EventsFragment
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
-                            .commit();
-                }
-            }
         };
         Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
             @Override
