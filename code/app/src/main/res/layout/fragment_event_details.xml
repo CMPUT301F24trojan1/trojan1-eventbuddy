@@ -1,74 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp">
 
+    <!-- Enlarged Back Button -->
+    <ImageButton
+        android:id="@+id/button_back"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="Back"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="?android:attr/homeAsUpIndicator" />
+
+    <!-- Event Image -->
     <ImageView
         android:id="@+id/eventImageView"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:layout_marginTop="8dp"
-        android:contentDescription="placeholder for events image"
+        android:contentDescription="Event image"
         android:src="@drawable/event_placeholder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@id/button_back"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Event Title -->
     <TextView
         android:id="@+id/eventNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Event Name"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/eventImageView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="16dp" />
 
-    <!-- Event Description -->
+    <!-- Event Location -->
     <TextView
-        android:id="@+id/eventDescriptionTextView"
+        android:id="@+id/eventLocationTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Event Description"
+        android:text="Event Location"
         app:layout_constraintTop_toBottomOf="@id/eventNameTextView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="8dp" />
 
-    <!-- Event Date -->
+    <!-- Event Time -->
     <TextView
         android:id="@+id/eventDateTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Event Date"
-        app:layout_constraintTop_toBottomOf="@id/eventDescriptionTextView"
+        android:text="Event Date and Time"
+        app:layout_constraintTop_toBottomOf="@id/eventLocationTextView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="8dp" />
 
-    <!-- Available Spots -->
+    <!-- Recurring Dates Dropdown -->
     <TextView
-        android:id="@+id/availableSpotsTextView"
+        android:id="@+id/recurringDatesTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Available Spots"
+        android:text="Recurring Dates"
         app:layout_constraintTop_toBottomOf="@id/eventDateTextView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="8dp" />
 
-    <Button
-        android:id="@+id/event_options_button"
+    <!-- Divider -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Event Description -->
+    <TextView
+        android:id="@+id/eventDescriptionTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Event Description"
+        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Lottery Entries -->
+    <TextView
+        android:id="@+id/lotteryEntriesTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="20dp"
-        android:background="@drawable/rounded_button"
-        android:text="Options"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eventImageView" />
+        android:text="Lottery Entries: "
+        app:layout_constraintTop_toBottomOf="@id/eventDescriptionTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Total Spots -->
+    <TextView
+        android:id="@+id/totalSpotsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Spots: "
+        app:layout_constraintTop_toBottomOf="@id/lotteryEntriesTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="4dp" />
+
+    <!-- Enter Now Button -->
+    <Button
+        android:id="@+id/button_enter_now"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter Now!"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/totalSpotsTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
