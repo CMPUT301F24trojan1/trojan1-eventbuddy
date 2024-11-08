@@ -19,6 +19,7 @@ import com.example.trojanplanner.model.ConcreteEvent;
 
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.model.Event;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
@@ -27,7 +28,7 @@ import java.util.Set;
 
 
 public class EventDetailsFragment extends Fragment {
-    private ConcreteEvent event;
+    private Event event;
     private Entrant entrant;
     private Database database;
 
@@ -37,6 +38,38 @@ public class EventDetailsFragment extends Fragment {
         this.entrant = entrant;
         this.database = new Database(); // Initialize Database instance
     }
+
+    public void setDatabase(Database database) {
+        this.database = database;
+    }
+
+    public void setEntrant(Entrant entrant) {
+        this.entrant = entrant;
+    }
+
+    // Factory method to create an instance of EventDetailsFragment with arguments
+    // This was just for testing but tbh that didn't work out
+    public static EventDetailsFragment newInstance(Event event, Entrant entrant) {
+        EventDetailsFragment fragment = new EventDetailsFragment();
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+        args.putSerializable("entrant", entrant);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            event = (Event) getArguments().getSerializable("event");
+            entrant = (Entrant) getArguments().getSerializable("entrant");
+        }
+        database = new Database();
+    }
+
+    // Required empty constructor
+    public EventDetailsFragment() {}
 
     @Nullable
     @Override
@@ -61,7 +94,7 @@ public class EventDetailsFragment extends Fragment {
         return view;
     }
 
-    private void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView, TextView eventDateTextView, TextView recurringDatesTextView, TextView eventDescriptionTextView) {
+    public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView, TextView eventDateTextView, TextView recurringDatesTextView, TextView eventDescriptionTextView) {
         eventNameTextView.setText(event.getName());
         eventLocationTextView.setText(event.getFacility().getFacilityId());
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -73,8 +106,8 @@ public class EventDetailsFragment extends Fragment {
         recurringDatesTextView.setText(recurrenceDaysText);
         eventDescriptionTextView.setText(event.getDescription());
     }
-
-    private void showConfirmDialog() {
+    // should this be public?
+    public void showConfirmDialog() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirm_registration, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setView(dialogView);
