@@ -1,7 +1,9 @@
 package com.example.trojanplanner.view;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -26,8 +29,8 @@ public class CreateEventFragment extends Fragment {
 
     private EditText eventNameEditText;
     private EditText eventDescriptionEditText;
-    private String eventFacilityEditText; // Temporarily using a string instead of EditText
-    private EditText eventDateEditText; // Add other fields as needed
+    private String eventFacilityEditText; // Temporarily using a string for facility
+    private EditText eventDateEditText;
     private Button createEventButton;
     private Database database;
 
@@ -46,48 +49,52 @@ public class CreateEventFragment extends Fragment {
 
         eventNameEditText = view.findViewById(R.id.eventNameEditText);
         eventDescriptionEditText = view.findViewById(R.id.eventDescriptionEditText);
-        eventFacilityEditText = "test"; // Temporary test string for facility
-        eventDateEditText = view.findViewById(R.id.eventDateEditText); // Add other fields as needed
+        eventDateEditText = view.findViewById(R.id.eventDateEditText);
         createEventButton = view.findViewById(R.id.createEventButton);
+
+        eventFacilityEditText = "Test Facility"; // Temporary hardcoded value for testing
 
         createEventButton.setOnClickListener(v -> createEvent());
     }
 
     private void createEvent() {
+        Log.d("CreateEventFragment", "createEvent called");
+
         String name = eventNameEditText.getText().toString();
         String description = eventDescriptionEditText.getText().toString();
-        String facility = eventFacilityEditText; // Use the temporary test string
-        String date = eventDateEditText.getText().toString(); // Handle other fields as needed
-        float price = 0;
+        String facilityName = eventFacilityEditText; // Use the temporary value for facility
+        String facilityId = "facility_" + System.currentTimeMillis(); // Generate a unique facility ID
+        String location = "Test Location"; // Example location
+        Organizer owner = (Organizer) getActivity().getIntent().getSerializableExtra("user");
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(description) || TextUtils.isEmpty(facility) || TextUtils.isEmpty(date)) {
+        // Validate the input
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(description) || TextUtils.isEmpty(facilityName)) {
             Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Organizer currentUser = (Organizer) getActivity().getIntent().getSerializableExtra("user");
-        if (currentUser == null) {
+        if (owner == null) {
             Toast.makeText(getContext(), "User not found", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Assuming you want to set some default values for the event date fields
-        Date startDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
-        Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
+        Date startDateTime = new Date(); // Placeholder for the start date
+        Date endDateTime = new Date(); // Placeholder for the end date
 
-        Event newEvent = new Event(name, description, price, facility, startDateTime, endDateTime,
-                30, 100L, 100L); // Adjust parameters as needed
+        // Initialize the Facility object
+        Facility facilityObj = new Facility(facilityName, facilityId, location, owner, null, null);
 
-        // Generate a unique event ID (you may want to implement this logic)
-        newEvent.setEventId("event_" + System.currentTimeMillis()); // Simple unique ID generation
+        // Create the new Event object
+        Event newEvent = new Event(name, description, 0.0f, facilityObj, startDateTime, endDateTime, 30, 100L, 100L);
+
+        newEvent.setEventId("event_" + System.currentTimeMillis()); // Generate a unique event ID
 
         // Insert the new event into the database
         database.insertEvent(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(getContext(), "Event created successfully!", Toast.LENGTH_SHORT).show();
-                // Optionally, navigate back or update UI
-                requireActivity().onBackPressed(); // Or navigate to another fragment
+                requireActivity().onBackPressed();
             }
         }, new OnFailureListener() {
             @Override

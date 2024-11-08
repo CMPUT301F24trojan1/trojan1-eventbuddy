@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_emptyEventsFragment_to_facilitySetupFragment"
             app:destination="@id/facilitySetupFragment" />
+        <action
+            android:id="@+id/action_emptyEventsFragment_to_createEventFragment"
+            app:destination="@id/createEventFragment" />
     </fragment>
 
     <fragment
@@ -51,5 +54,9 @@
         android:label="Waitlist"
         tools:layout="@layout/fragment_waitlist" />
 
-
+    <fragment
+        android:id="@+id/createEventFragment"
+        android:name="com.example.trojanplanner.view.CreateEventFragment"
+        android:label="Create Event"
+        tools:layout="@layout/fragment_create_events" />
 </navigation>

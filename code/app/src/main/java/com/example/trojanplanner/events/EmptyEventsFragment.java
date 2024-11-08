@@ -1,22 +1,20 @@
 package com.example.trojanplanner.events;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.R;
-import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.facility.FacilitySetupFragment;
 
 public class EmptyEventsFragment extends Fragment {
     private TextView messageTextView;
@@ -41,8 +39,14 @@ public class EmptyEventsFragment extends Fragment {
         NavController navController = NavHostFragment.findNavController(this);
 
         view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
-            // Navigate to FacilitySetupFragment using the action defined in nav_graph.xml
-            navController.navigate(R.id.facilitySetupFragment);
+            Log.d("EmptyEventsFragment", "Become Organizer Button Clicked");
+            navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
+        });
+
+        Button createEventButton = view.findViewById(R.id.createEventButton);
+        createEventButton.setOnClickListener(v -> {
+            Log.d("EmptyEventsFragment", "Create Event Button Clicked");
+            navController.navigate(R.id.action_emptyEventsFragment_to_createEventFragment);
         });
     }
 
