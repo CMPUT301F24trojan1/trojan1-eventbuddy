@@ -324,44 +324,34 @@ public class Database {
      * @param event The event to insert
      * @author Jared Gourley
      */
-    public void insertEvent(OnSuccessListener successListener, OnFailureListener failureListener, Event event) {
+    public void insertEvent(OnSuccessListener<Void> successListener, OnFailureListener failureListener, Event event) {
         Map<String, Object> eventMap = new HashMap<>();
-//        eventMap.put("eventID", event.getEventId());
-//        eventMap.put("name", event.getName());
-//        eventMap.put("description", event.getDescription());
-//        eventMap.put("facility", event.getFacility());
-//        eventMap.put("price", event.getPrice());
-//        eventMap.put("status", event.getStatus());
-//        eventMap.put("eventCapacity", event.getTotalSpots());
-//        eventMap.put("waitlistCapacity", );
-//        eventMap.put("eventPhoto", null);
-//        eventMap.put("requiresGeolocation", );
-//
-//        eventMap.put("creationTime", System.currentTimeMillis());
-//        eventMap.put("eventStart", event.getStartDateTime());
-//        eventMap.put("eventEnd", event.getEndDateTime());
-//        eventMap.put("waitlistOpen", );
-//        eventMap.put("watlistClose", );
-//
-//        eventMap.put("enrolledlist", );
-//        eventMap.put("waitlist", );
-//        eventMap.put("pendinglist", );
-//        eventMap.put("cancelledlist", );
+        eventMap.put("eventID", event.getEventId()); // Uncommented
+        eventMap.put("name", event.getName()); // Uncommented
+        eventMap.put("description", event.getDescription()); // Uncommented
+        eventMap.put("facility", event.getFacility()); // Uncommented
+        eventMap.put("status", event.getStatus()); // Uncommented
+        eventMap.put("eventCapacity", event.getTotalSpots()); // Uncommented
+        eventMap.put("requiresGeolocation", event.isRequiresGeolocation()); // Uncommented
 
-        eventMap.put("isRecurring", event.isRecurring());
-        if (event.isRecurring()) {
-            eventMap.put("recurrenceFormat", event.getRecurrenceType()); // note: database uses UNTIL_DATE standard but remembers what the organizer prefers
-            eventMap.put("recurringEndDate", event.getRecurrenceEndDate());
-            eventMap.put("recurringOn", event.getRecurrenceDays());
-        }
+        // Optional fields can remain commented or be left out for now
+        eventMap.put("creationTime", System.currentTimeMillis()); // Uncommented if you need to track creation time
+        eventMap.put("eventStart", event.getStartDateTime()); // Uncommented if you need to track start time
+        eventMap.put("eventEnd", event.getEndDateTime()); // Uncommented if you need to track end time
+
+        // If you want to track waitlist or enrolled users, you can uncomment those lines as well
+        // eventMap.put("enrolledlist", event.getEnrolledList()); // Uncomment if you need to track enrolled users
+        // eventMap.put("waitlist", event.getWaitingList()); // Uncomment if you need to track waiting list users
+        // eventMap.put("pendinglist", event.getPendingList()); // Uncomment if you need to track pending users
+        // eventMap.put("cancelledlist", event.getCancelledList()); // Uncomment if you need to track cancelled users
 
         db.collection("events")
                 .document(event.getEventId())
                 .set(eventMap, SetOptions.merge())
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
-        
     }
+
 
     /**
      * Inserts a document into the users collection of the Firestore Database. Overwrites the previous
@@ -429,13 +419,13 @@ public class Database {
      * @param facility The facility to store in the database
      * @author Jared Gourley
      */
-    public void insertFacility(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
+    // Renamed method: insertFacilityWithListeners for custom success/failure handling
+    public void insertFacilityWithListeners(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
         facilityMap.put("facilityPhoto", facility.getPfpFacilityFilePath());
         facilityMap.put("owner", facility.getOwner());
-        //facilityMap.put("currentEvents", );
 
         db.collection("facilities")
                 .document(facility.getFacilityId())
@@ -443,6 +433,7 @@ public class Database {
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
+
 
     /**
      * Inserts a facility object into the database.
@@ -454,9 +445,8 @@ public class Database {
      * @author Jared Gourley
      */
     public void insertFacility(Facility facility) {
-        insertFacility(defaultSuccessListener, defaultFailureListener, facility);
+        insertFacilityWithListeners(defaultSuccessListener, defaultFailureListener, facility);
     }
-
 
     // ===================== Get documents from Firestore Database =====================
 
