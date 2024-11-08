@@ -20,10 +20,17 @@ import com.example.trojanplanner.HelperFragments.WaitlistFragment;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Event;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EventEditFragment extends Fragment {
 
@@ -204,8 +211,56 @@ public class EventEditFragment extends Fragment {
 
 
     private void sendAnnouncement() {
-        // Implement the logic for sending an announcement about the event
-        Toast.makeText(getContext(), "Send announcement logic goes here", Toast.LENGTH_SHORT).show();
+        if (event == null || event.getEventId() == null) {
+            Toast.makeText(getContext(), "Event ID is missing", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create campaign data based on the event
+        Map<String, Object> campaignData = new HashMap<>();
+        campaignData.put("eventId", event.getEventId());
+        campaignData.put("eventName", event.getName());
+        campaignData.put("announcementTime", System.currentTimeMillis());  // Current timestamp
+        campaignData.put("message", "Check out this exciting event!"); // Custom message
+
+        // Get Firestore instance
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Store the campaign in the 'campaigns' collection with the event ID as document ID
+        DocumentReference campaignRef = db.collection("campaigns").document(event.getEventId());
+
+        // Set the campaign data in Firestore
+        campaignRef.set(campaignData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "Announcement sent successfully!", Toast.LENGTH_SHORT).show();
+                    // Optional: Send push notification if required
+                    sendPushNotification(event.getEventId(), "New Event Announcement!", "Don't miss out on " + event.getName());
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to send announcement", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+    private void sendPushNotification(String eventId, String title, String body) {
+        // Create the RemoteMessage to send to the topic (or device token)
+        RemoteMessage message = new RemoteMessage.Builder("/topics/" + eventId)  // Using topic as the recipient
+                .setMessageId(Integer.toString((int) System.currentTimeMillis()))  // Unique message ID
+                .addData("title", title)  // Add custom data (title)
+                .addData("body", body)    // Add custom data (body)
+                .build();
+
+        try {
+            // Send the message to the topic or device token
+            FirebaseMessaging.getInstance().send(message);
+
+            // Log success
+            Log.d("FCM", "Push notification sent successfully!");
+
+        } catch (Exception e) {
+            // Handle any errors during message sending
+            Log.e("FCM", "Failed to send push notification", e);
+        }
     }
 
     private void viewEventMap() {
