@@ -292,7 +292,7 @@ public class ProfileFragment extends Fragment {
 
         // Reset profile image to current profile image
         changedPfp = false;
-        if (profileActivity.currentUser.getPfpBitmap() != null) {
+        if (profileActivity.currentUser != null && profileActivity.currentUser.getPfpBitmap() != null) {
             profileImageBitmap = profileActivity.currentUser.getPfpBitmap();
             profileImage.setImageBitmap(profileImageBitmap);
         }

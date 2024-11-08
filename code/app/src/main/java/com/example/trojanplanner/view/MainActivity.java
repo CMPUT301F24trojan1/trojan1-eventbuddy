@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
             currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
         }
 
-
         activity = this;
         database = new Database();
         photoPicker = new PhotoPicker();
