@@ -4,9 +4,9 @@ package com.example.trojanplanner.model;
 import java.util.ArrayList;
 
 /**
- * Entrant class that is extended from User class that stores information relating to events
- * an Entrant is tied in and tracks participant's behavior while engaging in eventbuddy's events.
- * @author Madelaine Dalangin
+ * Entrant class that is extended from User class that stores information relating to events.
+ * An Entrant is tied in and tracks a participant's behavior while engaging in eventbuddy's events.
+ * @contributors: Madelaine Dalangin, Dricmoy Bhattacharjee
  */
 public class Entrant extends User {
 
@@ -37,11 +37,11 @@ public class Entrant extends User {
     }
 
     /**
-     * Method for adding event to Registered events array
+     * Method for adding event to waitlisted events array
      * @author Madelaine Dalangin
      * @param event
      */
-    private void addRegisteredEvent(Event event){
+    private void addWaitlistedEvent(Event event){
         if(!currentWaitlistedEvents.contains(event)) {
             currentWaitlistedEvents.add(event);
         }
@@ -51,11 +51,11 @@ public class Entrant extends User {
     }
 
     /**
-     * Method for removing an event an entrant registered in
+     * Method for removing an event an entrant is waitlisted in
      * @author Madelaine Dalangin
      * @param event
      */
-    private void removeRegisteredEvent(Event event){
+    private void removeWaitlistedEvent(Event event){
         if(currentWaitlistedEvents.contains(event)){
             currentWaitlistedEvents.remove(event);
         }
@@ -65,11 +65,11 @@ public class Entrant extends User {
     }
 
     /**
-     * Adding event to array of Entrant's joined events
+     * Adding event to array of Entrant's enrolled events
      * @author Madelaine Dalangin
      * @param event
      */
-    private void addJoinedEvent(Event event){
+    private void addEnrolledEvent(Event event){
         if(!currentEnrolledEvents.contains(event)){
             currentEnrolledEvents.add(event);
         }
@@ -79,11 +79,11 @@ public class Entrant extends User {
     }
 
     /**
-     * Method for removing an event Entrant has joined in (picked on raffle and participant joined)
+     * Method for removing an event Entrant has enrolled in (picked in raffle and participant accepted)
      * @author Madelaine Dalangin
      * @param event
      */
-    private void removeJoinedEvent(Event event){
+    private void removeEnrolledEvent(Event event){
         if(currentEnrolledEvents.contains(event)){
             currentEnrolledEvents.remove(event);
         }
@@ -92,30 +92,20 @@ public class Entrant extends User {
         }
     }
 
-    /**
-     * Method for array of events Entrant has yet to confirm rsvp or deny
-     * @author Madelaine Dalangin
-     * @param event
-     */
-    private void addPendingEvent(Event event){
-        if(!currentPendingEvents.contains(event)){
+    // Method for adding an event to the Pending events array (for events not accepted yet by entrant)
+    public void addPendingEvent(Event event) {
+        if (!currentPendingEvents.contains(event)) {
             currentPendingEvents.add(event);
-        }
-        else {
-            throw new IllegalArgumentException("Event in Entrant's Pending list.");
+        } else {
+            throw new IllegalArgumentException("Event is already in Entrant's Pending list.");
         }
     }
 
-    /**
-     * Method for removing events Entrant was picked from but they denied to join
-     * @author Madelaine Dalangin
-     * @param event
-     */
-    private void removePendingEvent(Event event){
-        if(currentPendingEvents.contains(event)){
+    // Method for removing events Entrant was picked for but did not respond to
+    public void removePendingEvent(Event event) {
+        if (currentPendingEvents.contains(event)) {
             currentPendingEvents.remove(event);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Event does not exist in Entrant's pending events list.");
         }
     }

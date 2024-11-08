@@ -5,8 +5,8 @@ import android.provider.Settings;
 import java.io.Serializable;
 
 /**
- * user class contains and stores information tied to a user.
- * @author Madelaine Dalangin
+ * Contains and stores information tied to a user.
+ * @author Madelaine Dalangin modified by Dricmoy Bhattacharjee
  */
 public abstract class User implements Serializable {
     private String lastName;
@@ -22,7 +22,7 @@ public abstract class User implements Serializable {
 
     /**
      * Constructor Method for User
-     * @author Madelaine Dalangin
+     * @author Madelaine Dalangin, modified by Dricmoy Bhattacharjee
      * @param lastName String
      * @param firstName String
      * @param email String
@@ -43,6 +43,28 @@ public abstract class User implements Serializable {
         this.isAdmin = isAdmin;
     }
 
+    /**
+     * Alternate constructor that also sets pfp file path
+     * @param deviceId
+     * @param email
+     * @param firstName
+     * @param hasAdminRights
+     * @param hasOrganizerRights
+     * @param lastName
+     * @param pfp
+     * @param phone
+     */
+    public User(String deviceId, String email, String firstName, boolean hasAdminRights,
+                boolean hasOrganizerRights, String lastName, String pfp, String phone){
+        this.deviceId = deviceId;
+        this.email = email;
+        this.firstName = firstName;
+        this.isAdmin = hasAdminRights;
+        this.isOrganizer = hasOrganizerRights;
+        this.lastName = lastName;
+        this.pfpFilePath = pfp;
+        this.phoneNumber = phone;
+    }
 
     /**
      * Getter method for user's last name

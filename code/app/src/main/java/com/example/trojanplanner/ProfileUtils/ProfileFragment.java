@@ -26,7 +26,7 @@ import com.example.trojanplanner.model.User;
 public class ProfileFragment extends Fragment {
 
     private Database database;
-    
+
     private ImageView profileImage;
     private EditText firstNameInput, lastNameInput, emailInput, phoneInput;
     private boolean changedPfp = false;
@@ -164,6 +164,6 @@ public class ProfileFragment extends Fragment {
         emailInput.setText(email);
         phoneInput.setText(phone);
     }
-    
-    
+
+
 }
