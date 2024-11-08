@@ -34,6 +34,11 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packagingOptions {
+        resources {
+            excludes += "mockito-extensions/org.mockito.plugins.MockMaker"
+        }
+    }
 }
 
 dependencies {
@@ -44,7 +49,7 @@ dependencies {
     implementation(libs.core)
     implementation(libs.camera.camera2)
     implementation(libs.firebase.database)
-
+    implementation("com.google.firebase:firebase-messaging:23.0.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -54,13 +59,17 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.4.0")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
     androidTestImplementation("androidx.fragment:fragment-testing:1.3.6")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.1")
-//    testImplementation("org.mockito:mockito-core:2.19.0")
-    testImplementation("org.mockito:mockito-core:4.+") // Update to the latest Mockito version
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.0.1")
 
-    implementation (libs.barcode.scanning)
-    implementation (libs.common)
+    // Add only to androidTestImplementation for instrumentation tests
+    androidTestImplementation("org.mockito:mockito-android:4.0.0")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.1")
+    testImplementation("org.mockito:mockito-core:4.+") // Only for JVM tests
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.0.1")
+    androidTestImplementation("com.linkedin.dexmaker:dexmaker-mockito:2.28.1")
+
+    implementation(libs.barcode.scanning)
+    implementation(libs.common)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
@@ -76,5 +85,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
 }
