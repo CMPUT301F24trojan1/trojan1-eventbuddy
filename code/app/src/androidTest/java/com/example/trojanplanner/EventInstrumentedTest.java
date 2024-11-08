@@ -44,7 +44,7 @@ public class EventInstrumentedTest {
         ConcreteEvent event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
 
         // Call getPicture() with the application context
-        Bitmap picture = event.getPicture(context);
+        Bitmap picture = event.getPicture();
 
         // Ensure the default image is returned when no picture is set
         assertNotNull("Event should have a default picture", picture);

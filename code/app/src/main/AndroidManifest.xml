@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.trojanplanner"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
@@ -15,6 +16,11 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
         tools:ignore="SelectedPhotoAccess" />
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
 
     <application
         android:name=".App"
@@ -52,6 +58,9 @@
         <activity
             android:name="androidx.fragment.app.testing.EmptyFragmentActivity"
             android:exported="true" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCDSAcHKPT_0GX3kpVJ5MdWOYPo-Y7lCNQ" />
 
     </application>
 </manifest>

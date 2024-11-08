@@ -30,6 +30,7 @@ public class CreateEventFragment extends Fragment {
     private EditText eventDateEditText; // Add other fields as needed
     private Button createEventButton;
     private Database database;
+    float Price = 0;
 
     @Nullable
     @Override
