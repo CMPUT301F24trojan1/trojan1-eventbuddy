@@ -1,6 +1,7 @@
 package com.example.trojanplanner.view;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.trojanplanner.ProfileUtils.ProfileFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
 import com.example.trojanplanner.model.Entrant;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -19,10 +21,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
 
-    private String deviceId;
-    private Entrant currentUser;
+    public String deviceId;
+    public Entrant currentUser;
 
-    ProfileFragment profileFragment;
+    public PhotoPicker photoPicker;
+    public ProfileFragment profileFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,23 +34,26 @@ public class ProfileActivity extends AppCompatActivity {
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
+
         // Get information from the intent received from activity switch
         deviceId = getIntent().getExtras().getString("deviceId");
         currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
         assert deviceId != null;
-        System.out.println("deviceId: " + deviceId);
-        System.out.println("currentUser: " + currentUser);
 
 
         // Display ProfileFragment in the fragment container
         if (savedInstanceState == null) {
-            profileFragment = new ProfileFragment(currentUser);
+            profileFragment = new ProfileFragment(this);
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.profile_fragment_container, profileFragment)
                     .commit();
         }
 
+        // Init a photopicker which uses a callback set in ProfileFragment
+        photoPicker = new PhotoPicker();
+        photoPicker.initPhotoPicker(profileFragment.photoPickerCallback);
 
         setupNavigation();
 
@@ -59,7 +65,7 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        profileFragment.populateFields(currentUser);
+        profileFragment.resetState(currentUser);
     }
 
 
@@ -85,26 +91,27 @@ public class ProfileActivity extends AppCompatActivity {
         // Set the selected item to profileActivity
         navView.setSelectedItemId(R.id.profileActivity);
 
-        // Don't enable the click listener until valid profile is made
-        if (currentUser == null) {
-            return;
-        }
+
 
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
-                Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                intent.putExtra("deviceId", deviceId);
-                intent.putExtra("user", currentUser);
-                startActivity(intent);
-                finish();
+                if (currentUser != null) {
+                    Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
+                    intent.putExtra("deviceId", deviceId);
+                    intent.putExtra("user", currentUser);
+                    startActivity(intent);
+                    finish();
+                }
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
-                Intent intent = new Intent(ProfileActivity.this, QRActivity.class);
-                intent.putExtra("deviceId", deviceId);
-                intent.putExtra("user", currentUser);
-                startActivity(intent);
-                finish();
+                if (currentUser != null) {
+                    Intent intent = new Intent(ProfileActivity.this, QRActivity.class);
+                    intent.putExtra("deviceId", deviceId);
+                    intent.putExtra("user", currentUser);
+                    startActivity(intent);
+                    finish();
+                }
                 return true;
             } else return item.getItemId() == R.id.profileActivity; // Stay in the same activity
         });
