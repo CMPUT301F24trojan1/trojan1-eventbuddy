@@ -6,7 +6,7 @@ import java.util.ArrayList;
 /**
  * Entrant class that is extended from User class that stores information relating to events.
  * An Entrant is tied in and tracks a participant's behavior while engaging in eventbuddy's events.
- * @contributors: Madelaine Dalangin, Dricmoy Bhattacharjee
+ * @author Madelaine Dalangin, Dricmoy Bhattacharjee
  */
 public class Entrant extends User {
 
