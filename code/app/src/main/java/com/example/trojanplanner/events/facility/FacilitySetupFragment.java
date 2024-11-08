@@ -66,6 +66,7 @@ public class FacilitySetupFragment extends Fragment {
 
         uploadPhotoButton.setOnClickListener(v -> openImagePicker());
         saveButton.setOnClickListener(v -> saveFacility());
+
         cancelButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
 
         if (getActivity() instanceof MainActivity) {
@@ -162,6 +163,7 @@ public class FacilitySetupFragment extends Fragment {
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.facilitySetupFragment);  // Navigate after saving
+          
         } else {
             // If the photo was selected, proceed as usual
             try {
