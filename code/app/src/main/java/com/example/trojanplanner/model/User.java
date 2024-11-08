@@ -15,7 +15,7 @@ public abstract class User implements Serializable {
     private String phoneNumber;
     private String deviceId;
     private String pfpFilePath;
-    private Bitmap pfpBitmap;
+    private SerialBitmap pfpBitmap;
     private String role; //Entrant, Organizer, Admin
     private boolean isOrganizer;
     private boolean isAdmin;
@@ -201,11 +201,21 @@ public abstract class User implements Serializable {
     }
 
     public Bitmap getPfpBitmap() {
-        return pfpBitmap;
+        if (this.pfpBitmap == null) {
+            return null;
+        }
+        else {
+            return pfpBitmap.getBitmap();
+        }
     }
 
     public void setPfpBitmap(Bitmap pfpBitmap) {
-        this.pfpBitmap = pfpBitmap;
+        if (pfpBitmap == null) {
+            this.pfpBitmap = null;
+        }
+        else {
+            this.pfpBitmap = new SerialBitmap(pfpBitmap);
+        }
     }
 }
 
