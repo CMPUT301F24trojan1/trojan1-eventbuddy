@@ -150,7 +150,7 @@ public class Database {
      * @author Jared Gourley
      *
      */
-    public void uploadImage(Bitmap bitmap, @NonNull User owner, String filepath, OnSuccessListener successListener, OnFailureListener failureListener) {
+    public void uploadImage(@NonNull Bitmap bitmap, @NonNull User owner, String filepath, OnSuccessListener successListener, OnFailureListener failureListener) {
         //String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
         StorageReference refToSave = storageRef.child(filepath);
 
@@ -298,10 +298,10 @@ public class Database {
 
 
         db.collection("users")
-            .document(user.getDeviceId())
-            .set(userMap, SetOptions.merge())
-            .addOnSuccessListener(successListener)
-            .addOnFailureListener(failureListener);
+                .document(user.getDeviceId())
+                .set(userMap, SetOptions.merge())
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
     }
 
 
@@ -326,7 +326,7 @@ public class Database {
      * <br>
      * Can optionally be given a custom success and failure listener to perform a more specialized
      * action on success or failure.
-     * 
+     *
      * @param successListener The action to take on successful user insert
      * @param failureListener The action to take on failed user insert
      * @param event The event to insert
@@ -368,7 +368,7 @@ public class Database {
                 .set(eventMap, SetOptions.merge())
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
-        
+
     }
 
     /**
@@ -438,7 +438,7 @@ public class Database {
      * @author Jared Gourley
      */
     // Renamed method: insertFacilityWithListeners for custom success/failure handling
-    public void insertFacilityWithListeners(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
+    public void insertFacility(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
@@ -463,7 +463,7 @@ public class Database {
      * @author Jared Gourley
      */
     public void insertFacility(Facility facility) {
-        insertFacilityWithListeners(defaultSuccessListener, defaultFailureListener, facility);
+        insertFacility(defaultSuccessListener, defaultFailureListener, facility);
     }
 
     // ===================== Get documents from Firestore Database =====================
@@ -610,6 +610,7 @@ public class Database {
     private Entrant unpackEntrantMap(Map<String, Object> entrantMap) {
         Map<String, Object> m = entrantMap;
         Entrant entrant = new Entrant((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Entrant", (boolean) m.get("hasOrganizerRights"), (boolean) m.get("hasAdminRights"));
+        entrant.setPfpFilePath((String) m.get("pfp"));
 
         return entrant;
     }
@@ -670,6 +671,7 @@ public class Database {
         }
 
         Organizer organizer = new Organizer((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Organizer", true, (boolean) m.get("hasAdminRights"), (ArrayList<Event>) m.get("createdEvents"), (Facility) m.get("facility"));
+        organizer.setPfpFilePath((String) m.get("pfp"));
 
         return organizer;
     }
@@ -732,6 +734,7 @@ public class Database {
         }
 
         Admin admin = new Admin((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Admin", (boolean) m.get("hasOrganizerRights"), true);
+        admin.setPfpFilePath((String) m.get("pfp"));
 
         return admin;
     }
@@ -873,68 +876,73 @@ public class Database {
 
 
 
+/**
+ * Function to test querying an entrant. You can run this test by setting up a temp button
+ * in MainActivity to run this function
+ */
+public static void getEntrantTest() {
+    Database database = new Database();
+    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+        @Override
+        public void OnSuccess(Object object) {
+            Entrant entrant = (Entrant) object;
+            System.out.println("deviceId: " + entrant.getDeviceId());
+            System.out.println("email: " + entrant.getEmail());
+            System.out.println("firstName: " + entrant.getFirstName());
+            System.out.println("lastName: " + entrant.getLastName());
+            System.out.println("hasAdminRights: " + entrant.isAdmin());
+            System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
+            System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
+            System.out.println("currentPendingEvents: " + entrant.getCurrentPendingEvents());
+            System.out.println("currentWaitlistedEvents: " + entrant.getCurrentWaitlistedEvents());
+            System.out.println("currentDeclinedEvents: " + entrant.getCurrentDeclinedEvents());
+        }
+    };
+
+    Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+        @Override
+        public void OnFailure() {
+            System.out.println("Query attempt failed!");
+        }
+    };
+
+    database.getEntrant(successAction, failureAction, "testEntrant");
+}
 
 
-    /**
-     * Function to test querying an entrant. You can run this test by setting up a temp button
-     * in MainActivity to run this function
-     */
-    public static void getEntrantTest() {
-        Database database = new Database();
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
-            @Override
-            public void OnSuccess(Object object) {
-                Entrant entrant = (Entrant) object;
-                System.out.println("deviceId: " + entrant.getDeviceId());
-                System.out.println("email: " + entrant.getEmail());
-                System.out.println("firstName: " + entrant.getFirstName());
-                System.out.println("lastName: " + entrant.getLastName());
-                System.out.println("hasAdminRights: " + entrant.isAdmin());
-                System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
-                System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
-                System.out.println("currentPendingEvents: " + entrant.getCurrentPendingEvents());
-                System.out.println("currentWaitlistedEvents: " + entrant.getCurrentWaitlistedEvents());
-                System.out.println("currentDeclinedEvents: " + entrant.getCurrentDeclinedEvents());
-            }
-        };
+public static void uploadEventTest() {
+    // fake user with android id "Testfolder" (uploads to testfolder folder)
+    Database database = new Database();
+    Event event = new Event("TESTEVENTNAME", "TESTEVENT DESC", 0);
+    event.setEventId("UPLOAD_EVENT_TEST");
+    database.insertEvent(event);
+}
 
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("Query attempt failed!");
-            }
-        };
+public static void getOrganizerTest() {
+    Database database = new Database();
+    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+        @Override
+        public void OnSuccess(Object object) {
+            Organizer organizer = (Organizer) object;
+            System.out.println("deviceId: " + organizer.getDeviceId());
+            System.out.println("email: " + organizer.getEmail());
+            System.out.println("firstName: " + organizer.getFirstName());
+            System.out.println("lastName: " + organizer.getLastName());
+            System.out.println("hasAdminRights: " + organizer.isAdmin());
+            System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
+            System.out.println("createdEvents: " + organizer.getCreatedEvents());
+        }
+    };
 
-        database.getEntrant(successAction, failureAction, "testEntrant");
-    }
+    Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+        @Override
+        public void OnFailure() {
+            System.out.println("Query attempt failed!");
+        }
+    };
 
-
-
-    public static void getOrganizerTest() {
-        Database database = new Database();
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
-            @Override
-            public void OnSuccess(Object object) {
-                Organizer organizer = (Organizer) object;
-                System.out.println("deviceId: " + organizer.getDeviceId());
-                System.out.println("email: " + organizer.getEmail());
-                System.out.println("firstName: " + organizer.getFirstName());
-                System.out.println("lastName: " + organizer.getLastName());
-                System.out.println("hasAdminRights: " + organizer.isAdmin());
-                System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
-                System.out.println("createdEvents: " + organizer.getCreatedEvents());
-            }
-        };
-
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("Query attempt failed!");
-            }
-        };
-
-        database.getOrganizer(successAction, failureAction, "testOrganizer");
-    }
+    database.getOrganizer(successAction, failureAction, "testOrganizer");
+}
 
 
     public static void getQRTest() {
@@ -957,12 +965,11 @@ public class Database {
         database.getQRData(successAction, failureAction, "awoi42A(*@M#NFAOaskwlqo");
     }
 
-
-
-
-
-
-
-
-
 }
+
+
+
+
+
+
+
