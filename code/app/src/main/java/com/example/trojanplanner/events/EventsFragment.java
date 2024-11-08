@@ -16,6 +16,8 @@ import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
 import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -58,21 +60,20 @@ public class EventsFragment extends Fragment {
         Date endDateTime = calendar.getTime();
 
         // Add dummy events for testing
-        for (int i = 0; i < 20; i++) {
-            eventList.add(new ConcreteEvent(
-                    "Event " + (i + 1),
-                    "Description for Event " + (i + 1),
-                    0,
-                    "Location " + (i + 1),
-                    startDateTime,
-                    endDateTime
-            ));
-        }
-
-        // Optionally add additional events individually
-        eventList.add(new ConcreteEvent("Event 1", "Description for Event 1", 0, "Gym", startDateTime, endDateTime));
-        eventList.add(new ConcreteEvent("Event 2", "Description for Event 2", 0, "Library", startDateTime, endDateTime));
-        eventList.add(new ConcreteEvent("Event 3", "Description for Event 3", 0, "Cafeteria", startDateTime, endDateTime));
+//        for (int i = 0; i < 20; i++) {
+//            eventList.add(new ConcreteEvent(
+//                    "Event " + (i + 1),
+//                    "Description for Event " + (i + 1),
+//                    new Facility("name", "12345", "my house", ),
+//                    startDateTime,
+//                    endDateTime
+//            ));
+//        }
+//
+//        // Optionally add additional events individually
+//        eventList.add(new ConcreteEvent("Event 1", "Description for Event 1", "Gym", startDateTime, endDateTime));
+//        eventList.add(new ConcreteEvent("Event 2", "Description for Event 2", "Library", startDateTime, endDateTime));
+//        eventList.add(new ConcreteEvent("Event 3", "Description for Event 3", "Cafeteria", startDateTime, endDateTime));
 
         eventsAdapter.notifyDataSetChanged();
     }
