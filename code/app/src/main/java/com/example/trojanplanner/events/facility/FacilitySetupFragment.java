@@ -34,8 +34,8 @@ import java.util.Objects;
 public class FacilitySetupFragment extends Fragment {
     private static final int REQUEST_IMAGE_PICK = 1;
     private ImageView facilityPhoto;
-    private EditText facilityName;
-    private EditText ownerName;
+    private EditText facilityNameEditText;
+    private EditText facilityLocationEditText;
     private Uri facilityPhotoUri;
     private MainActivity mainActivity;
 
@@ -45,8 +45,8 @@ public class FacilitySetupFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_facility_setup, container, false);
 
         facilityPhoto = view.findViewById(R.id.facility_photo);
-        facilityName = view.findViewById(R.id.facility_name);
-        ownerName = view.findViewById(R.id.owner_name);
+        facilityNameEditText = view.findViewById(R.id.facility_name);
+        facilityLocationEditText = view.findViewById(R.id.location);
         Button uploadPhotoButton = view.findViewById(R.id.upload_photo_button);
         Button saveButton = view.findViewById(R.id.save_button);
         Button cancelButton = view.findViewById(R.id.cancel_button);
@@ -57,6 +57,16 @@ public class FacilitySetupFragment extends Fragment {
 
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();
+
+            // Override default photopicker callback function
+            mainActivity.facilityPhotoPicker.dummyCallback = new PhotoPicker.PhotoPickerCallback() {
+                @Override
+                public void OnPhotoPickerFinish(Bitmap bitmap) {
+                    facilityPhoto.setImageBitmap(bitmap);
+                    System.out.println("does it work??");
+                }
+            };
+
         }
 
         return view;
@@ -81,7 +91,7 @@ public class FacilitySetupFragment extends Fragment {
     }
 
     private void openImagePicker() {
-        mainActivity.photoPicker.openPhotoPicker(mainActivity.currentUser);
+        mainActivity.facilityPhotoPicker.openPhotoPicker(mainActivity.currentUser);
     }
 
     @Override
@@ -94,10 +104,10 @@ public class FacilitySetupFragment extends Fragment {
     }
 
     private void saveFacility() {
-        String name = facilityName.getText().toString().trim();
-        String ownerNameText = ownerName.getText().toString().trim();
+        String name = facilityNameEditText.getText().toString().trim();
+        String location = facilityLocationEditText.getText().toString().trim();
 
-        if (name.isEmpty() || ownerNameText.isEmpty()) {
+        if (name.isEmpty() || location.isEmpty()) {
             Toast.makeText(getActivity(), "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -111,7 +121,7 @@ public class FacilitySetupFragment extends Fragment {
             // Optionally, use a default string path for the image (could be a placeholder URL)
             String defaultUriString = "default_image_uri";
             // Create the Facility with the default image URI string
-            Facility facility = new Facility(name, "generatedFacilityId", ownerNameText, null, defaultUriString, bitmap);
+            Facility facility = new Facility(name, "generatedFacilityId", location, null, defaultUriString, bitmap);
 
             // Insert the facility into the database
             Database db = new Database();
@@ -131,7 +141,7 @@ public class FacilitySetupFragment extends Fragment {
             }
 
             // Create the Facility with the selected photo URI
-            Facility facility = new Facility(name, "generatedFacilityId", ownerNameText, null, facilityPhotoUri.toString(), bitmap);
+            Facility facility = new Facility(name, "generatedFacilityId", location, null, facilityPhotoUri.toString(), bitmap);
 
             // Insert the facility into the database
             Database db = new Database();

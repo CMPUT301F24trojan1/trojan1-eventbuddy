@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.trojanplanner.App;
@@ -17,7 +16,6 @@ import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -40,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
     public Entrant currentUser = null; // The person who is using the app right now
     private String deviceId;
     private Database database;
-    public PhotoPicker photoPicker;
+
+    public PhotoPicker facilityPhotoPicker;
+    private PhotoPicker.PhotoPickerCallback facilityPhotoPickerCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +56,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
+
         activity = this;
         database = new Database();
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker();
+        facilityPhotoPicker = new PhotoPicker();
+        facilityPhotoPicker.initPhotoPicker();
 
 
         // If this is the first time opening the app, get the device ID
