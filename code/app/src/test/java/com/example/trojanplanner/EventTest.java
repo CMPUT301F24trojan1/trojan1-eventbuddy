@@ -79,8 +79,8 @@ public class EventTest {
         Date endDateTime = calendar.getTime();
 
         // Initialize two instances of the same recurring event, with different recurrence settings
-        Event dailyEventWithEndDate = new ConcreteEvent("Daily Workout", "Gym session", "Gym", startDateTime, endDateTime);
-        Event dailyEventWithOccurrences = new ConcreteEvent("Daily Workout", "Gym session", "Gym", startDateTime, endDateTime);
+        Event dailyEventWithEndDate = new ConcreteEvent("Daily Workout", "Gym session", 0, "Gym", startDateTime, endDateTime);
+        Event dailyEventWithOccurrences = new ConcreteEvent("Daily Workout", "Gym session", 0, "Gym", startDateTime, endDateTime);
 
         // Set both events to recur on weekdays (Monday - Friday)
         for (String day : new String[]{"M", "T", "W", "R", "F"}) {
@@ -145,7 +145,7 @@ public class EventTest {
 
     @Test
     public void testAddAndRemoveParticipant() {
-        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", "Gym", startDateTime, endDateTime);
+        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
         Entrant entrant = new Entrant("Doe", "John", "johndoe@example.com", "1234567890", "device123", "participant", false, false);
 
         // Test adding a participant
@@ -162,7 +162,7 @@ public class EventTest {
     @Test
     public void testIsWaitlistFull() {
         // Assume the maximum capacity of the waitlist is set to 2 for testing
-        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", "Gym", startDateTime, endDateTime);
+        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
         event.addToWaitlist(new Entrant("Smith", "Alice", "alice@example.com", "1112223333", "device456", "participant", false, false));
         event.addToWaitlist(new Entrant("Johnson", "Bob", "bob@example.com", "4445556666", "device789", "participant", false, false));
         assertTrue("Waitlist should be full", event.isWaitlistFull(2));
@@ -189,7 +189,7 @@ public class EventTest {
 
     @Test
     public void testRecurringEventWithTotalOccurrences() {
-        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", "Gym", startDateTime, endDateTime);
+        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
         // Set event recurrence to weekdays (Monday - Friday) with 10 occurrences
         event.setRecurring(true);
         event.setRecurrenceType(Event.RecurrenceType.AFTER_OCCURRENCES);
@@ -206,7 +206,7 @@ public class EventTest {
 
     @Test
     public void testRecurringEventWithEndDate() {
-        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", "Gym", startDateTime, endDateTime);
+        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
         // Set event recurrence to weekdays (Monday - Friday) ending on a specific date
         event.setRecurring(true);
         event.setRecurrenceType(Event.RecurrenceType.UNTIL_DATE);
@@ -229,7 +229,7 @@ public class EventTest {
 
     @Test
     public void testIsRegistrationOpen() {
-        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", "Gym", startDateTime, endDateTime);
+        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
         // Set registration deadline to a future date
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, 2);
@@ -264,7 +264,7 @@ public class EventTest {
         Date currentDate = calendar.getTime();
 
         // Create an event with start and end times
-        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", "Gym", startDateTime, endDateTime);
+        Event event = new ConcreteEvent("Morning Yoga", "Relaxing session", 0, "Gym", startDateTime, endDateTime);
 
         // Use the overloaded updateStatus() with the specified currentDate
         event.updateStatus(currentDate);
