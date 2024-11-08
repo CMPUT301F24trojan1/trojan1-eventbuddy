@@ -37,9 +37,24 @@
 
     <fragment
         android:id="@+id/eventsListFragment"
-        android:name="com.example.trojanplanner.events.facility.CreateEventFragment"
+        android:name="com.example.trojanplanner.events.CreateEventFragment"
         android:label="Facility Registration"
         tools:layout="@layout/fragment_events_list" />
+<!--    <fragment-->
+<!--        android:id="@+id/organizerRegistrationFragment"-->
+<!--        android:name="com.example.trojanplanner.organizer.OrganizerRegistrationFragment"-->
+<!--        android:label="Organizer Registration"-->
+<!--        tools:layout="@layout/fragment_organizer_options" />-->
+
+<!--    <fragment-->
+<!--        android:id="@+id/emptyEventsFragment"-->
+<!--        android:name="com.example.trojanplanner.events.EmptyEventsFragment"-->
+<!--        android:label="Empty Events">-->
+<!--        <action-->
+<!--            android:id="@+id/action_emptyEventsFragment_to_organizerRegistrationFragment"-->
+<!--            app:destination="@id/organizerRegistrationFragment" />-->
+<!--    </fragment>-->
+
 
     <fragment
         android:id="@+id/eventEditFragment"
@@ -113,4 +128,5 @@
         app:destination="@id/eventDetailsFragment"
         app:popUpTo="@id/eventDetailsFragment"
         app:popUpToInclusive="true" />
+
 </navigation>
