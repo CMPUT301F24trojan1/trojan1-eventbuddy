@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
@@ -31,8 +30,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
-
-import java.util.Objects;
 
 import java.util.Objects;
 
@@ -75,23 +72,7 @@ public class MainActivity extends AppCompatActivity {
             getEntrantFromDeviceId(deviceId); // Redirects if no entrant exists!
         }
 
-
-        // Load EmptyEventsFragment initially
-        loadEmptyEventsFragment(); // TODO: In the getEntrantFromDeviceId OnSuccess operation, load actual events if entrant has them
-
         setupNavigation();
-    }
-
-
-
-
-
-
-    private void loadEmptyEventsFragment() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, new EmptyEventsFragment())
-                .commit();
     }
 
     @SuppressLint("HardwareIds")
@@ -129,6 +110,17 @@ public class MainActivity extends AppCompatActivity {
                      getUserPfp();
                  }
                  // TODO: populate events array
+                 // Check if the user has any events
+                 if ((currentUser.getCurrentWaitlistedEvents() == null || currentUser.getCurrentWaitlistedEvents().isEmpty()) &&
+                         (currentUser.getCurrentPendingEvents() == null || currentUser.getCurrentPendingEvents().isEmpty())) {
+                     // Show the EmptyEventsFragment if no events are found
+                     // will show by default
+                 } else {
+                     // Otherwise, show the EventsFragment
+                     getSupportFragmentManager().beginTransaction()
+                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+                             .commit();
+                 }
              }
         };
         Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
