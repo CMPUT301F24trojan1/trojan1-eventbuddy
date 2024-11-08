@@ -9,12 +9,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.facility.FacilitySetupFragment;
 
 public class EmptyEventsFragment extends Fragment {
-
     private TextView messageTextView;
 
     @Nullable
@@ -33,10 +37,13 @@ public class EmptyEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set up the button to navigate to OrganizerRegistrationFragment
-        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.organizerRegistrationFragment)
-        );
+        // Set up the NavController
+        NavController navController = NavHostFragment.findNavController(this);
+
+        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
+            // Navigate to FacilitySetupFragment using the action defined in nav_graph.xml
+            navController.navigate(R.id.facilitySetupFragment);
+        });
     }
 
     private void showNoEventsMessage() {
