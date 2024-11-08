@@ -31,22 +31,35 @@ import com.example.trojanplanner.view.MainActivity;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * A fragment that handles the setup of a new facility. It allows the user to input the
+ * facility's name, owner's name, and upload a photo, and then saves the facility details
+ * in the database.
+ */
 public class FacilitySetupFragment extends Fragment {
     private static final int REQUEST_IMAGE_PICK = 1;
     private ImageView facilityPhoto;
-    private EditText facilityName;
-    private EditText ownerName;
+    private EditText facilityNameEditText;
+    private EditText facilityLocationEditText;
     private Uri facilityPhotoUri;
     private MainActivity mainActivity;
 
+    /**
+     * Inflates the layout for this fragment and sets up the user interface components.
+     *
+     * @param inflater The LayoutInflater object to inflate the view.
+     * @param container The container view to attach the fragment to.
+     * @param savedInstanceState The saved instance state for the fragment, if any.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_facility_setup, container, false);
 
         facilityPhoto = view.findViewById(R.id.facility_photo);
-        facilityName = view.findViewById(R.id.facility_name);
-        ownerName = view.findViewById(R.id.owner_name);
+        facilityNameEditText = view.findViewById(R.id.facility_name);
+        facilityLocationEditText = view.findViewById(R.id.location);
         Button uploadPhotoButton = view.findViewById(R.id.upload_photo_button);
         Button saveButton = view.findViewById(R.id.save_button);
         Button cancelButton = view.findViewById(R.id.cancel_button);
@@ -57,20 +70,35 @@ public class FacilitySetupFragment extends Fragment {
 
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();
+
+            // Override default photopicker callback function
+            mainActivity.facilityPhotoPicker.dummyCallback = new PhotoPicker.PhotoPickerCallback() {
+                @Override
+                public void OnPhotoPickerFinish(Bitmap bitmap) {
+                    facilityPhoto.setImageBitmap(bitmap);
+                    System.out.println("does it work??");
+                }
+            };
+
         }
 
         return view;
     }
 
+    /**
+     * Hides the action bar when the fragment is resumed to provide a full-screen experience.
+     */
     @Override
     public void onResume() {
         super.onResume();
-        // Hide the action bar for full-screen effect
         if (getActivity() instanceof AppCompatActivity) {
             Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).hide();
         }
     }
 
+    /**
+     * Restores the action bar visibility when the fragment is stopped.
+     */
     @Override
     public void onStop() {
         super.onStop();
@@ -80,10 +108,20 @@ public class FacilitySetupFragment extends Fragment {
         }
     }
 
+    /**
+     * Opens the photo picker to allow the user to select a photo for the facility.
+     */
     private void openImagePicker() {
-        mainActivity.photoPicker.openPhotoPicker(mainActivity.currentUser);
+        mainActivity.facilityPhotoPicker.openPhotoPicker(mainActivity.currentUser);
     }
 
+    /**
+     * Handles the result from the photo picker activity and sets the selected photo URI.
+     *
+     * @param requestCode The request code passed in startActivityForResult().
+     * @param resultCode The result code returned by the photo picker activity.
+     * @param data The intent containing the result data, including the selected photo URI.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -93,11 +131,15 @@ public class FacilitySetupFragment extends Fragment {
         }
     }
 
+    /**
+     * Saves the facility data to the database. If no photo is selected, a default image is used.
+     * Displays a toast message indicating whether the facility was saved successfully or not.
+     */
     private void saveFacility() {
-        String name = facilityName.getText().toString().trim();
-        String ownerNameText = ownerName.getText().toString().trim();
+        String name = facilityNameEditText.getText().toString().trim();
+        String location = facilityLocationEditText.getText().toString().trim();
 
-        if (name.isEmpty() || ownerNameText.isEmpty()) {
+        if (name.isEmpty() || location.isEmpty()) {
             Toast.makeText(getActivity(), "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -111,7 +153,7 @@ public class FacilitySetupFragment extends Fragment {
             // Optionally, use a default string path for the image (could be a placeholder URL)
             String defaultUriString = "default_image_uri";
             // Create the Facility with the default image URI string
-            Facility facility = new Facility(name, "generatedFacilityId", ownerNameText, null, defaultUriString, bitmap);
+            Facility facility = new Facility(name, "generatedFacilityId", location, null, defaultUriString, bitmap);
 
             // Insert the facility into the database
             Database db = new Database();
@@ -119,7 +161,7 @@ public class FacilitySetupFragment extends Fragment {
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.facilitySetupFragment);
+            navController.navigate(R.id.facilitySetupFragment);  // Navigate after saving
         } else {
             // If the photo was selected, proceed as usual
             try {
@@ -131,14 +173,14 @@ public class FacilitySetupFragment extends Fragment {
             }
 
             // Create the Facility with the selected photo URI
-            Facility facility = new Facility(name, "generatedFacilityId", ownerNameText, null, facilityPhotoUri.toString(), bitmap);
+            Facility facility = new Facility(name, "generatedFacilityId", location, null, facilityPhotoUri.toString(), bitmap);
 
             // Insert the facility into the database
             Database db = new Database();
             db.insertFacility(facility);
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(requireView()).navigateUp();
+            Navigation.findNavController(requireView()).navigateUp();  // Navigate back after saving
         }
     }
 }
