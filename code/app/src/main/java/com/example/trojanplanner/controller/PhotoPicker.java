@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.ActivityResultRegistry;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwner;
 
@@ -29,7 +30,9 @@ import java.io.IOException;
  */
 public class PhotoPicker {
 
-    private Uri selectedPhoto = null; // TODO: investigate if it's possible to break the sequence and close photo picker with this still true
+    private Bitmap selectedPhoto = null; // TODO: investigate if it's possible to break the sequence and close photo picker with this still true
+    private String selectedPhotoPath = null;
+
     private boolean currentlyPicking = false;
 
     private ActivityResultRegistry registry;
@@ -40,10 +43,16 @@ public class PhotoPicker {
     private boolean hasDatabase = false;
     private User user; // Just to assign a user for uploading
 
+    private PhotoPickerCallback dummyCallback;
+
     public PhotoPicker() {
         activity = App.activityManager.getActivity();
         owner = (LifecycleOwner) activity;
         registry = ( (AppCompatActivity) activity).getActivityResultRegistry();
+        dummyCallback = new PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) { return; }
+        };
     }
 
 
@@ -51,12 +60,21 @@ public class PhotoPicker {
         return currentlyPicking;
     }
 
-    public Uri getSelectedPhoto() {
+    public Bitmap getSelectedPhoto() {
         return selectedPhoto;
     }
 
     public boolean hasDatabase() {
         return hasDatabase;
+    }
+
+
+    /**
+     * A callback so that classes can call the PhotoPicker and receive the selected photo when it
+     * is chosen.
+     */
+    public interface PhotoPickerCallback {
+        void OnPhotoPickerFinish(Bitmap bitmap);
     }
 
 
@@ -68,49 +86,70 @@ public class PhotoPicker {
      * @param database The database to upload to (set to null to avoid uploading)
      * @author Jared Gourley
      */
-    public void initPhotoPicker(Database database) {
+    public void initPhotoPicker(@NonNull PhotoPickerCallback callback, Database database) {
         // https://developer.android.com/training/data-storage/shared/photopicker#select-single-item
         // https://developer.android.com/training/basics/intents/result#separate - needed to modify call to work from non-Activity object
         photoPickerLauncher =
                 registry.register("photoPickerResult", owner, new ActivityResultContracts.PickVisualMedia(), uri -> {
-                    // Callback is invoked after the user selects a media item or closes the
-                    // photo picker.
+                    // Callback is invoked after the user selects a media item or closes the photo picker.
                     if (uri != null) {
                         Log.d("PhotoPicker", "Selected URI: " + uri);
-                        selectedPhoto = uri;
                         Bitmap bitmap;
+                        // Attempt to convert received URI to bitmap
+                        try {
+                            bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
+                            selectedPhoto = bitmap;
+                        }
+                        catch (IOException e) {
+                            Log.d("PhotoPicker", "uri invalid/no permissions");
+                            selectedPhoto = null;
+                            currentlyPicking = false;
+                            callback.OnPhotoPickerFinish(selectedPhoto);
+                            return;
+                        }
+                        // Trigger the successful callback with the photo and upload if desired
+                        callback.OnPhotoPickerFinish(selectedPhoto);
                         if (database != null) {
-                            try {
-                                bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
-                            }
-                            catch (IOException e) {
-                                System.out.println("uri invalid/no permissions");
-                                return;
-                            }
                             database.uploadImage(bitmap, user);
                         }
                         currentlyPicking = false;
+                    // If no photo was selected
                     } else {
                         Log.d("PhotoPicker", "No media selected");
                         selectedPhoto = null;
                         currentlyPicking = false;
+                        callback.OnPhotoPickerFinish(selectedPhoto);
                     }
                 });
+
         if (database != null) {
             hasDatabase = true;
         }
     }
+
 
     /**
      * Method to initialize the PhotoPicker instance. This must be called before attempting to call
      * openPhotoPicker and THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD.
      * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
+     * If a callback is passed, the callback will be triggered when the PhotoPicker is closed
+     * and the chosen photo will be given (could be null if PhotoPicker cancelled).
      * @author Jared Gourley
      */
     public void initPhotoPicker() {
-        initPhotoPicker(null);
+        initPhotoPicker(dummyCallback, null);
     }
+
+    public void initPhotoPicker(PhotoPickerCallback callback) {
+        initPhotoPicker(callback, null);
+    }
+
+    public void initPhotoPicker(Database database) {
+        initPhotoPicker(dummyCallback, database);
+    }
+
+
 
 
     // TODO: Is this function necessary?
