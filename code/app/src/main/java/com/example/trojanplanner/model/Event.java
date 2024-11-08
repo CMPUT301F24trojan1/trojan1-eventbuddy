@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-
-
 // facilities can have .... multiple events (facility isn't implemented yet)
 public class Event implements Serializable {
     private String name;
@@ -56,11 +54,14 @@ public class Event implements Serializable {
 
     //for recurrence settings
     private boolean isRecurring;
-    private Set<String> recurrenceDays; ///create a hash on creaton
+    private ArrayList<String> recurrenceDays; ///create a hash on creation
     private RecurrenceType recurrenceType;
     private String eventRecurrenceType;
     private Date recurrenceEndDate;
     private int Total_Occurrences;
+
+//    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
+//    }
 
     // https://www.w3schools.com/java/java_enums.asp
     public enum RecurrenceType {
@@ -130,7 +131,7 @@ public class Event implements Serializable {
         this.notifications = new ArrayList<>();
         this.registrationDeadline = null;
         this.isRecurring = false;
-        this.recurrenceDays = new HashSet<>();
+        this.recurrenceDays = new ArrayList<>();
         this.recurrenceType = RecurrenceType.NEVER;
         this.eventRecurrenceType = null;
         this.recurrenceEndDate = null;
@@ -349,11 +350,11 @@ public class Event implements Serializable {
         isRecurring = recurring;
     }
 
-    public Set<String> getRecurrenceDays() {
+    public ArrayList<String> getRecurrenceDays() {
         return recurrenceDays;
     }
 
-    public void setRecurrenceDays(Set<String> recurrenceDays) {
+    public void setRecurrenceDays(ArrayList<String> recurrenceDays) {
         this.recurrenceDays = recurrenceDays;
     }
 
@@ -500,7 +501,7 @@ public class Event implements Serializable {
     private String getDayOfWeek(Calendar calendar) {
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
         switch (dayOfWeek) {
-            case Calendar.SUNDAY: return "S";
+            case Calendar.SUNDAY: return "U";
             case Calendar.MONDAY: return "M";
             case Calendar.TUESDAY: return "T";
             case Calendar.WEDNESDAY: return "W";
@@ -510,6 +511,7 @@ public class Event implements Serializable {
             default: return "";
         }
     }
+
     //FIREBASE, uses helper function above to change Recurrence TYPE
     public void convertToEndDateType() {
         if (recurrenceType == RecurrenceType.AFTER_OCCURRENCES && Total_Occurrences > 0) {

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 /**
  * Entrant class that is extended from User class that stores information relating to events.
  * An Entrant is tied in and tracks a participant's behavior while engaging in eventbuddy's events.
- * @contributors: Madelaine Dalangin, Dricmoy Bhattacharjee
+ * @author Madelaine Dalangin, Dricmoy Bhattacharjee
  */
 public class Entrant extends User {
 
@@ -142,4 +142,20 @@ public class Entrant extends User {
     public void setCurrentDeclinedEvents(ArrayList<Event> currentDeclinedEvents) {
         this.currentDeclinedEvents = currentDeclinedEvents;
     }
+
+    /**
+     * Returns the same user as an Organizer class.
+     * <br>
+     * isOrganizer must be true otherwise an exception is thrown.
+     * @return The equivalent organizer class for this entrant
+     */
+    public Organizer returnOrganizer() {
+        // TODO enforce the isOrganizer check
+        Organizer organizer = new Organizer(this.getLastName(), this.getFirstName(), this.getEmail(), this.getPhoneNumber(), this.getDeviceId(), this.getRole(), true, this.isAdmin(), new ArrayList<Event>(), null);
+
+        return organizer;
+    }
+
+
+
 }

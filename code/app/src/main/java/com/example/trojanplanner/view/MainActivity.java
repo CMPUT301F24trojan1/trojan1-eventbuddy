@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.EmptyEventsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
@@ -34,8 +33,6 @@ import com.example.trojanplanner.databinding.ActivityMainBinding;
 
 import java.util.Objects;
 
-import java.util.Objects;
-
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private Activity activity;
@@ -43,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
     public Entrant currentUser = null; // The person who is using the app right now
     private String deviceId;
     private Database database;
-    public PhotoPicker photoPicker;
+
+    public PhotoPicker facilityPhotoPicker;
+    private PhotoPicker.PhotoPickerCallback facilityPhotoPickerCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +58,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
+
         activity = this;
         database = new Database();
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker();
+        facilityPhotoPicker = new PhotoPicker();
+        facilityPhotoPicker.initPhotoPicker();
 
 
         // If this is the first time opening the app, get the device ID
@@ -75,23 +76,7 @@ public class MainActivity extends AppCompatActivity {
             getEntrantFromDeviceId(deviceId); // Redirects if no entrant exists!
         }
 
-
-        // Load EmptyEventsFragment initially
-        loadEmptyEventsFragment(); // TODO: In the getEntrantFromDeviceId OnSuccess operation, load actual events if entrant has them
-
         setupNavigation();
-    }
-
-
-
-
-
-
-    private void loadEmptyEventsFragment() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, new EmptyEventsFragment())
-                .commit();
     }
 
     @SuppressLint("HardwareIds")
@@ -129,6 +114,17 @@ public class MainActivity extends AppCompatActivity {
                      getUserPfp();
                  }
                  // TODO: populate events array
+                 // Check if the user has any events
+                 if ((currentUser.getCurrentWaitlistedEvents() == null || currentUser.getCurrentWaitlistedEvents().isEmpty()) &&
+                         (currentUser.getCurrentPendingEvents() == null || currentUser.getCurrentPendingEvents().isEmpty())) {
+                     // Show the EmptyEventsFragment if no events are found
+                     // will show by default
+                 } else {
+                     // Otherwise, show the EventsFragment
+                     getSupportFragmentManager().beginTransaction()
+                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+                             .commit();
+                 }
              }
         };
         Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
@@ -193,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.emptyEventsFragment, R.id.eventsFragment)
+                R.id.emptyEventsFragment, R.id.eventsListFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
@@ -210,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.eventsFragment) {
-                navController.navigate(R.id.eventsFragment);
+            if (item.getItemId() == R.id.eventsListFragment) {
+                navController.navigate(R.id.eventsListFragment);
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
                 Intent intent = new Intent(MainActivity.this, QRActivity.class);

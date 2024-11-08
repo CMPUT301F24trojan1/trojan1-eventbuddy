@@ -360,7 +360,7 @@ public class Database {
         if (event.isRecurring()) {
             eventMap.put("recurrenceFormat", event.getRecurrenceType()); // note: database uses UNTIL_DATE standard but remembers what the organizer prefers
             eventMap.put("recurringEndDate", event.getRecurrenceEndDate());
-            eventMap.put("recurringOn", event.getRecurrenceDays());
+            eventMap.put("recurringOn", (ArrayList) event.getRecurrenceDays());
         }
 
         db.collection("events")
@@ -553,7 +553,7 @@ public class Database {
         if (event.isRecurring()) {
             event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
             event.setRecurrenceEndDate((Date) m.get("recurringEndDate"));
-            event.setRecurrenceDays((Set<String>) m.get("recurringOn"));
+            event.setRecurrenceDays((ArrayList<String>) m.get("recurringOn"));
         }
 
         return event;
@@ -876,49 +876,49 @@ public class Database {
 
 
 
-/**
- * Function to test querying an entrant. You can run this test by setting up a temp button
- * in MainActivity to run this function
- */
-public static void getEntrantTest() {
-    Database database = new Database();
-    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
-        @Override
-        public void OnSuccess(Object object) {
-            Entrant entrant = (Entrant) object;
-            System.out.println("deviceId: " + entrant.getDeviceId());
-            System.out.println("email: " + entrant.getEmail());
-            System.out.println("firstName: " + entrant.getFirstName());
-            System.out.println("lastName: " + entrant.getLastName());
-            System.out.println("hasAdminRights: " + entrant.isAdmin());
-            System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
-            System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
-            System.out.println("currentPendingEvents: " + entrant.getCurrentPendingEvents());
-            System.out.println("currentWaitlistedEvents: " + entrant.getCurrentWaitlistedEvents());
-            System.out.println("currentDeclinedEvents: " + entrant.getCurrentDeclinedEvents());
-        }
-    };
+    /**
+     * Function to test querying an entrant. You can run this test by setting up a temp button
+     * in MainActivity to run this function
+     */
+    public static void getEntrantTest() {
+        Database database = new Database();
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+            @Override
+            public void OnSuccess(Object object) {
+                Entrant entrant = (Entrant) object;
+                System.out.println("deviceId: " + entrant.getDeviceId());
+                System.out.println("email: " + entrant.getEmail());
+                System.out.println("firstName: " + entrant.getFirstName());
+                System.out.println("lastName: " + entrant.getLastName());
+                System.out.println("hasAdminRights: " + entrant.isAdmin());
+                System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
+                System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
+                System.out.println("currentPendingEvents: " + entrant.getCurrentPendingEvents());
+                System.out.println("currentWaitlistedEvents: " + entrant.getCurrentWaitlistedEvents());
+                System.out.println("currentDeclinedEvents: " + entrant.getCurrentDeclinedEvents());
+            }
+        };
 
-    Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-        @Override
-        public void OnFailure() {
-            System.out.println("Query attempt failed!");
-        }
-    };
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("Query attempt failed!");
+            }
+        };
 
-    database.getEntrant(successAction, failureAction, "testEntrant");
-}
+        database.getEntrant(successAction, failureAction, "testEntrant");
+    }
 
 
-public static void uploadEventTest() {
-    // fake user with android id "Testfolder" (uploads to testfolder folder)
-    Database database = new Database();
-    Event event = new Event("TESTEVENTNAME", "TESTEVENT DESC", 0);
-    event.setEventId("UPLOAD_EVENT_TEST");
-    database.insertEvent(event);
-}
+    public static void uploadEventTest() {
+        // fake user with android id "Testfolder" (uploads to testfolder folder)
+        Database database = new Database();
+        Event event = new Event("TESTEVENTNAME", "TESTEVENT DESC", 0);
+        event.setEventId("UPLOAD_EVENT_TEST");
+        database.insertEvent(event);
+    }
 
-public static void getOrganizerTest() {
+    public static void getOrganizerTest() {
     Database database = new Database();
     Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
         @Override
@@ -965,11 +965,7 @@ public static void getOrganizerTest() {
         database.getQRData(successAction, failureAction, "awoi42A(*@M#NFAOaskwlqo");
     }
 
+
 }
-
-
-
-
-
 
 

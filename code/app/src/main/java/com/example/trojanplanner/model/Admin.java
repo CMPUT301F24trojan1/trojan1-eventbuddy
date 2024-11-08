@@ -18,8 +18,9 @@ public class Admin extends User {
      * @param email        Admin's email address
      * @param phoneNumber  Admin's phone number
      * @param deviceId     Admin's device ID
-     * @param pfpFilePath  Admin's profile picture file path
-     * @param pfpBitmap    Admin's profile picture bitmap
+     * @param role The role of the created user (should be "admin")
+     * @param isOrganizer If the created admin has organizer rights
+     * @param isAdmin If the created admin has admin rights (should be true)
      */
     public Admin(String lastName, String firstName, String email, String phoneNumber,
                  String deviceId, String role, boolean isOrganizer, boolean isAdmin) {
