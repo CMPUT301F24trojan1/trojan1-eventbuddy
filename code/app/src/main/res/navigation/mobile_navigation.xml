@@ -38,4 +38,12 @@
         android:name="com.example.trojanplanner.view.ProfileActivity"
         android:label="@string/title_profile"
         tools:layout="@layout/activity_profile" />
+
+    <fragment
+        android:id="@+id/waitlistFragment"
+        android:name="com.example.trojanplanner.HelperFragments.WaitlistFragment"
+        android:label="Waitlist"
+        tools:layout="@layout/fragment_waitlist" />
+
+
 </navigation>
