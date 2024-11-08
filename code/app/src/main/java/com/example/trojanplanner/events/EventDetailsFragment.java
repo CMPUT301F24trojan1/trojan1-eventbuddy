@@ -56,7 +56,7 @@ public class EventDetailsFragment extends Fragment {
         // Set data from the event object to the UI elements
         if (event != null) {
             // Set the image, if available, or default one
-            Bitmap eventPicture = event.getPicture();
+            Bitmap eventPicture = event.getPicture(requireContext());
             if (eventPicture != null) {
                 eventImageView.setImageBitmap(eventPicture);
             } else {

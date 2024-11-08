@@ -24,7 +24,6 @@ import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
 
 public class ProfileFragment extends Fragment {
-
     private Database database;
 
     private ImageView profileImage;
@@ -164,6 +163,4 @@ public class ProfileFragment extends Fragment {
         emailInput.setText(email);
         phoneInput.setText(phone);
     }
-
-
 }

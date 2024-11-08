@@ -91,8 +91,6 @@ public class QRActivity extends AppCompatActivity {
      *
      * @author Dricmoy Bhattacharjee
      */
-
-
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -103,8 +101,6 @@ public class QRActivity extends AppCompatActivity {
             startQRScanner(); // Start the scanner if permission is already granted
         }
     }
-
-
 
     /**
      * Starts the continuous QR scanner. It sets the decoder factory to recognize
