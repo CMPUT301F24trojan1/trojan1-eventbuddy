@@ -19,12 +19,14 @@ import java.util.List;
 
 public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.EventViewHolder> {
 
+    private final EventArrayAdapter.OnEventClickListener OnEventClickListener;
     private List<Event> eventList;
     private Context context;
 
-    public EventArrayAdapter(Context context, List<Event> eventList) {
+    public EventArrayAdapter(Context context, List<Event> eventList, OnEventClickListener listener) {
         this.context = context;
         this.eventList = eventList;
+        this.OnEventClickListener = listener;
     }
 
     @NonNull
@@ -47,6 +49,18 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
         } else {
             holder.eventImage.setImageResource(R.drawable.default_event_pic); // Default image
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            // When an event is clicked, call the onEventClick method
+            if (OnEventClickListener != null) {
+                OnEventClickListener.onEventClick(event); // This will call the onEventClick in the fragment
+            }
+        });
+    }
+
+    // Define the OnEventClickListener interface
+    public interface OnEventClickListener {
+        void onEventClick(Event event);
     }
 
     @Override

@@ -371,7 +371,6 @@ public class Database {
 
     }
 
-
     /**
      * Inserts a document into the users collection of the Firestore Database. Overwrites the previous
      * document if one with the same device ID exists.

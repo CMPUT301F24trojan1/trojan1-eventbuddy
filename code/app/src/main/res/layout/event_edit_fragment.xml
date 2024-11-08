@@ -6,6 +6,19 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Top Header -->
+    <TextView
+        android:id="@+id/eventSettingsHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Event Settings"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp"/>
+
     <!-- Event Image -->
     <ImageView
         android:id="@+id/eventImageView"
@@ -13,7 +26,7 @@
         android:layout_height="200dp"
         android:contentDescription="Event Image"
         android:src="@drawable/event_placeholder"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/eventSettingsHeader"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:scaleType="centerCrop"
@@ -25,6 +38,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Event Name"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:minHeight="48dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventImageView"
@@ -36,6 +52,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Spots Available"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:minHeight="48dp"
         android:inputType="number"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -48,6 +67,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Event Description"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:minHeight="48dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventSpotsAvailableEditText"
@@ -59,6 +81,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Event Date (MM/DD/YYYY)"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:minHeight="48dp"
         android:inputType="date"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -71,6 +96,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Event Time (HH:MM AM/PM)"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:minHeight="48dp"
         android:inputType="time"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -83,28 +111,52 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Event Price"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:minHeight="48dp"
         android:inputType="numberDecimal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventTimeEditText"
         android:layout_marginBottom="16dp"/>
 
-    <!-- Create and Cancel Buttons -->
+    <!-- Save Changes Button -->
     <Button
-        android:id="@+id/createEventButton"
-        android:layout_width="wrap_content"
+        android:id="@+id/saveChangesButton"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Create Event"
+        android:text="Save Changes"
+        android:textSize="16sp"
+        android:padding="12dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventPriceEditText"
-        android:layout_marginEnd="8dp"/>
-
-    <Button
-        android:id="@+id/cancelEventButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cancel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventPriceEditText"
-        android:layout_marginStart="8dp"/>
+        android:layout_marginBottom="8dp"/>
+
+    <!-- View Waitlist Button -->
+    <Button
+        android:id="@+id/viewWaitlistButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="View Waitlist"
+        android:textSize="16sp"
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/saveChangesButton"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Return to My Events Button -->
+    <Button
+        android:id="@+id/returnToEventsButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Return to My Events"
+        android:textSize="16sp"
+        android:padding="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewWaitlistButton"
+        android:layout_marginBottom="16dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
