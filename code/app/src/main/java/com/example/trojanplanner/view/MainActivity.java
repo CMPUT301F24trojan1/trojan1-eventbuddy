@@ -15,8 +15,10 @@ import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -24,6 +26,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.trojanplanner.databinding.ActivityMainBinding;
+
+import java.util.Objects;
 
 import java.util.Objects;
 
