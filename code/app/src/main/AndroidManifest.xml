@@ -39,5 +39,6 @@
         <activity
             android:name=".view.QRActivity">
         </activity>
+        <activity android:name=".view.SlideShowActivity" />
     </application>
 </manifest>
