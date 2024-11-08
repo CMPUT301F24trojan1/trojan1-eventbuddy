@@ -26,7 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/owner_name" />
+        app:layout_constraintTop_toBottomOf="@id/location" />
 
     <EditText
         android:id="@+id/facility_name"
@@ -52,11 +52,11 @@
         app:layout_constraintTop_toBottomOf="@id/save_button" />
 
     <EditText
-        android:id="@+id/owner_name"
+        android:id="@+id/location"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:hint="Owner Name"
+        android:hint="Facility Location"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
