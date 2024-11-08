@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Set;
 
 //NOTE THIS IS FOR THE ENTRANT NOT ORGANIZER, same with event_details_fragment.xml
@@ -171,7 +172,7 @@ public class EventDetailsFragment extends Fragment {
         eventDateTextView.setText(startDate + " - " + endDate);
 
         // Convert abbreviations in recurrenceDays to full day names
-        Set<String> recurrenceDays = event.getRecurrenceDays();
+        ArrayList<String> recurrenceDays = event.getRecurrenceDays();
         String recurrenceDaysText = recurrenceDays.stream()
                 .map(this::getFullDayName) // Convert each unique abbreviation to full day name
                 .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
