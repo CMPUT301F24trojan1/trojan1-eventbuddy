@@ -202,6 +202,7 @@ public class ProfileFragment extends Fragment {
                     });
         }
     }
+
     /**
      *
      * @param user
