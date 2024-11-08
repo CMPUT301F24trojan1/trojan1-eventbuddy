@@ -43,7 +43,7 @@ public class PhotoPicker {
     private boolean hasDatabase = false;
     private User user; // Just to assign a user for uploading
 
-    private PhotoPickerCallback dummyCallback;
+    public PhotoPickerCallback dummyCallback;
 
     public PhotoPicker() {
         activity = App.activityManager.getActivity();
@@ -83,6 +83,7 @@ public class PhotoPicker {
      * openPhotoPicker and THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD.
      * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
+     * @param callback The callback function
      * @param database The database to upload to (set to null to avoid uploading)
      * @author Jared Gourley
      */

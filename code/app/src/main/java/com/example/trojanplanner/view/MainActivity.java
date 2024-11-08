@@ -40,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
     public Entrant currentUser = null; // The person who is using the app right now
     private String deviceId;
     private Database database;
-    public PhotoPicker photoPicker;
+
+    public PhotoPicker facilityPhotoPicker;
+    private PhotoPicker.PhotoPickerCallback facilityPhotoPickerCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +57,13 @@ public class MainActivity extends AppCompatActivity {
             currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
         }
 
+
+
+
         activity = this;
         database = new Database();
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker();
+        facilityPhotoPicker = new PhotoPicker();
+        facilityPhotoPicker.initPhotoPicker();
 
 
         // If this is the first time opening the app, get the device ID
