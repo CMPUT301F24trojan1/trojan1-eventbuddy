@@ -47,6 +47,7 @@ public class ProfileFragment extends Fragment {
     private boolean changedPfp = false;
 
     private ProfileActivity profileActivity;
+    public Entrant currentEntrant; // Should reference the same user as App.currentUser
 
     public PhotoPicker.PhotoPickerCallback photoPickerCallback;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -59,9 +60,23 @@ public class ProfileFragment extends Fragment {
 
     public ProfileFragment(ProfileActivity profileActivity) {
         this.profileActivity = profileActivity; // can get the user from this object
-        if (database == null) {
-            database = new Database();
-        }
+//        if (database == null) {
+//            database = new Database();
+//        }
+        // Database.getDatabase();
+        // Add a listener to the running getUser query if it's not set yet
+//        if (App.currentUser == null) {
+//            Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
+//                @Override
+//                public void OnSuccess(Object object) {
+//
+//                }
+//            }
+
+
+            //database.getEntrant(App.deviceId);
+//        }
+
         photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
             @Override
             public void OnPhotoPickerFinish(Bitmap bitmap) {
@@ -133,16 +148,17 @@ public class ProfileFragment extends Fragment {
     private void handleCancel() {
         // Handle cancel action, e.g., clear fields or go back
         System.out.println("Cancel!");
-        System.out.println("user: " + profileActivity.currentUser);
-        if (profileActivity.currentUser != null) {
-            System.out.println("firstname: " + profileActivity.currentUser.getFirstName() + ", lastname: " + profileActivity.currentUser.getLastName());
+        System.out.println("user: " + App.currentUser);
+        if (App.currentUser != null) {
+            System.out.println("firstname: " + App.currentUser.getFirstName() + ", lastname: " + App.currentUser.getLastName());
         }
-        resetState(profileActivity.currentUser); // for now, reset fields to current saved values
+        resetState(App.currentUser); // for now, reset fields to current saved values
     }
 
     private void handleSave() {
         // Handle save action, e.g., validate input and save to a database or API
         System.out.println("Save!");
+        // TODO: This probably should not be allowed to run if the database is currently still retrieving the current user?
 
         // Input validation
         boolean errorCaught = false;
@@ -172,40 +188,38 @@ public class ProfileFragment extends Fragment {
         // If null, give basic entrant privileges
         boolean isOrganizer = false, isAdmin = false;
         String deviceId;
-        if (profileActivity.currentUser != null) {
-            profileActivity.currentUser.setFirstName(firstName);
-            profileActivity.currentUser.setLastName(lastName);
-            profileActivity.currentUser.setEmail(email);
-            profileActivity.currentUser.setPhoneNumber(phone);
+        if (App.currentUser != null) {
+            App.currentUser.setFirstName(firstName);
+            App.currentUser.setLastName(lastName);
+            App.currentUser.setEmail(email);
+            App.currentUser.setPhoneNumber(phone);
         }
         else {
-            deviceId = profileActivity.deviceId;
-            profileActivity.currentUser = new Entrant(lastName, firstName, email, phone, deviceId, "Entrant", false, false);
+            deviceId = App.deviceId;
+            App.currentUser = new Entrant(lastName, firstName, email, phone, deviceId, "Entrant", false, false);
         }
 
-        if (database == null) {
-            database = new Database();
-        }
+        Database database = Database.getDB();
 
         // If pfp image was changed, explicitly choose a new filepath here
         // and use it for both the Firebase Storage upload and the database document insert
         if (changedPfp) { // && profileImageBitmap != null
             Bitmap bitmap = profileImageBitmap;
-            String newPfpFilepath = profileActivity.deviceId + "/" + System.currentTimeMillis() + ".png";
-            profileActivity.currentUser.setPfpFilePath(newPfpFilepath);
+            String newPfpFilepath = App.deviceId + "/" + System.currentTimeMillis() + ".png";
+            App.currentUser.setPfpFilePath(newPfpFilepath);
             System.out.println("bitmap: " + bitmap);
             System.out.println("filepath: " + newPfpFilepath);
             // Upload the image if the change is a non-null image
             if (bitmap != null) {
-                database.uploadImage(bitmap, profileActivity.currentUser, newPfpFilepath); // assume this doesn't fail??
+                database.uploadImage(bitmap, App.currentUser, newPfpFilepath); // assume this doesn't fail??
             }
             else {
-                profileActivity.currentUser.setPfpFilePath(null);
+                App.currentUser.setPfpFilePath(null);
             }
         }
 
         // Upload
-        database.insertUserDocument(profileActivity.currentUser);
+        database.insertUserDocument(App.currentUser);
     }
 
     private void handleNotifications(boolean isSubscribed) {
@@ -254,7 +268,7 @@ public class ProfileFragment extends Fragment {
 
 
     public void onSelectedPhoto(Bitmap bitmap) {
-        if (bitmap != null) {
+        if (bitmap != null && bitmap != profileImageBitmap) {
             changedPfp = true;
             profileImageBitmap = bitmap;
             profileImage.setImageBitmap(bitmap);
@@ -292,8 +306,8 @@ public class ProfileFragment extends Fragment {
 
         // Reset profile image to current profile image
         changedPfp = false;
-        if (profileActivity.currentUser.getPfpBitmap() != null) {
-            profileImageBitmap = profileActivity.currentUser.getPfpBitmap();
+        if (App.currentUser != null && App.currentUser.getPfpBitmap() != null) {
+            profileImageBitmap = App.currentUser.getPfpBitmap();
             profileImage.setImageBitmap(profileImageBitmap);
         }
         else {

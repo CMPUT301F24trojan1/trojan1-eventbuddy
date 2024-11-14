@@ -50,7 +50,7 @@ public class PfpClickPopupFragment extends DialogFragment {
     }
 
     private void changePFP() {
-        profileActivity.photoPicker.openPhotoPicker(profileActivity.currentUser);
+        profileActivity.photoPicker.openPhotoPicker();
     }
 
 

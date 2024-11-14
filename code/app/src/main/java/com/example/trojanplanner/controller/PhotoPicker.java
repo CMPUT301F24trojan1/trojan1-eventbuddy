@@ -3,7 +3,6 @@ package com.example.trojanplanner.controller;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -43,10 +42,10 @@ public class PhotoPicker {
     private boolean hasDatabase = false;
     private User user; // Just to assign a user for uploading
 
-    private PhotoPickerCallback dummyCallback;
+    public PhotoPickerCallback dummyCallback;
 
     public PhotoPicker() {
-        activity = App.activityManager.getActivity();
+        activity = App.activity;
         owner = (LifecycleOwner) activity;
         registry = ( (AppCompatActivity) activity).getActivityResultRegistry();
         dummyCallback = new PhotoPickerCallback() {
@@ -83,6 +82,7 @@ public class PhotoPicker {
      * openPhotoPicker and THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD.
      * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
+     * @param callback The callback function
      * @param database The database to upload to (set to null to avoid uploading)
      * @author Jared Gourley
      */
@@ -164,11 +164,10 @@ public class PhotoPicker {
 
     /**
      * Creates and opens a PhotoPicker UI screen to allow choosing a photo from the user's photo album.
-     * Ensure isCurrentlyPicking() is false then use getSelectedPhoto() after this function call
-     * to check on the selection results.
+     * Results of the selection can be checked through the callback function defined in initPhotoPicker.
      * <br>
      * Requires calling the initPhotoPicker function before using this one.
-     * @param user The current user of the app
+     * @param user The current user of the app (required if planning to use database upload)
      * @author Jared Gourley
      */
     public void openPhotoPicker(User user) {
@@ -191,5 +190,23 @@ public class PhotoPicker {
                 .build());
 
     }
+
+
+    /**
+     * Creates and opens a PhotoPicker UI screen to allow choosing a photo from the user's photo album.
+     * Results of the selection can be checked through the callback function defined in initPhotoPicker.
+     * <br>
+     * Requires calling the initPhotoPicker function before using this one.
+     * @author Jared Gourley
+     */
+    public void openPhotoPicker() {
+        if (hasDatabase) {
+            throw new RuntimeException("Must provide a user parameter when initialized with database.");
+        }
+
+        openPhotoPicker(null);
+    }
+
+
 
 }

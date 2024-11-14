@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -202,10 +203,11 @@ public class EventDetailsFragmentTest {
         );
 
         // Set recurrence days for the event
-        HashSet<String> recurrenceDays = new HashSet<>();
-        recurrenceDays.add("Monday");
-        recurrenceDays.add("Wednesday");
-        testEvent.setRecurrenceDays(recurrenceDays);
+//        HashSet<String> recurrenceDays = new ArrayList<>();
+//        recurrenceDays.add("Monday");
+//        recurrenceDays.add("Wednesday");
+        testEvent.addRecurrenceDay("Monday");
+        testEvent.addRecurrenceDay("Wednesday");
 
         // Define a test entrant
         testEntrant = new Entrant("Doe", "Jane", "jane.doe@example.com", "123-456-7890", "Device001", "Guest", false, false);
