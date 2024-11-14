@@ -4,15 +4,25 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Button;
+import android.widget.Toast;
 
-import com.example.trojanplanner.events.EmptyEventsFragment;
+import com.example.trojanplanner.App;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.model.User;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -25,7 +35,12 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private static Activity activity; // Important to allow non-activity classes to trigger UI components, i.e. PhotoPicker
+
+
+    private Database database;
+
+    public PhotoPicker facilityPhotoPicker;
+    private PhotoPicker.PhotoPickerCallback facilityPhotoPickerCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,36 +49,95 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        activity = this;
 
-        storeDeviceId();
+        database = Database.getDB();
+        facilityPhotoPicker = new PhotoPicker();
+        facilityPhotoPicker.initPhotoPicker();
 
-        // Load EmptyEventsFragment initially
-        loadEmptyEventsFragment();
+
+        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
+        if (App.currentUser == null) {
+            // Get/check entrant from db based on device ID (note: this is async)
+            getEntrantFromDeviceId(App.deviceId); // Redirects if no entrant exists!
+        }
 
         setupNavigation();
     }
 
-    private void loadEmptyEventsFragment() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, new EmptyEventsFragment())
-                .commit();
+
+    /**
+     *
+     * @param deviceId
+     * @author Jared Gourley
+     */
+    private void getEntrantFromDeviceId(String deviceId) {
+        // On success, set the entrant object and populate the events list
+        // On failure, redirect to the make profile page (for now?)
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+            @Override
+             public void OnSuccess(Object object) {
+                 App.currentUser = (Entrant) object;
+                 Entrant currentEntrant = (Entrant) App.currentUser; // Just to make this function have less typecasting
+                 System.out.println("getEntrantFromDeviceId success! current user: " + currentEntrant.getFirstName() + " " + currentEntrant.getLastName());
+                 Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
+                 myToast.show();
+                 System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
+                 if (currentEntrant.getPfpFilePath() != null) {
+                     getUserPfp();
+                 }
+                 // TODO: populate events array
+                 // Check if the user has any events
+                 if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
+                         (currentEntrant.getCurrentPendingEvents() == null || currentEntrant.getCurrentPendingEvents().isEmpty())) {
+                     // Show the EmptyEventsFragment if no events are found
+                     // will show by default
+                 } else {
+                     // Otherwise, show the EventsFragment
+//                     getSupportFragmentManager().beginTransaction()
+//                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+//                             .commit();
+                     NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_activity_main);
+                     navController.navigate(R.id.eventsListFragment);
+                 }
+             }
+        };
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("getEntrantFromDeviceId failed: new user?");
+                Toast myToast = Toast.makeText(App.activity, "Hello new user! Make a profile to join events!", Toast.LENGTH_LONG);
+                myToast.show();
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                startActivity(intent);
+            }
+        };
+
+        database.getEntrant(successAction, failureAction, deviceId);
     }
 
-    @SuppressLint("HardwareIds")
-    private void storeDeviceId() {
-        // Get the device ID
-         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        // Get SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPreferences", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+    public void getUserPfp() {
+        System.out.println("Getting user's PFP bitmap...");
+        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                App.currentUser.setPfpBitmap(decodedImage);
+                System.out.println("success!! User pfp bitmap received!");
+            }
+        };
+        OnFailureListener failureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                System.out.println("NOOOOOOOOOOOOOOOOO user pfp bitmap query failed");
+            }
+        };
 
-        // Store the device ID
-        editor.putString("device_id", deviceId);
-        editor.apply(); // Save changes
+        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
     }
+
+
 
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
@@ -88,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.emptyEventsFragment, R.id.eventsFragment)
+                R.id.emptyEventsFragment, R.id.eventsListFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
@@ -105,26 +179,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.eventsFragment) {
-                navController.navigate(R.id.eventsFragment);
+            if (item.getItemId() == R.id.eventsListFragment) {
+                navController.navigate(R.id.eventsListFragment);
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
-                startActivity(new Intent(MainActivity.this, QRActivity.class));
+                Intent intent = new Intent(MainActivity.this, QRActivity.class);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                startActivity(intent);
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
-                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                startActivity(intent);
                 return true;
             }
             return false;
         });
     }
 
-    /*
-     * Gets the application context. This is a static method so any other class is able to call this function
-     * in order to get the application context itself
-     * @return The application context
-
-        public static Context getAppContext() {
-            return activity.getApplicationContext();
-        } */
 }

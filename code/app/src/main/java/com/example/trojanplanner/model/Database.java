@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -28,20 +29,25 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A class that handles adding/querying/modifying/removing documents from the Firestore Database,
  * as well as uploading/downloading/deleting images from the Firebase Storage.
+ * <br>
+ * Implemented as a singleton, so all classes that instantiate a Database get the same object.
+ * This allows adding listeners to ongoing queries instead of having to send new ones.
  */
 public class Database {
+    private static Database database; // The global singleton database object
+
     private FirebaseFirestore db;
 
     private FirebaseStorage storage;
     private StorageReference storageRef;
-
-    private Activity activity;
 
     private PhotoPicker photoPicker;
 
@@ -49,28 +55,44 @@ public class Database {
     private OnFailureListener defaultFailureListener;
 
 
+    // ================== METHODS TO GET THE GLOBAL DATABASE OBJECT ==================
+
+    public static Database getDB() {
+        if (database == null) {
+            database = new Database();
+        }
+        return database;
+    }
+
+    public static Database getDB(FirebaseFirestore firestore) {
+        if (database != null) {
+            throw new RuntimeException("Cannot inject dependency if global database is already created");
+        }
+        database = new Database(firestore);
+        return database;
+    }
+
+ // ========================= (private) Constructors ==========================
     /**
      * The default constructor which creates a working Database object
      */
-    public Database() {
+    private Database() {
         this(FirebaseFirestore.getInstance());
     }
-
 
     /**
      * An alternative constructor which explicitly states the database instance. Only really
      * made so that making a mock database instance with things like Mockito is possible.
      */
-    public Database(FirebaseFirestore firestore) {
+    private Database(FirebaseFirestore firestore) {
         db = firestore;
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
-        activity = App.activityManager.getActivity();
         defaultSuccessListener = new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 System.out.println("FIRESTORE SUCCESS");
-                Toast myToast = Toast.makeText(activity, R.string.firestore_db_upload_success, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firestore_db_upload_success, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -78,7 +100,7 @@ public class Database {
             @Override
             public void onFailure(@NonNull Exception e) {
                 System.out.println("FIRESTORE FAIL");
-                Toast myToast = Toast.makeText(activity, R.string.firestore_db_upload_fail, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firestore_db_upload_fail, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -94,6 +116,11 @@ public class Database {
     public void initPhotoPicker() {
         photoPicker = new PhotoPicker();
         photoPicker.initPhotoPicker(this);
+    }
+
+    public void initPhotoPicker(PhotoPicker.PhotoPickerCallback callback) {
+        photoPicker = new PhotoPicker();
+        photoPicker.initPhotoPicker(callback, this);
     }
 
     // TODO: Is this function necessary?
@@ -132,26 +159,28 @@ public class Database {
 
     /**
      * Uploads an image to the Firebase Storage area tied to a given user.
-     * @param uri The uri reference to the image that should be uploaded
+     * Sets the owner's pfpFilePath and pfpBitmap attributes when called.
+     * @param bitmap The bitmap of the image that should be uploaded
      * @param owner The user who will claim ownership of the uploaded image through their device ID
+     * @param filepath The filepath to store the image as (USE CORRECT CONVENTIONS FOR THIS)
      * @param successListener The action that should be taken on a successful upload
      * @param failureListener The action that should be taken on a failed upload
      * @author Jared Gourley
      *
      */
-    public void uploadImage(Uri uri, @NonNull User owner, OnSuccessListener successListener, OnFailureListener failureListener) {
-        String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
-        StorageReference refToSave = storageRef.child(filePath);
+    public void uploadImage(@NonNull Bitmap bitmap, @NonNull User owner, String filepath, OnSuccessListener successListener, OnFailureListener failureListener) {
+        //String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
+        StorageReference refToSave = storageRef.child(filepath);
 
         // Attempt to get a bitmap of the uri reference
-        Bitmap bitmap;
-        try {
-            bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
-        }
-        catch (IOException e) {
-            System.out.println("uri invalid/no permissions");
-            return;
-        }
+//        Bitmap bitmap;
+//        try {
+//            bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
+//        }
+//        catch (IOException e) {
+//            System.out.println("uri invalid/no permissions");
+//            return;
+//        }
 
         // Compress and convert to byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -159,7 +188,7 @@ public class Database {
         byte[] data = baos.toByteArray();
 
         // Set filepath and bitmap as user attributes
-        owner.setPfpFilePath(filePath);
+        owner.setPfpFilePath(filepath);
         owner.setPfpBitmap(bitmap);
 
         // Upload!
@@ -169,21 +198,12 @@ public class Database {
 
     }
 
-    /**
-     * Uploads an image to the Firebase Storage area tied to a given user.
-     * A wrapper function for the 4-parameter uploadImage designed for easier use. Sets a generic successlistener
-     * and failurelistener which should be suitable for most cases.
-     * @param uri The uri reference to the image that should be uploaded
-     * @param owner The user who will claim ownership of the uploaded image through their device ID
-     * @author Jared Gourley
-     */
-    public void uploadImage(Uri uri, User owner) {
-
+    public void uploadImage(Bitmap bitmap, User owner, String filepath) {
         OnSuccessListener successListener = new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 System.out.println("SUCCESS");
-                Toast myToast = Toast.makeText(activity, R.string.firebase_storage_upload_success, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firebase_storage_upload_success, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -191,13 +211,30 @@ public class Database {
             @Override
             public void onFailure(@NonNull Exception e) {
                 System.out.println("FAIL");
-                Toast myToast = Toast.makeText(activity, R.string.firebase_storage_upload_fail, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firebase_storage_upload_fail, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
+        // Cal the proper uploadImage method
+        uploadImage(bitmap, owner, filepath, successListener, failureListener);
+    }
+
+
+    /**
+     * Uploads an image to the Firebase Storage area tied to a given user.
+     * Sets the owner's pfpFilePath and pfpBitmap attributes when called.
+     * A wrapper function for the 5-parameter uploadImage designed for easier use. Uses our convention
+     * for image filepaths automatically. Sets a generic successlistener
+     * and failurelistener which should be suitable for most cases.
+     * @param bitmap The bitmap of the image that should be uploaded
+     * @param owner The user who will claim ownership of the uploaded image through their device ID
+     * @author Jared Gourley
+     */
+    public void uploadImage(Bitmap bitmap, User owner) {
+        String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
 
         // Call the proper uploadImage method
-        uploadImage(uri, owner, successListener, failureListener);
+        uploadImage(bitmap, owner, filePath);
 
     }
 
@@ -248,7 +285,7 @@ public class Database {
         userMap.put("deviceID", user.getDeviceId());
         userMap.put("hasOrganizerRights", user.isOrganizer());
         userMap.put("hasAdminRights", user.isAdmin());
-        userMap.put("pfp", null);
+        userMap.put("pfp", user.getPfpFilePath());
         return userMap;
     }
 
@@ -268,11 +305,21 @@ public class Database {
     public void insertUserDocument(OnSuccessListener successListener, OnFailureListener failureListener, User user) {
         Map<String, Object> userMap = initUserMap(user);
 
+        if (user.getClass() == Entrant.class) {
+            userMap.put("currentWaitlistedEvents", ((Entrant) user).getCurrentWaitlistedEvents());
+            userMap.put("currentEnrolledEvents", ((Entrant) user).getCurrentEnrolledEvents());
+            userMap.put("currentDeclinedEvents", ((Entrant) user).getCurrentDeclinedEvents());
+            userMap.put("currentPendingEvents", ((Entrant) user).getCurrentPendingEvents());
+        } else if (user.getClass() == Organizer.class) {
+            userMap.put("createdEvents", ((Organizer) user).getCreatedEvents());
+        } // (no special attributes for admins)
+
+
         db.collection("users")
-            .document(user.getDeviceId())
-            .set(userMap)
-            .addOnSuccessListener(successListener)
-            .addOnFailureListener(failureListener);
+                .document(user.getDeviceId())
+                .set(userMap, SetOptions.merge())
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
     }
 
 
@@ -297,7 +344,7 @@ public class Database {
      * <br>
      * Can optionally be given a custom success and failure listener to perform a more specialized
      * action on success or failure.
-     * 
+     *
      * @param successListener The action to take on successful user insert
      * @param failureListener The action to take on failed user insert
      * @param event The event to insert
@@ -305,41 +352,41 @@ public class Database {
      */
     public void insertEvent(OnSuccessListener successListener, OnFailureListener failureListener, Event event) {
         Map<String, Object> eventMap = new HashMap<>();
-//        eventMap.put("eventID", event.getEventId());
-//        eventMap.put("name", event.getName());
-//        eventMap.put("description", event.getDescription());
-//        eventMap.put("facility", event.getFacility());
-//        eventMap.put("price", event.getPrice());
-//        eventMap.put("status", event.getStatus());
-//        eventMap.put("eventCapacity", event.getTotalSpots());
-//        eventMap.put("waitlistCapacity", );
-//        eventMap.put("eventPhoto", null);
-//        eventMap.put("requiresGeolocation", );
-//
-//        eventMap.put("creationTime", System.currentTimeMillis());
-//        eventMap.put("eventStart", event.getStartDateTime());
-//        eventMap.put("eventEnd", event.getEndDateTime());
-//        eventMap.put("waitlistOpen", );
-//        eventMap.put("watlistClose", );
-//
-//        eventMap.put("enrolledlist", );
-//        eventMap.put("waitlist", );
-//        eventMap.put("pendinglist", );
-//        eventMap.put("cancelledlist", );
+        eventMap.put("eventID", event.getEventId());
+        eventMap.put("name", event.getName());
+        eventMap.put("description", event.getDescription());
+        eventMap.put("facility", event.getFacility());
+        eventMap.put("price", event.getPrice());
+        eventMap.put("status", event.getStatus());
+        eventMap.put("eventCapacity", event.getTotalSpots());
+        eventMap.put("waitlistCapacity", event.getWaitlistCapacity());
+        eventMap.put("eventPhoto", null);
+        eventMap.put("requiresGeolocation", event.isRequiresGeolocation());
+
+        eventMap.put("creationTime", System.currentTimeMillis());
+        eventMap.put("eventStart", event.getStartDateTime());
+        eventMap.put("eventEnd", event.getEndDateTime());
+        eventMap.put("waitlistOpen", event.getWaitlistOpen());
+        eventMap.put("watlistClose", event.getWaitlistClose());
+
+        eventMap.put("enrolledlist", event.getEnrolledList());
+        eventMap.put("waitlist", event.getWaitingList());
+        eventMap.put("pendinglist", event.getPendingList());
+        eventMap.put("cancelledlist", event.getCancelledList());
 
         eventMap.put("isRecurring", event.isRecurring());
         if (event.isRecurring()) {
             eventMap.put("recurrenceFormat", event.getRecurrenceType()); // note: database uses UNTIL_DATE standard but remembers what the organizer prefers
             eventMap.put("recurringEndDate", event.getRecurrenceEndDate());
-            eventMap.put("recurringOn", event.getRecurrenceDays());
+            eventMap.put("recurringOn", (ArrayList) event.getRecurrenceDays());
         }
 
         db.collection("events")
                 .document(event.getEventId())
-                .set(eventMap)
+                .set(eventMap, SetOptions.merge())
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
-        
+
     }
 
     /**
@@ -408,20 +455,21 @@ public class Database {
      * @param facility The facility to store in the database
      * @author Jared Gourley
      */
+    // Renamed method: insertFacilityWithListeners for custom success/failure handling
     public void insertFacility(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
         facilityMap.put("facilityPhoto", facility.getPfpFacilityFilePath());
         facilityMap.put("owner", facility.getOwner());
-        //facilityMap.put("currentEvents", );
 
         db.collection("facilities")
                 .document(facility.getFacilityId())
-                .set(facilityMap)
+                .set(facilityMap, SetOptions.merge())
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
+
 
     /**
      * Inserts a facility object into the database.
@@ -435,7 +483,6 @@ public class Database {
     public void insertFacility(Facility facility) {
         insertFacility(defaultSuccessListener, defaultFailureListener, facility);
     }
-
 
     // ===================== Get documents from Firestore Database =====================
 
@@ -496,14 +543,38 @@ public class Database {
 
 
     private Event unpackEventMap(Map<String, Object> eventMap) {
-//        Event event = new Event();
-//
-//        event.setName();
-        // etc etc etc
+        Map<String, Object> m = eventMap;
+        // Make a minimal event and then add in all other attributes
+        Event event = new Event((String) m.get("name"), (String) m.get("description"), (float) m.get("price"));
+
+        event.setEventId((String) m.get("eventID"));
+        event.setFacility((Facility) m.get("facility")); // TODO probably will be a string instead of an actual facility
+        event.setPictureFilePath((String) m.get("eventPhoto"));
+
+        event.setStartDateTime((Date) m.get("eventStart"));
+        event.setEndDateTime((Date) m.get("eventEnd"));
+        event.setWaitlistOpen((Date) m.get("waitlistOpen"));
+        event.setWaitlistClose((Date) m.get("waitlistClose"));
+
+        event.setRequiresGeolocation((boolean) m.get("requiresGeolocation"));
+        event.setTotalSpots((Long) m.get("eventCapacity"));
+        event.setWaitlistCapacity((int) m.get("waitlistCapacity"));
+        event.setStatus((String) m.get("status"));
 
 
-//        return event;
-        return null;
+        event.setEnrolledList((ArrayList<User>) m.get("enrolledList"));
+        event.setWaitingList((ArrayList<User>) m.get("waitlist"));
+        event.setPendingList((ArrayList<User>) m.get("pendingList"));
+        event.setCancelledList((ArrayList<User>) m.get("cancelledList"));
+
+        event.setRecurring((boolean) m.get("isRecurring"));
+        if (event.isRecurring()) {
+            event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
+            event.setRecurrenceEndDate((Date) m.get("recurringEndDate"));
+            event.setRecurrenceDays((ArrayList<String>) m.get("recurringOn"));
+        }
+
+        return event;
     }
 
 
@@ -557,6 +628,7 @@ public class Database {
     private Entrant unpackEntrantMap(Map<String, Object> entrantMap) {
         Map<String, Object> m = entrantMap;
         Entrant entrant = new Entrant((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Entrant", (boolean) m.get("hasOrganizerRights"), (boolean) m.get("hasAdminRights"));
+        entrant.setPfpFilePath((String) m.get("pfp"));
 
         return entrant;
     }
@@ -617,6 +689,7 @@ public class Database {
         }
 
         Organizer organizer = new Organizer((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Organizer", true, (boolean) m.get("hasAdminRights"), (ArrayList<Event>) m.get("createdEvents"), (Facility) m.get("facility"));
+        organizer.setPfpFilePath((String) m.get("pfp"));
 
         return organizer;
     }
@@ -679,6 +752,7 @@ public class Database {
         }
 
         Admin admin = new Admin((String) m.get("lastName"), (String) m.get("firstName"), (String) m.get("email"), (String) m.get("phone"), (String) m.get("deviceID"), "Admin", (boolean) m.get("hasOrganizerRights"), true);
+        admin.setPfpFilePath((String) m.get("pfp"));
 
         return admin;
     }
@@ -797,8 +871,8 @@ public class Database {
     }
 
 
-    public void downloadImageTest() {
-        Database database = new Database();
+    public static void downloadImageTest() {
+        Database database = Database.getDB();
         OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
@@ -814,10 +888,8 @@ public class Database {
             }
         };
 
-        downloadImage("1234567890/1729746211299.png", successListener, failureListener);
+        database.downloadImage("1234567890/1729746211299.png", successListener, failureListener);
     }
-
-
 
 
 
@@ -826,8 +898,8 @@ public class Database {
      * Function to test querying an entrant. You can run this test by setting up a temp button
      * in MainActivity to run this function
      */
-    public void getEntrantTest() {
-        Database database = new Database();
+    public static void getEntrantTest() {
+        Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override
             public void OnSuccess(Object object) {
@@ -856,36 +928,43 @@ public class Database {
     }
 
 
-
-    public void getOrganizerTest() {
-        Database database = new Database();
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
-            @Override
-            public void OnSuccess(Object object) {
-                Organizer organizer = (Organizer) object;
-                System.out.println("deviceId: " + organizer.getDeviceId());
-                System.out.println("email: " + organizer.getEmail());
-                System.out.println("firstName: " + organizer.getFirstName());
-                System.out.println("lastName: " + organizer.getLastName());
-                System.out.println("hasAdminRights: " + organizer.isAdmin());
-                System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
-                System.out.println("createdEvents: " + organizer.getCreatedEvents());
-            }
-        };
-
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("Query attempt failed!");
-            }
-        };
-
-        database.getOrganizer(successAction, failureAction, "testOrganizer");
+    public static void uploadEventTest() {
+        // fake user with android id "Testfolder" (uploads to testfolder folder)
+        Database database = Database.getDB();
+        Event event = new Event("TESTEVENTNAME", "TESTEVENT DESC", 0);
+        event.setEventId("UPLOAD_EVENT_TEST");
+        database.insertEvent(event);
     }
 
+    public static void getOrganizerTest() {
+    Database database = Database.getDB();
+    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+        @Override
+        public void OnSuccess(Object object) {
+            Organizer organizer = (Organizer) object;
+            System.out.println("deviceId: " + organizer.getDeviceId());
+            System.out.println("email: " + organizer.getEmail());
+            System.out.println("firstName: " + organizer.getFirstName());
+            System.out.println("lastName: " + organizer.getLastName());
+            System.out.println("hasAdminRights: " + organizer.isAdmin());
+            System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
+            System.out.println("createdEvents: " + organizer.getCreatedEvents());
+        }
+    };
 
-    public void getQRTest() {
-        Database database = new Database();
+    Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+        @Override
+        public void OnFailure() {
+            System.out.println("Query attempt failed!");
+        }
+    };
+
+    database.getOrganizer(successAction, failureAction, "testOrganizer");
+}
+
+
+    public static void getQRTest() {
+        Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override
             public void OnSuccess(Object object) {
@@ -905,11 +984,6 @@ public class Database {
     }
 
 
-
-
-
-
-
-
-
 }
+
+
