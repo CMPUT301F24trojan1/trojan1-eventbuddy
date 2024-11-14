@@ -22,6 +22,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.model.Database;
@@ -113,7 +114,7 @@ public class FacilitySetupFragment extends Fragment {
      * Opens the photo picker to allow the user to select a photo for the facility.
      */
     private void openImagePicker() {
-        mainActivity.facilityPhotoPicker.openPhotoPicker(mainActivity.currentUser);
+        mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
     }
 
     /**
@@ -157,7 +158,7 @@ public class FacilitySetupFragment extends Fragment {
             Facility facility = new Facility(name, "generatedFacilityId", location, null, defaultUriString, bitmap);
 
             // Insert the facility into the database
-            Database db = new Database();
+            Database db = Database.getDB();
             db.insertFacility(facility);
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
@@ -178,7 +179,7 @@ public class FacilitySetupFragment extends Fragment {
             Facility facility = new Facility(name, "generatedFacilityId", location, null, facilityPhotoUri.toString(), bitmap);
 
             // Insert the facility into the database
-            Database db = new Database();
+            Database db = Database.getDB();
             db.insertFacility(facility);
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
