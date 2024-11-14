@@ -61,7 +61,7 @@ public class EventDetailsFragment extends Fragment {
     public EventDetailsFragment(ConcreteEvent event, Entrant entrant) {
         this.event = event;
         this.entrant = entrant;
-        this.database = new Database(); // Initialize Database instance
+        this.database = Database.getDB(); // Initialize Database instance
     }
 
     public Event getEvent() {
@@ -110,7 +110,7 @@ public class EventDetailsFragment extends Fragment {
             event = (Event) getArguments().getSerializable("event");
             entrant = (Entrant) getArguments().getSerializable("entrant");
         }
-        database = new Database();
+        database = Database.getDB();
     }
 
     // Required empty constructor
