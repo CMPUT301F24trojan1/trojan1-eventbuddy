@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.QRUtils.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
@@ -74,10 +75,10 @@ public class QRActivity extends AppCompatActivity {
         binding = ActivityQrBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        deviceId = getIntent().getExtras().getString("deviceId");
-        currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
+        deviceId = App.deviceId;
+        currentUser = (Entrant) App.currentUser;
 
-        Database db = new Database();
+        Database db = Database.getDB();
 
         barcodeView = findViewById(R.id.barcode_scanner);
         ImageButton helpButton = findViewById(R.id.qr_help_button);
@@ -222,15 +223,13 @@ public class QRActivity extends AppCompatActivity {
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
                 Intent intent = new Intent(QRActivity.this, MainActivity.class);
-                intent.putExtra("deviceId", deviceId);
-                intent.putExtra("user", currentUser);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
                 startActivity(intent);
                 finish();
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 Intent intent = new Intent(QRActivity.this, ProfileActivity.class);
-                intent.putExtra("deviceId", deviceId);
-                intent.putExtra("user", currentUser);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
                 startActivity(intent);
                 finish();
                 return true;

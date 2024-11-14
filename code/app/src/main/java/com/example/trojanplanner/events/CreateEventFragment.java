@@ -67,7 +67,7 @@ public class CreateEventFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize database
-        database = new Database();
+        database = Database.getDB();
 
         eventNameEditText = view.findViewById(R.id.eventNameEditText);
         eventDescriptionEditText = view.findViewById(R.id.eventDescriptionEditText);
@@ -103,8 +103,7 @@ public class CreateEventFragment extends Fragment {
             return false;
         }
 
-        Entrant currentUser = ((MainActivity) App.activityManager.getActivity()).currentUser;
-        Entrant currentUser = (Entrant) ((MainActivity) App.activityManager.getActivity()).currentUser; // Ask Jared
+        Entrant currentUser = (Entrant) App.currentUser;
         Organizer currentOrganizer = currentUser.returnOrganizer();
 
         if (currentUser == null) {
@@ -128,7 +127,7 @@ public class CreateEventFragment extends Fragment {
             @Override
             public void onSuccess(Void aVoid) {
                 if (isAdded()) {
-                    Toast.makeText(App.activityManager.getActivity(), "Event created successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(App.activity, "Event created successfully!", Toast.LENGTH_SHORT).show();
                     // Add the event to the organizer's list of created events
                     currentOrganizer.addEvent(newEvent);
                     database.insertUserDocument(currentOrganizer);
@@ -139,7 +138,7 @@ public class CreateEventFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Exception e) {
                 if (isAdded()) {
-                    Toast.makeText(App.activityManager.getActivity(), "Failed to create event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(App.activity, "Failed to create event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         }, newEvent);
