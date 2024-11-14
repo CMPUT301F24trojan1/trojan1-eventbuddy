@@ -28,7 +28,7 @@ import androidx.annotation.Nullable;
  */
 public class ActivityManager implements Application.ActivityLifecycleCallbacks {
 
-    private Activity activity;
+    //private Activity activity;
 
     /**
      * Constructor that registers the activity lifecycle callbacks with the provided application.
@@ -45,7 +45,7 @@ public class ActivityManager implements Application.ActivityLifecycleCallbacks {
      * @return The current activity or {@code null} if no activity is currently running.
      */
     public Activity getActivity() {
-        return activity;
+        return App.activity;
     }
 
     /**
@@ -56,7 +56,7 @@ public class ActivityManager implements Application.ActivityLifecycleCallbacks {
      */
     @Override
     public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
-        this.activity = activity;
+        App.activity = activity;
     }
 
     /**
@@ -66,7 +66,7 @@ public class ActivityManager implements Application.ActivityLifecycleCallbacks {
      */
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
-        this.activity = activity;
+        App.activity = activity;
     }
 
     /**
@@ -76,7 +76,7 @@ public class ActivityManager implements Application.ActivityLifecycleCallbacks {
      */
     @Override
     public void onActivityResumed(@NonNull Activity activity) {
-        this.activity = activity;
+        App.activity = activity;
     }
 
     /**

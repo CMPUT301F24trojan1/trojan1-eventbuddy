@@ -16,10 +16,14 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
+import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
+import com.example.trojanplanner.model.Organizer;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -60,11 +64,11 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
 
         // Initialize the event list and adapter
         eventList = new ArrayList<>();
-        eventsAdapter = new EventArrayAdapter(App.activityManager.getActivity(), eventList, this);
+        eventsAdapter = new EventArrayAdapter(App.activity, eventList, this);
         recyclerView.setAdapter(eventsAdapter);
 
         // Initialize database instance
-        database = new Database();
+        database = Database.getDB();
 
         // Load events from the database
         loadEventsFromDatabase();
@@ -103,7 +107,9 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
                     System.out.println("Unexpected data format received from database. Adding a dummy event for testing.");
                     addDummyEvent();
                 }
-                
+            }
+        };
+    }
     /**
      * Loads events into the list. If the list is empty, dummy events are generated and added.
      */
@@ -131,6 +137,8 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
                 );
             }
         };
+
+        Database.QuerySuccessAction onSuccess = null; // TODO: implement if this function need to call db?
 
         Database.QueryFailureAction onFailure = new Database.QueryFailureAction() {
             @Override
@@ -191,4 +199,6 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         super.onDestroyView();
         binding = null;
     }
+
+
 }
