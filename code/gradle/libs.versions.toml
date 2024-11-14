@@ -3,6 +3,7 @@ agp = "8.6.0"
 barcodeScanning = "17.3.0"
 common = "18.11.0"
 core = "3.4.1"
+firebaseBom = "33.5.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -17,12 +18,17 @@ cameraCore = "1.4.0"
 cameraLifecycle = "1.4.0"
 cameraView = "1.4.0"
 zxingAndroidEmbedded = "4.3.0"
+firebaseDatabase = "21.0.0"
 
 [libraries]
 barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
 common = { module = "com.google.mlkit:common", version.ref = "common" }
 core = { module = "com.google.zxing:core", version.ref = "core" }
+firebase-appcheck = { module = "com.google.firebase:firebase-appcheck" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -37,6 +43,7 @@ camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "
 camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraLifecycle" }
 camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraView" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
