@@ -37,14 +37,17 @@ import java.util.Set;
 /**
  * A class that handles adding/querying/modifying/removing documents from the Firestore Database,
  * as well as uploading/downloading/deleting images from the Firebase Storage.
+ * <br>
+ * Implemented as a singleton, so all classes that instantiate a Database get the same object.
+ * This allows adding listeners to ongoing queries instead of having to send new ones.
  */
 public class Database {
+    private static Database database; // The global singleton database object
+
     private FirebaseFirestore db;
 
     private FirebaseStorage storage;
     private StorageReference storageRef;
-
-    private Activity activity;
 
     private PhotoPicker photoPicker;
 
@@ -52,29 +55,44 @@ public class Database {
     private OnFailureListener defaultFailureListener;
 
 
+    // ================== METHODS TO GET THE GLOBAL DATABASE OBJECT ==================
 
+    public static Database getDB() {
+        if (database == null) {
+            database = new Database();
+        }
+        return database;
+    }
+
+    public static Database getDB(FirebaseFirestore firestore) {
+        if (database != null) {
+            throw new RuntimeException("Cannot inject dependency if global database is already created");
+        }
+        database = new Database(firestore);
+        return database;
+    }
+
+ // ========================= (private) Constructors ==========================
     /**
      * The default constructor which creates a working Database object
      */
-    public Database() {
+    private Database() {
         this(FirebaseFirestore.getInstance());
     }
-
 
     /**
      * An alternative constructor which explicitly states the database instance. Only really
      * made so that making a mock database instance with things like Mockito is possible.
      */
-    public Database(FirebaseFirestore firestore) {
+    private Database(FirebaseFirestore firestore) {
         db = firestore;
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
-        activity = App.activityManager.getActivity();
         defaultSuccessListener = new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 System.out.println("FIRESTORE SUCCESS");
-                Toast myToast = Toast.makeText(activity, R.string.firestore_db_upload_success, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firestore_db_upload_success, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -82,7 +100,7 @@ public class Database {
             @Override
             public void onFailure(@NonNull Exception e) {
                 System.out.println("FIRESTORE FAIL");
-                Toast myToast = Toast.makeText(activity, R.string.firestore_db_upload_fail, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firestore_db_upload_fail, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -185,7 +203,7 @@ public class Database {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 System.out.println("SUCCESS");
-                Toast myToast = Toast.makeText(activity, R.string.firebase_storage_upload_success, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firebase_storage_upload_success, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -193,7 +211,7 @@ public class Database {
             @Override
             public void onFailure(@NonNull Exception e) {
                 System.out.println("FAIL");
-                Toast myToast = Toast.makeText(activity, R.string.firebase_storage_upload_fail, Toast.LENGTH_SHORT);
+                Toast myToast = Toast.makeText(App.activity, R.string.firebase_storage_upload_fail, Toast.LENGTH_SHORT);
                 myToast.show();
             }
         };
@@ -370,7 +388,6 @@ public class Database {
                 .addOnFailureListener(failureListener);
 
     }
-
 
     /**
      * Inserts a document into the users collection of the Firestore Database. Overwrites the previous
@@ -855,7 +872,7 @@ public class Database {
 
 
     public static void downloadImageTest() {
-        Database database = new Database();
+        Database database = Database.getDB();
         OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
@@ -882,7 +899,7 @@ public class Database {
      * in MainActivity to run this function
      */
     public static void getEntrantTest() {
-        Database database = new Database();
+        Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override
             public void OnSuccess(Object object) {
@@ -913,14 +930,14 @@ public class Database {
 
     public static void uploadEventTest() {
         // fake user with android id "Testfolder" (uploads to testfolder folder)
-        Database database = new Database();
+        Database database = Database.getDB();
         Event event = new Event("TESTEVENTNAME", "TESTEVENT DESC", 0);
         event.setEventId("UPLOAD_EVENT_TEST");
         database.insertEvent(event);
     }
 
     public static void getOrganizerTest() {
-    Database database = new Database();
+    Database database = Database.getDB();
     Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
         @Override
         public void OnSuccess(Object object) {
@@ -947,7 +964,7 @@ public class Database {
 
 
     public static void getQRTest() {
-        Database database = new Database();
+        Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override
             public void OnSuccess(Object object) {

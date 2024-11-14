@@ -35,12 +35,12 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private Activity activity;
 
-    public Entrant currentUser = null; // The person who is using the app right now
-    private String deviceId;
+
     private Database database;
-    public PhotoPicker photoPicker;
+
+    public PhotoPicker facilityPhotoPicker;
+    private PhotoPicker.PhotoPickerCallback facilityPhotoPickerCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,46 +49,21 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Get information from other activity
-        if (getIntent().getExtras() != null) {
-            deviceId = getIntent().getExtras().getString("deviceId");
-            currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
-        }
+
+        database = Database.getDB();
+        facilityPhotoPicker = new PhotoPicker();
+        facilityPhotoPicker.initPhotoPicker();
 
 
-        activity = this;
-        database = new Database();
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker();
-
-
-        // If this is the first time opening the app, get the device ID
         // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
-        if (deviceId == null) {
-            storeDeviceId();
-            System.out.println("deviceId: " + deviceId);
-
+        if (App.currentUser == null) {
             // Get/check entrant from db based on device ID (note: this is async)
-            getEntrantFromDeviceId(deviceId); // Redirects if no entrant exists!
+            getEntrantFromDeviceId(App.deviceId); // Redirects if no entrant exists!
         }
 
         setupNavigation();
     }
 
-    @SuppressLint("HardwareIds")
-    private void storeDeviceId() {
-        // Get the device ID
-        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        this.deviceId = deviceId;
-
-        // Get SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences("MyAppPreferences", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        // Store the device ID
-        editor.putString("device_id", deviceId);
-        editor.apply(); // Save changes
-    }
 
     /**
      *
@@ -101,25 +76,28 @@ public class MainActivity extends AppCompatActivity {
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
             @Override
              public void OnSuccess(Object object) {
-                 currentUser = (Entrant) object;
-                 System.out.println("getEntrantFromDeviceId success! current user: " + currentUser.getFirstName() + " " + currentUser.getLastName());
-                 Toast myToast = Toast.makeText(App.activityManager.getActivity(), "Hello " + currentUser.getFirstName() + "!", Toast.LENGTH_LONG);
+                 App.currentUser = (Entrant) object;
+                 Entrant currentEntrant = (Entrant) App.currentUser; // Just to make this function have less typecasting
+                 System.out.println("getEntrantFromDeviceId success! current user: " + currentEntrant.getFirstName() + " " + currentEntrant.getLastName());
+                 Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
                  myToast.show();
-                 System.out.println("currentUser pfp file path: " + currentUser.getPfpFilePath());
-                 if (currentUser.getPfpFilePath() != null) {
+                 System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
+                 if (currentEntrant.getPfpFilePath() != null) {
                      getUserPfp();
                  }
                  // TODO: populate events array
                  // Check if the user has any events
-                 if ((currentUser.getCurrentWaitlistedEvents() == null || currentUser.getCurrentWaitlistedEvents().isEmpty()) &&
-                         (currentUser.getCurrentPendingEvents() == null || currentUser.getCurrentPendingEvents().isEmpty())) {
+                 if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
+                         (currentEntrant.getCurrentPendingEvents() == null || currentEntrant.getCurrentPendingEvents().isEmpty())) {
                      // Show the EmptyEventsFragment if no events are found
                      // will show by default
                  } else {
                      // Otherwise, show the EventsFragment
-                     getSupportFragmentManager().beginTransaction()
-                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
-                             .commit();
+//                     getSupportFragmentManager().beginTransaction()
+//                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+//                             .commit();
+                     NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_activity_main);
+                     navController.navigate(R.id.eventsListFragment);
                  }
              }
         };
@@ -127,11 +105,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void OnFailure() {
                 System.out.println("getEntrantFromDeviceId failed: new user?");
-                Toast myToast = Toast.makeText(App.activityManager.getActivity(), "Hello new user! Make a profile to join events!", Toast.LENGTH_LONG);
+                Toast myToast = Toast.makeText(App.activity, "Hello new user! Make a profile to join events!", Toast.LENGTH_LONG);
                 myToast.show();
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                intent.putExtra("deviceId", deviceId);
-                intent.putExtra("user", currentUser);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
                 startActivity(intent);
             }
         };
@@ -146,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(byte[] bytes) {
                 Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                currentUser.setPfpBitmap(decodedImage);
+                App.currentUser.setPfpBitmap(decodedImage);
                 System.out.println("success!! User pfp bitmap received!");
             }
         };
@@ -157,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        database.downloadImage(currentUser.getPfpFilePath(), successListener, failureListener);
+        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
     }
 
 
@@ -185,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.emptyEventsFragment, R.id.eventsFragment)
+                R.id.emptyEventsFragment, R.id.eventsListFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
@@ -202,19 +179,17 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.eventsFragment) {
-                navController.navigate(R.id.eventsFragment);
+            if (item.getItemId() == R.id.eventsListFragment) {
+                navController.navigate(R.id.eventsListFragment);
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
                 Intent intent = new Intent(MainActivity.this, QRActivity.class);
-                intent.putExtra("deviceId", deviceId);
-                intent.putExtra("user", currentUser);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
                 startActivity(intent);
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                intent.putExtra("deviceId", deviceId);
-                intent.putExtra("user", currentUser);
+                // Bundle attributes to be passed here i.e. intent.putExtra(...)
                 startActivity(intent);
                 return true;
             }
