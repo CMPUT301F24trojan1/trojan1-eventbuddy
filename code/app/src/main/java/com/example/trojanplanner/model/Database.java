@@ -54,6 +54,23 @@ public class Database {
     private OnSuccessListener defaultSuccessListener;
     private OnFailureListener defaultFailureListener;
 
+    // States for if a query is running already. Set to the ID being queried, or null if none happening
+    private String activeUserQuery = null;
+    private String activeEventQuery = null;
+    private String activeFacilityQuery = null;
+    private String activeImageQuery = null;
+
+    // Listeners to invoke upon query result
+    private ArrayList<QuerySuccessAction> userSuccessListeners = new ArrayList<QuerySuccessAction>();
+    private ArrayList<QuerySuccessAction> eventSuccessListeners = new ArrayList<QuerySuccessAction>();
+    private ArrayList<QuerySuccessAction> facilitySuccessListeners = new ArrayList<QuerySuccessAction>();
+    private ArrayList<QueryFailureAction> userFailureListeners = new ArrayList<QueryFailureAction>();
+    private ArrayList<QueryFailureAction> eventFailureListeners = new ArrayList<QueryFailureAction>();
+    private ArrayList<QueryFailureAction> facilityFailureListeners = new ArrayList<QueryFailureAction>();
+
+    private ArrayList<OnSuccessListener> imageSuccessListeners = new ArrayList<OnSuccessListener>();
+    private ArrayList<OnFailureListener> imageFailureListeners = new ArrayList<OnFailureListener>();
+
 
     // ================== METHODS TO GET THE GLOBAL DATABASE OBJECT ==================
 
@@ -104,6 +121,24 @@ public class Database {
                 myToast.show();
             }
         };
+    }
+
+// ========================== Getters (no setters) =========================
+
+    public String getActiveUserQuery() {
+        return activeUserQuery;
+    }
+
+    public String getActiveImageQuery() {
+        return activeImageQuery;
+    }
+
+    public String getActiveFacilityQuery() {
+        return activeFacilityQuery;
+    }
+
+    public String getActiveEventQuery() {
+        return activeEventQuery;
     }
 
 
@@ -169,18 +204,7 @@ public class Database {
      *
      */
     public void uploadImage(@NonNull Bitmap bitmap, @NonNull User owner, String filepath, OnSuccessListener successListener, OnFailureListener failureListener) {
-        //String filePath = owner.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
         StorageReference refToSave = storageRef.child(filepath);
-
-        // Attempt to get a bitmap of the uri reference
-//        Bitmap bitmap;
-//        try {
-//            bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), uri);
-//        }
-//        catch (IOException e) {
-//            System.out.println("uri invalid/no permissions");
-//            return;
-//        }
 
         // Compress and convert to byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -266,13 +290,55 @@ public class Database {
      * @author Jared Gourley
      */
     public void downloadImage(String filePath, OnSuccessListener successListener, OnFailureListener failureListener) {
+        // If this query is already happening, simply add listeners instead of re-running
+        if (activeImageQuery != null && activeImageQuery == filePath) {
+            // Add listeners to current lists
+            imageSuccessListeners.add(successListener);
+            imageFailureListeners.add(failureListener);
+            return;
+        }
+        else if (activeImageQuery != null && activeImageQuery != filePath) {
+            throw new RuntimeException("Queries currently cannot handle multiple unique document queries of the same type concurrently.");
+        }
+        // Else no query running so run one
+
+        imageSuccessListeners.add(successListener);
+        imageFailureListeners.add(failureListener);
+
+        activeImageQuery = filePath;
         StorageReference storageRef = storage.getReference();
         StorageReference pathReference = storageRef.child(filePath);
 
         final long TEN_MEGABYTES = 1024 * 1024 * 10; // Max download size
-        pathReference.getBytes(TEN_MEGABYTES).addOnSuccessListener(successListener).addOnFailureListener(failureListener);
+        pathReference.getBytes(TEN_MEGABYTES).addOnSuccessListener(callImageSuccessListeners).addOnFailureListener(callImageFailureListeners);
 
     }
+
+    // Private listener that calls all success listeners
+    private OnSuccessListener callImageSuccessListeners = new OnSuccessListener() {
+        @Override
+        public void onSuccess(Object o) {
+            for (OnSuccessListener listener : imageSuccessListeners) {
+                listener.onSuccess(o);
+            }
+            activeImageQuery = null;
+            imageSuccessListeners.clear();
+            imageFailureListeners.clear();
+        }
+    };
+
+    // Private listener that calls all failure listeners
+    private OnFailureListener callImageFailureListeners = new OnFailureListener() {
+        @Override
+        public void onFailure(@NonNull Exception e) {
+            for (OnFailureListener listener : imageFailureListeners) {
+                listener.onFailure(e);
+            }
+            activeImageQuery = null;
+            imageSuccessListeners.clear();
+            imageFailureListeners.clear();
+        }
+    };
 
     // ===================== Add documents to Firestore Database =====================
 
@@ -455,7 +521,6 @@ public class Database {
      * @param facility The facility to store in the database
      * @author Jared Gourley
      */
-    // Renamed method: insertFacilityWithListeners for custom success/failure handling
     public void insertFacility(OnSuccessListener successListener, OnFailureListener failureListener, Facility facility) {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
@@ -591,6 +656,21 @@ public class Database {
      * @author Jared Gourley
      */
     public void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId) {
+        // If this query is already happening, simply add listeners instead of re-running
+        if (activeEventQuery != null && activeEventQuery == eventId) {
+            // Add listeners to current lists
+            eventSuccessListeners.add(successAction);
+            eventFailureListeners.add(failureAction);
+            return;
+        }
+        else if (activeEventQuery != null && activeEventQuery != eventId) {
+            throw new RuntimeException("Queries currently cannot handle multiple unique document queries of the same type concurrently.");
+        }
+        // Else no query running so run one
+        eventSuccessListeners.add(successAction);
+        eventFailureListeners.add(failureAction);
+
+        activeEventQuery = eventId;
         DocumentReference docRef = db.collection("events").document(eventId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -600,15 +680,18 @@ public class Database {
                     if (document.exists()) {
                         Event event = unpackEventMap(document.getData());
                         if (event != null) {
-                            successAction.OnSuccess(event);
+                            // Send success signals
+                            sendToEventListeners(event, true);
+                            return;
                         }
-                        else {
-                            failureAction.OnFailure();
-                        }
-                    } else {
-                        failureAction.OnFailure();
                     }
-                } else {
+                    // Send failure signals
+                    sendToEventListeners(null, false);
+                    return;
+
+                }
+                else {
+                    // This case should not be happening under normal circumstances
                     Log.d("WARN", "get failed with ", task.getException());
                 }
             }
@@ -616,7 +699,32 @@ public class Database {
 
     }
 
+    /**
+     * Notifies all listeners waiting on the event query.
+     * @param event The event received (if successful)
+     * @param isSuccessful True if success listeners should be called, false if failure listeners should be called.
+     * @author Jared Gourley
+     */
+    private void sendToEventListeners(Event event, boolean isSuccessful) {
+        if (isSuccessful) {
+            for (QuerySuccessAction listener : eventSuccessListeners) {
+                if (listener != null) {
+                    listener.OnSuccess(event);
+                }
+            }
+        }
+        else {
+            for (QueryFailureAction listener : eventFailureListeners) {
+                if (listener != null) {
+                    listener.OnFailure();
+                }
+            }
+        }
 
+        activeEventQuery = null;
+        eventSuccessListeners.clear();
+        eventFailureListeners.clear();
+    }
 
 
     /**
@@ -647,6 +755,21 @@ public class Database {
      * @author Jared Gourley
      */
     public void getEntrant(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId) {
+        // If this query is already happening, simply add listeners instead of re-running
+        if (activeUserQuery != null && activeUserQuery == androidId) {
+            // Add listeners to current lists
+            userSuccessListeners.add(successAction);
+            userFailureListeners.add(failureAction);
+            return;
+        }
+        else if (activeUserQuery != null && activeUserQuery != androidId) {
+            throw new RuntimeException("Queries currently cannot handle multiple unique document queries of the same type concurrently.");
+        }
+        // Else no query running so run one
+        userSuccessListeners.add(successAction);
+        userFailureListeners.add(failureAction);
+
+        activeUserQuery = androidId;
         DocumentReference docRef = db.collection("users").document(androidId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -656,15 +779,17 @@ public class Database {
                     if (document.exists()) {
                         Entrant entrant = unpackEntrantMap(document.getData());
                         if (entrant != null) { // TODO: query for every event reference found as well?
-                            successAction.OnSuccess(entrant);
+                            // Send success signals
+                            sendToEntrantListeners(entrant, true);
+                            return;
                         }
-                        else {
-                            failureAction.OnFailure();
-                        }
-                    } else {
-                        failureAction.OnFailure();
                     }
-                } else {
+                    // Send failure signals
+                    sendToEntrantListeners(null, false);
+
+                }
+                else {
+                    // This case should not be happening under normal circumstances
                     Log.d("WARN", "get failed with ", task.getException());
                 }
             }
@@ -673,6 +798,32 @@ public class Database {
     }
 
 
+    /**
+     * Notifies all listeners waiting on the entrant query.
+     * @param entrant The entrant received (if successful)
+     * @param isSuccessful True if success listeners should be called, false if failure listeners should be called.
+     * @author Jared Gourley
+     */
+    private void sendToEntrantListeners(Entrant entrant, boolean isSuccessful) {
+        if (isSuccessful) {
+            for (QuerySuccessAction listener : userSuccessListeners) {
+                if (listener != null) {
+                    listener.OnSuccess(entrant);
+                }
+            }
+        }
+        else {
+            for (QueryFailureAction listener : userFailureListeners) {
+                if (listener != null) {
+                    listener.OnFailure();
+                }
+            }
+        }
+
+        activeUserQuery = null;
+        userSuccessListeners.clear();
+        userFailureListeners.clear();
+    }
 
 
     /**
@@ -718,16 +869,18 @@ public class Database {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Organizer organizer = unpackOrganizerMap(document.getData());
-                        if (organizer != null) {
-                            successAction.OnSuccess(organizer);
+                        if (organizer != null) { // TODO: query for every event reference found as well?
+                            // Send success signals
+                            sendToOrganizerListeners(organizer, true);
+                            return;
                         }
-                        else {
-                            failureAction.OnFailure();
-                        }
-                    } else {
-                        failureAction.OnFailure();
                     }
-                } else {
+                    // Send failure signals
+                    sendToOrganizerListeners(null, false);
+
+                }
+                else {
+                    // This case should not be happening under normal circumstances
                     Log.d("WARN", "get failed with ", task.getException());
                 }
             }
@@ -736,6 +889,32 @@ public class Database {
     }
 
 
+    /**
+     * Notifies all listeners waiting on the organizer query.
+     * @param organizer The organizer received (if successful)
+     * @param isSuccessful True if success listeners should be called, false if failure listeners should be called.
+     * @author Jared Gourley
+     */
+    private void sendToOrganizerListeners(Organizer organizer, boolean isSuccessful) {
+        if (isSuccessful) {
+            for (QuerySuccessAction listener : userSuccessListeners) {
+                if (listener != null) {
+                    listener.OnSuccess(organizer);
+                }
+            }
+        }
+        else {
+            for (QueryFailureAction listener : userFailureListeners) {
+                if (listener != null) {
+                    listener.OnFailure();
+                }
+            }
+        }
+
+        activeUserQuery = null;
+        userSuccessListeners.clear();
+        userFailureListeners.clear();
+    }
 
 
     /**
@@ -782,15 +961,17 @@ public class Database {
                     if (document.exists()) {
                         Admin admin = unpackAdminMap(document.getData());
                         if (admin != null) {
-                            successAction.OnSuccess(admin);
+                            // Send success signals
+                            sendToAdminListeners(admin, true);
+                            return;
                         }
-                        else {
-                            failureAction.OnFailure();
-                        }
-                    } else {
-                        failureAction.OnFailure();
                     }
-                } else {
+                    // Send failure signals
+                    sendToAdminListeners(null, false);
+
+                }
+                else {
+                    // This case should not be happening under normal circumstances
                     Log.d("WARN", "get failed with ", task.getException());
                 }
             }
@@ -799,7 +980,32 @@ public class Database {
     }
 
 
+    /**
+     * Notifies all listeners waiting on the admin query.
+     * @param admin The admin received (if successful)
+     * @param isSuccessful True if success listeners should be called, false if failure listeners should be called.
+     * @author Jared Gourley
+     */
+    private void sendToAdminListeners(Admin admin, boolean isSuccessful) {
+        if (isSuccessful) {
+            for (QuerySuccessAction listener : userSuccessListeners) {
+                if (listener != null) {
+                    listener.OnSuccess(admin);
+                }
+            }
+        }
+        else {
+            for (QueryFailureAction listener : userFailureListeners) {
+                if (listener != null) {
+                    listener.OnFailure();
+                }
+            }
+        }
 
+        activeUserQuery = null;
+        userSuccessListeners.clear();
+        userFailureListeners.clear();
+    }
 
 
 
