@@ -125,7 +125,7 @@ public class CreateEventFragment extends Fragment {
         Entrant currentUser = (Entrant) App.currentUser;
         Organizer currentOrganizer = currentUser.returnOrganizer();
 
-        if (currentUser == null) {
+        if (currentOrganizer == null) {
             Toast.makeText(getContext(), "Organizer not found", Toast.LENGTH_SHORT).show();
             return false;
         }
