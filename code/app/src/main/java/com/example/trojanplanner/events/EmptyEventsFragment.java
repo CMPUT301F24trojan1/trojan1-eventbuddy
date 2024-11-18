@@ -63,48 +63,36 @@ public class EmptyEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Set up a click listener for the "Become Organizer" button
-        view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
-            // Check if the user is already an organizer
-            if (App.currentUser != null && App.currentUser.isOrganizer()) {
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Access Denied")
-                        .setMessage("You are already registered as an organizer! Would you like to create an Event instead?")
-                        .setPositiveButton("Create an Event",(dialog, which) -> {
-                            // Optionally navigate to an information screen
-                            NavController navController = NavHostFragment.findNavController(this);
-                            navController.navigate(R.id.action_eventsFragment_to_eventEditFragment); // Replace with the correct fragment ID
-                        })
-                        .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
-                        .show();
-            }  else {
-                // Navigate to the Facility Setup fragment
-                NavController navController = NavHostFragment.findNavController(this);
-                navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
-            }
-        });
+        // Check if the user is already an organizer
+        if (App.currentUser != null) {
+            if (App.currentUser.isOrganizer()) {
+                // If the user is an organizer, show the "Create Event" button and hide "Become Organizer" button
+                view.findViewById(R.id.createEventButton).setVisibility(View.VISIBLE);
+                view.findViewById(R.id.becomeOrganizerButton).setVisibility(View.GONE);
 
-        // Set up a click listener for the "Create Event" button
-        view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
-            if (App.currentUser != null && App.currentUser.isOrganizer()) {
-                // Navigate to the Create Event fragment
-                NavController navController = NavHostFragment.findNavController(this);
-                navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
+                // Set up a click listener for the "Create Event" button
+                view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
+                    // Navigate to the Create Event fragment
+                    NavController navController = NavHostFragment.findNavController(this);
+                    navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
+                });
             } else {
-                // Show a dialog for non-organizers
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Access Denied")
-                        .setMessage("You need to be registered as an organizer to access this feature.")
-                        .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
-                        .setPositiveButton("Take me there", (dialog, which) -> {
-                            // Optionally navigate to an information screen
-                            NavController navController = NavHostFragment.findNavController(this);
-                            navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment); // Replace with the correct fragment ID
-                        })
-                        .create()
-                        .show();
+                // If the user is not an organizer, show the "Become Organizer" button
+                view.findViewById(R.id.becomeOrganizerButton).setVisibility(View.VISIBLE);
+                view.findViewById(R.id.createEventButton).setVisibility(View.GONE);
+
+                // Set up a click listener for the "Become Organizer" button
+                view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
+                    // Navigate to the Facility Setup fragment
+                    NavController navController = NavHostFragment.findNavController(this);
+                    navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
+                });
             }
-        });
+        } else {
+            // If the user is not logged in or no user exists, hide both buttons
+            view.findViewById(R.id.becomeOrganizerButton).setVisibility(View.GONE);
+            view.findViewById(R.id.createEventButton).setVisibility(View.GONE);
+        }
     }
 
     /**

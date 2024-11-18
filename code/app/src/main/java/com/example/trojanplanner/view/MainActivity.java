@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
         database = Database.getDB();
         facilityPhotoPicker = new PhotoPicker();
         facilityPhotoPicker.initPhotoPicker();
