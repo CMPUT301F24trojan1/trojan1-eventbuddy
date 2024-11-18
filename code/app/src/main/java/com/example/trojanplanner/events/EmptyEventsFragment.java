@@ -1,10 +1,12 @@
 package com.example.trojanplanner.events;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 
 /**
@@ -62,16 +65,45 @@ public class EmptyEventsFragment extends Fragment {
 
         // Set up a click listener for the "Become Organizer" button
         view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
-            // Navigate to the Facility Setup fragment
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
+            // Check if the user is already an organizer
+            if (App.currentUser != null && App.currentUser.isOrganizer()) {
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Access Denied")
+                        .setMessage("You are already registered as an organizer! Would you like to create an Event instead?")
+                        .setPositiveButton("Create an Event",(dialog, which) -> {
+                            // Optionally navigate to an information screen
+                            NavController navController = NavHostFragment.findNavController(this);
+                            navController.navigate(R.id.action_eventsFragment_to_eventEditFragment); // Replace with the correct fragment ID
+                        })
+                        .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
+                        .show();
+            }  else {
+                // Navigate to the Facility Setup fragment
+                NavController navController = NavHostFragment.findNavController(this);
+                navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
+            }
         });
 
         // Set up a click listener for the "Create Event" button
         view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
-            // Navigate to the Create Event fragment
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
+            if (App.currentUser != null && App.currentUser.isOrganizer()) {
+                // Navigate to the Create Event fragment
+                NavController navController = NavHostFragment.findNavController(this);
+                navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
+            } else {
+                // Show a dialog for non-organizers
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Access Denied")
+                        .setMessage("You need to be registered as an organizer to access this feature.")
+                        .setNegativeButton("Close", (dialog, which) -> dialog.dismiss())
+                        .setPositiveButton("Take me there", (dialog, which) -> {
+                            // Optionally navigate to an information screen
+                            NavController navController = NavHostFragment.findNavController(this);
+                            navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment); // Replace with the correct fragment ID
+                        })
+                        .create()
+                        .show();
+            }
         });
     }
 
