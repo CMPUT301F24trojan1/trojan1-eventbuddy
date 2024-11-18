@@ -11,6 +11,7 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.ProfileUtils.ProfileFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
@@ -21,8 +22,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
 
-    public String deviceId;
-    public Entrant currentUser;
 
     public PhotoPicker photoPicker;
     public ProfileFragment profileFragment;
@@ -33,14 +32,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-
-
-        // Get information from the intent received from activity switch
-        deviceId = getIntent().getExtras().getString("deviceId");
-        currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
-        assert deviceId != null;
-
 
         // Display ProfileFragment in the fragment container
         if (savedInstanceState == null) {
@@ -65,7 +56,7 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        profileFragment.resetState(currentUser);
+        profileFragment.resetState(App.currentUser);
     }
 
 
@@ -96,19 +87,17 @@ public class ProfileActivity extends AppCompatActivity {
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
-                if (currentUser != null) {
+                if (App.currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                    intent.putExtra("deviceId", deviceId);
-                    intent.putExtra("user", currentUser);
+                    // Bundle attributes to be passed here i.e. intent.putExtra(...)
                     startActivity(intent);
                     finish();
                 }
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
-                if (currentUser != null) {
+                if (App.currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, QRActivity.class);
-                    intent.putExtra("deviceId", deviceId);
-                    intent.putExtra("user", currentUser);
+                    // Bundle attributes to be passed here i.e. intent.putExtra(...)
                     startActivity(intent);
                     finish();
                 }

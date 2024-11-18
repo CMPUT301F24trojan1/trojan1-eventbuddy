@@ -3,7 +3,6 @@ package com.example.trojanplanner.controller;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -46,7 +45,7 @@ public class PhotoPicker {
     public PhotoPickerCallback dummyCallback;
 
     public PhotoPicker() {
-        activity = App.activityManager.getActivity();
+        activity = App.activity;
         owner = (LifecycleOwner) activity;
         registry = ( (AppCompatActivity) activity).getActivityResultRegistry();
         dummyCallback = new PhotoPickerCallback() {
@@ -165,11 +164,10 @@ public class PhotoPicker {
 
     /**
      * Creates and opens a PhotoPicker UI screen to allow choosing a photo from the user's photo album.
-     * Ensure isCurrentlyPicking() is false then use getSelectedPhoto() after this function call
-     * to check on the selection results.
+     * Results of the selection can be checked through the callback function defined in initPhotoPicker.
      * <br>
      * Requires calling the initPhotoPicker function before using this one.
-     * @param user The current user of the app
+     * @param user The current user of the app (required if planning to use database upload)
      * @author Jared Gourley
      */
     public void openPhotoPicker(User user) {
@@ -192,5 +190,23 @@ public class PhotoPicker {
                 .build());
 
     }
+
+
+    /**
+     * Creates and opens a PhotoPicker UI screen to allow choosing a photo from the user's photo album.
+     * Results of the selection can be checked through the callback function defined in initPhotoPicker.
+     * <br>
+     * Requires calling the initPhotoPicker function before using this one.
+     * @author Jared Gourley
+     */
+    public void openPhotoPicker() {
+        if (hasDatabase) {
+            throw new RuntimeException("Must provide a user parameter when initialized with database.");
+        }
+
+        openPhotoPicker(null);
+    }
+
+
 
 }
