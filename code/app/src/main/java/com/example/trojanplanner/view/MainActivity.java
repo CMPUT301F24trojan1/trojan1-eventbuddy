@@ -137,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
      * <p>
@@ -195,5 +194,4 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
-
 }
