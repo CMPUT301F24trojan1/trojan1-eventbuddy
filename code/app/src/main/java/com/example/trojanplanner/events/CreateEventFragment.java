@@ -164,7 +164,6 @@ public class CreateEventFragment extends Fragment {
 
         return true;
     }
-
   
     private void navigateToEventsListFragment(View view) {
         if (view != null) {
@@ -172,9 +171,7 @@ public class CreateEventFragment extends Fragment {
             navController.navigate(R.id.eventsListFragment);
         }
     }
-  
-  
-  
+
     /**
      * Handles options menu item selections.
      *
