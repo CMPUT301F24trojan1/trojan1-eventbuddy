@@ -26,8 +26,8 @@ public class Event implements Serializable {
     private int daysLeftToRegister;
     private String qrCodePath;
     private Bitmap qrCodeBitmap;
-    private Bitmap picture; // New attribute to store the event picture
-    private String pictureFilePath; //uhhh
+    private Bitmap picture; // Event picture bitmap
+    private String pictureFilePath; // Path to where the picture bitmap is stored in Firebase Storage
 
     //participant lists
     private ArrayList<User> waitingList;
@@ -110,8 +110,9 @@ public class Event implements Serializable {
 //        this.recurrenceType = RecurrenceType.NEVER; // I set this by default
 //    }
 
-    public Event(String name, String description, float price, Facility facility, Date startDateTime, Date endDateTime,
+    public Event(String eventId, String name, String description, float price, Facility facility, Date startDateTime, Date endDateTime,
                  int daysLeftToRegister, Long totalSpots, Long availableSpots) {
+        this.eventId = eventId;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -140,19 +141,39 @@ public class Event implements Serializable {
     }
 
     // Constructor with no image args
-    public Event(String eventName, String eventDescription, float price) {
+    public Event(String eventId, String eventName, String eventDescription, float price) {
+        this.eventId = eventId;
         this.name = eventName;
         this.description = eventDescription;
         this.price = price;
     }
 
     // Constructor with image args
-    public Event(String eventName, String eventDescription, float price, Bitmap imageBitmap) {
+    public Event(String eventId, String eventName, String eventDescription, float price, Bitmap imageBitmap) {
+        this.eventId = eventId;
         this.name = eventName;
         this.description = eventDescription;
         this.price = price;
         this.picture = imageBitmap;
     }
+
+    /**
+     * Alternate constructor to create an INCOMPLETE Event object to allow
+     * setting attributes after object creation.
+     *
+     * @param eventId The eventId of the event
+     * @author Jared Gourley
+     */
+    public Event(String eventId) {
+        this(eventId, "NAME", "DESCRIPTION", 0);
+    }
+
+
+    @Override
+    public String toString() {
+        return "Event: " + name + " (" + eventId + ")";
+    }
+
 
     public ArrayList<User> getWaitingList() {
         return waitingList;
@@ -242,12 +263,22 @@ public class Event implements Serializable {
         this.price = price;
     }
 
+    // fuck you java
+    public void setPrice (Double price) {
+        this.price = price.floatValue();
+    }
+
     public int getWaitlistCapacity() {
         return waitlistCapacity;
     }
 
     public void setWaitlistCapacity(int waitlistCapacity) {
         this.waitlistCapacity = waitlistCapacity;
+    }
+
+    // fuck you again java
+    public void setWaitlistCapacity(Long waitlistCapacity) {
+        this.waitlistCapacity = waitlistCapacity.intValue();
     }
 
     public ArrayList<User> getCancelledList() {
