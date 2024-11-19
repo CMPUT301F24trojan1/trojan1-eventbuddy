@@ -899,7 +899,7 @@ public class Database {
      * @author Jared Gourley
      */
     public void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId) {
-        getEvent(successAction, failureAction, eventId, false, null);
+        getEvent(successAction, failureAction, eventId, false, new Facility("sorry still WIP"));
     }
 
 
