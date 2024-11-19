@@ -50,31 +50,32 @@ dependencies {
     implementation(libs.camera.camera2)
     implementation(libs.firebase.database)
     implementation("com.google.firebase:firebase-messaging:23.0.0")
+
+    // Test dependencies
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite") // Exclude protobuf-lite
+    }
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("androidx.navigation:navigation-testing:2.5.3")
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.4.0")
     androidTestImplementation("androidx.test:rules:1.4.0")
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
     androidTestImplementation("androidx.fragment:fragment-testing:1.3.6")
-
-    // Add only to androidTestImplementation for instrumentation tests
     androidTestImplementation("org.mockito:mockito-android:4.0.0")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.1")
-    testImplementation("org.mockito:mockito-core:4.+") // Only for JVM tests
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.0.1")
     androidTestImplementation("com.linkedin.dexmaker:dexmaker-mockito:2.28.1")
 
+    // Firebase dependencies
     implementation(libs.barcode.scanning)
     implementation(libs.common)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.appcheck)
+    implementation("com.google.firebase:firebase-messaging:23.0.0")
 
+    // UI dependencies
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
@@ -82,6 +83,8 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+
+    // Unit testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
