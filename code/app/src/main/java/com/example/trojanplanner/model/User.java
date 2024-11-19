@@ -66,6 +66,25 @@ public abstract class User implements Serializable {
         this.phoneNumber = phone;
     }
 
+
+    /**
+     * Alternate constructor to create an INCOMPLETE User object to allow
+     * setting attributes after object creation.
+     *
+     * @param deviceId The deviceId of the user account
+     * @author Jared Gourley
+     */
+    public User(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+
+    @Override
+    public String toString() {
+        return firstName + " " + lastName + " (" + deviceId + ")";
+    }
+
+
     /**
      * Getter method for user's last name
      * @author Madelaine Dalangin
@@ -190,6 +209,14 @@ public abstract class User implements Serializable {
      */
     public boolean isAdmin() {
         return isAdmin;
+    }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    public void setIsOrganizer(boolean isOrganizer) {
+        this.isOrganizer = isOrganizer;
     }
 
     public String getPfpFilePath() {
