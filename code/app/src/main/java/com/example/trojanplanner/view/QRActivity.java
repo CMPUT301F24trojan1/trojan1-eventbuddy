@@ -78,6 +78,8 @@ public class QRActivity extends AppCompatActivity {
         deviceId = App.deviceId;
         currentUser = (Entrant) App.currentUser;
 
+        etInput = findViewById(R.id.etInput);
+
         Database db = Database.getDB();
 
         barcodeView = findViewById(R.id.barcode_scanner);
@@ -98,6 +100,8 @@ public class QRActivity extends AppCompatActivity {
             }
         };
         getOnBackPressedDispatcher().addCallback(this, callback);
+
+        startQRScanner();
     }
 
     /**
@@ -133,10 +137,15 @@ public class QRActivity extends AppCompatActivity {
         Collection<BarcodeFormat> formats = Collections.singletonList(BarcodeFormat.QR_CODE);
         barcodeView.setDecoderFactory(new DefaultDecoderFactory(formats));
         barcodeView.decodeContinuous(new BarcodeCallback() {
-            public void barcodeResult(Result result) {
+            @Override
+            public void barcodeResult(BarcodeResult result) {
                 if (result != null) {
-                    String eventCode = result.getText();  // Use the scanned QR code as the eventId
+                    String scannedData = result.getText(); // The scanned QR code text
 
+                    // Show a toast message no matter what is scanned
+                    Toast.makeText(QRActivity.this, "Scanned: " + scannedData, Toast.LENGTH_SHORT).show();
+
+                    // Query the database for the event
                     Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
                         @Override
                         public void OnSuccess(Object object) {
@@ -144,7 +153,7 @@ public class QRActivity extends AppCompatActivity {
                                 Event event = (Event) object;  // Cast to Event
                                 Log.d("QRActivity", "Event retrieved: " + event.getName());
 
-                                // Now you can pass the event data to another fragment or perform other actions
+                                // Navigate to the EventDetailsFragment with the event data
                                 navigateToEventDetailsFragment(event);
                             }
                         }
@@ -160,16 +169,15 @@ public class QRActivity extends AppCompatActivity {
                         }
                     };
 
-                    database.getEvent(successAction, failureAction,eventCode);  // Fetch the event using the eventId
+                    database.getEvent(successAction, failureAction, scannedData);  // Fetch the event using the scanned QR code text
                     barcodeView.pause();  // Pause scanning after a successful scan
                 }
             }
 
             @Override
-            public void barcodeResult(BarcodeResult result) { }
-
-            @Override
-            public void possibleResultPoints(List<ResultPoint> resultPoints) { }
+            public void possibleResultPoints(List<ResultPoint> resultPoints) {
+                // Optionally handle potential result points here
+            }
         });
         barcodeView.resume();
     }

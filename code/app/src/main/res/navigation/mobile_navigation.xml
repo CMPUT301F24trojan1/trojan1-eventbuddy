@@ -94,4 +94,19 @@
             app:argType="com.example.trojanplanner.model.Event" />
     </fragment>
 
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.trojanplanner.ProfileUtils.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile">
+
+        <action
+            android:id="@+id/action_profileFragment_to_facilitySetupFragment"
+            app:destination="@id/facilitySetupFragment" />
+
+        <action
+            android:id="@+id/action_profileFragment_to_emptyEventsFragment"
+            app:destination="@id/emptyEventsFragment" />
+    </fragment>
+
 </navigation>
