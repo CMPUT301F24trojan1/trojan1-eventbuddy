@@ -16,7 +16,7 @@ public class Entrant extends User {
     private ArrayList<Event> currentDeclinedEvents;
 
     /**
-     * Constructor Method for Entrant
+     * Constructor Method for a new Entrant (that has no events yet)
      *
      * @param lastName    String
      * @param firstName   String
@@ -35,6 +35,49 @@ public class Entrant extends User {
         this.currentPendingEvents = new ArrayList<Event>();
         this.currentDeclinedEvents = new ArrayList<Event>();
     }
+
+
+    /**
+     * Constructor Method for an existing Entrant that already has events set
+     *
+     * @param lastName    String
+     * @param firstName   String
+     * @param email       String
+     * @param phoneNumber String
+     * @param deviceId    String
+     * @param role        String
+     * @param isOrganizer boolean
+     * @param isAdmin     boolean
+     * @param currentWaitlistedEvents ArrayList<Event>
+     * @param currentEnrolledEvents ArrayList<Event>
+     * @param currentWaitlistedEvents ArrayList<Event>
+     * @param currentPendingEvents ArrayList<Event>
+     * @param currentDeclinedEvents ArrayList<Event>
+     * @author Jared Gourley
+     */
+    public Entrant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, ArrayList<Event> currentWaitlistedEvents, ArrayList<Event> currentEnrolledEvents, ArrayList<Event> currentPendingEvents, ArrayList<Event> currentDeclinedEvents) {
+        super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
+        this.currentWaitlistedEvents = currentWaitlistedEvents;
+        this.currentEnrolledEvents = currentEnrolledEvents;
+        this.currentPendingEvents = currentPendingEvents;
+        this.currentDeclinedEvents = currentDeclinedEvents;
+    }
+
+    /**
+     * Alternate constructor to create an INCOMPLETE Entrant object to allow
+     * setting attributes after object creation.
+     *
+     * @param deviceId The deviceId of the entrant account
+     * @author Jared Gourley
+     */
+    public Entrant(String deviceId) {
+        super(deviceId);
+        this.currentWaitlistedEvents = new ArrayList<Event>();
+        this.currentEnrolledEvents = new ArrayList<Event>();
+        this.currentPendingEvents = new ArrayList<Event>();
+        this.currentDeclinedEvents = new ArrayList<Event>();
+    }
+
 
     /**
      * Method for adding event to waitlisted events array
@@ -97,7 +140,7 @@ public class Entrant extends User {
         if (!currentPendingEvents.contains(event)) {
             currentPendingEvents.add(event);
         } else {
-            throw new IllegalArgumentException("Event is already in Entrant's Pending list.");
+            throw new IllegalArgumentException("Event is already in Entrant's pending list.");
         }
     }
 
@@ -110,6 +153,21 @@ public class Entrant extends User {
         }
     }
 
+    public void addDeclinedEvent(Event event) {
+        if (!currentDeclinedEvents.contains(event)) {
+            currentDeclinedEvents.add(event);
+        } else {
+            throw new IllegalArgumentException("Event is already in Entrant's declined list.");
+        }
+    }
+
+    public void removeDeclinedEvent(Event event) {
+        if (currentDeclinedEvents.contains(event)) {
+            currentDeclinedEvents.remove(event);
+        } else {
+            throw new IllegalArgumentException("Event does not exist in Entrant's declined events list.");
+        }
+    }
 
     public ArrayList<Event> getCurrentWaitlistedEvents() {
         return currentWaitlistedEvents;

@@ -56,12 +56,12 @@ public class ProfileActivity extends AppCompatActivity {
         // If the current user is still null, see if there's an active
         // db query waiting for a response
         database = Database.getDB();
-        if (database.getActiveUserQuery() != null) { // If still getting user
+        if (database.getActiveEntrantQuery() != null) { // If still getting user
             Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
                 @Override
                 public void OnSuccess(Object object) {
                     profileFragment.resetState((Entrant) object);
-                    // Also get the incoming profile picture if one was requested by MainActivity
+                    // TODO CHANGE THIS
                     if (database.getActiveImageQuery() != null) {
                         getIncomingPfp();
                     }
