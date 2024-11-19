@@ -1,4 +1,7 @@
 <resources>
+    <string name="splash_description">Trojan Planner welcome page logo</string>
+    <string name="welcomeText">Testing if it\'s running</string>
+    <string name="welcomeSubtext"></string>
     <string name="app_name">TrojanPlanner</string>
     <string name="title_events">MyEvents</string>
     <string name="title_qr">QR Scanner</string>
