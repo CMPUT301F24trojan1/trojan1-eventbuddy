@@ -2,6 +2,7 @@ package com.example.trojanplanner.view;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +17,10 @@ import com.example.trojanplanner.ProfileUtils.ProfileFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
+import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -25,6 +29,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     public PhotoPicker photoPicker;
     public ProfileFragment profileFragment;
+    private Database database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,31 @@ public class ProfileActivity extends AppCompatActivity {
 
         setupNavigation();
 
+        // If the current user is still null, see if there's an active
+        // db query waiting for a response
+        database = Database.getDB();
+        if (database.getActiveEntrantQuery() != null) { // If still getting user
+            Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
+                @Override
+                public void OnSuccess(Object object) {
+                    profileFragment.resetState((Entrant) object);
+                    // TODO CHANGE THIS
+                    if (database.getActiveImageQuery() != null) {
+                        getIncomingPfp();
+                    }
+                }
+            };
+            Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
+                @Override
+                public void OnFailure() {
+                    ; // Happens if no saved user exists for this device: no action needed
+                }
+            };
+
+            database.getEntrant(successAction, failureAction, App.deviceId);
+        }
+
+
         // Future code will be written in onStart to make sure the fragment fully loads properly
 
     }
@@ -57,6 +87,31 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         profileFragment.resetState(App.currentUser);
+    }
+
+
+    /**
+     * Sets an action on image retrieval to set the profile picture of the fragment.
+     * This function is only called if the MainActivity user profile retrieval is not finished yet.
+     * @author Jared Gourley
+     */
+    private void getIncomingPfp() {
+        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Assume that the MainActivity call set the user attribute already, we just want to reset state
+                profileFragment.resetState(App.currentUser);
+            }
+        };
+        OnFailureListener failureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                ; // Should never happen: user pfp filepath attribute should point to valid bitmap
+            }
+        };
+
+        // Add the actions to the query
+        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
     }
 
 
@@ -81,7 +136,6 @@ public class ProfileActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Set the selected item to profileActivity
         navView.setSelectedItemId(R.id.profileActivity);
-
 
 
         // Set up the listener to handle Bottom Navigation item selections
