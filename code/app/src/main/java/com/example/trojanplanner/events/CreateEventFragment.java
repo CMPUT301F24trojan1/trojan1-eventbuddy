@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -40,6 +41,7 @@ public class CreateEventFragment extends Fragment {
     private String eventFacilityEditText; // Temporarily using a string instead of EditText
     private EditText eventDateEditText; // Add other fields as needed
     private Button createEventButton;
+    private Button cancelEventButton;
     private Database database;
 
     /**
@@ -74,13 +76,30 @@ public class CreateEventFragment extends Fragment {
         eventFacilityEditText = "test"; // Temporary test string for facility
         eventDateEditText = view.findViewById(R.id.eventDateEditText); // Add other fields as needed
         createEventButton = view.findViewById(R.id.createEventButton);
+        cancelEventButton = view.findViewById(R.id.cancelEventButton); // Cancel button
 
+
+        // Handle "Create Event" button click
         createEventButton.setOnClickListener(v -> {
             boolean ret = createEvent(view);
             if (ret) {
                 navigateToEventsListFragment(view);
             }
         });
+
+        // Handle "Cancel" button click
+        cancelEventButton.setOnClickListener(v -> {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Cancel Event Creation")
+                    .setMessage("Are you sure you want to discard this event?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        NavController navController = NavHostFragment.findNavController(this);
+                        navController.navigateUp();
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        });
+
     }
 
     /**
@@ -106,7 +125,7 @@ public class CreateEventFragment extends Fragment {
         Entrant currentUser = (Entrant) App.currentUser;
         Organizer currentOrganizer = currentUser.returnOrganizer();
 
-        if (currentUser == null) {
+        if (currentOrganizer == null) {
             Toast.makeText(getContext(), "Organizer not found", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -145,7 +164,6 @@ public class CreateEventFragment extends Fragment {
 
         return true;
     }
-
   
     private void navigateToEventsListFragment(View view) {
         if (view != null) {
@@ -153,9 +171,7 @@ public class CreateEventFragment extends Fragment {
             navController.navigate(R.id.eventsListFragment);
         }
     }
-  
-  
-  
+
     /**
      * Handles options menu item selections.
      *

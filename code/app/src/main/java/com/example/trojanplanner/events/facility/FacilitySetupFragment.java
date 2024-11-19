@@ -68,7 +68,10 @@ public class FacilitySetupFragment extends Fragment {
         uploadPhotoButton.setOnClickListener(v -> openImagePicker());
         saveButton.setOnClickListener(v -> saveFacility());
 
-        cancelButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
+        cancelButton.setOnClickListener(v -> {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.emptyEventsFragment);
+        });
 
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();

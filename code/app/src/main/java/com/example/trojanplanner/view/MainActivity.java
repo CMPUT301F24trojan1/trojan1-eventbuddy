@@ -17,7 +17,6 @@ import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -48,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
 
         database = Database.getDB();
         facilityPhotoPicker = new PhotoPicker();
@@ -138,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
      * <p>
@@ -196,5 +193,4 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
-
 }
