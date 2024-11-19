@@ -13,9 +13,28 @@ public class Facility {
     private Organizer owner;
     private String pfpFacilityFilePath;
     private Bitmap pfpFacilityBitmap;
-    
+
+
     /**
      * Constructor for Facility
+     * @param name The name of the facility
+     * @param facilityId The unique ID of the facility
+     * @param location
+     * @param owner
+     * @param pfpFacilityFilePath
+     * @author Jared Gourley
+     */
+    public Facility(String name, String facilityId, String location, Organizer owner, String pfpFacilityFilePath) {
+        this.name = name;
+        this.facilityId = facilityId;
+        this.location = location;
+        this.owner = owner;
+        this.pfpFacilityFilePath = pfpFacilityFilePath;
+    }
+
+
+    /**
+     * Alternate constructor for Facility explicitly setting pfp bitmap
      * @param name The name of the facility
      * @param facilityId The unique ID of the facility
      * @param location
@@ -29,14 +48,28 @@ public class Facility {
         this.facilityId = facilityId;
         this.location = location;
         this.owner = owner;
-//        this.event = event;
-//        this.dateOccupied = dateOccupied;
-//        this.capacityOfEvent = capacityOfEvent;
-//        this.maxCapacityOfFacility = maxCapacityOfFacility;
-//        this.hasOwner = hasOwner;
         this.pfpFacilityFilePath = pfpFacilityFilePath;
         this.pfpFacilityBitmap = pfpFacilityBitmap;
     }
+
+
+    /**
+     * Alternate constructor to create an INCOMPLETE Facility object to allow
+     * setting attributes after object creation.
+     *
+     * @param facilityId The facilityId of the event
+     * @author Jared Gourley
+     */
+    public Facility(String facilityId) {
+        this.facilityId = facilityId;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Facility: " + name + " (" + facilityId + ")";
+    }
+
 
     public String getName() {
         return name;

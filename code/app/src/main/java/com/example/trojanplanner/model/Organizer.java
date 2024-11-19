@@ -33,6 +33,21 @@ public class Organizer extends User {
         this.facility = facility;
     }
 
+
+    /**
+     * Alternate constructor to create an INCOMPLETE Organizer object to allow
+     * setting attributes after object creation.
+     *
+     * @param deviceId The deviceId of the organizer account
+     * @author Jared Gourley
+     */
+    public Organizer(String deviceId) {
+        super(deviceId);
+        facility = null;
+        createdEvents = new ArrayList<Event>();
+    }
+
+
     /**
      * Method for getting the array of Events created
      * @author Jared Gourley
@@ -40,6 +55,10 @@ public class Organizer extends User {
      */
     public ArrayList<Event> getCreatedEvents() {
         return createdEvents;
+    }
+
+    public void setCreatedEvents(ArrayList<Event> createdEvents) {
+        this.createdEvents = createdEvents;
     }
 
     /**
@@ -59,7 +78,7 @@ public class Organizer extends User {
     /**
      * method for removing an event from the array using object Event as parameter
      * @author Jared Gourley
-     * @param event, Event
+     * @param event The event object to remove
      */
     public void removeEvent(Event event) {
         if (createdEvents.contains(event)){
@@ -72,8 +91,8 @@ public class Organizer extends User {
 
     /**
      * Method for removing an Event using index
+     * @param index The index of the event to remove
      * @author Jared Gourley
-     * @param index, int
      */
     public void removeEvent(int index) {
         if (index < createdEvents.size() && index >= 0) {
@@ -82,6 +101,36 @@ public class Organizer extends User {
         else {
             throw new IllegalArgumentException("Invalid index on event delete");
         }
+    }
+
+    /**
+     * Method for overwriting the event at a given index with a new index.
+     * @param event The event to assign to the new index
+     * @param index The index to assign the event to
+     * @author Jared Gourley
+     */
+    public void setEventAtIndex(Event event, int index) {
+        if (index < createdEvents.size() && index >= 0) {
+            createdEvents.set(index, event);
+        }
+        else {
+            throw new IllegalArgumentException("Invalid index on event insert");
+        }
+    }
+
+    /**
+     * Method which returns the index in which the event matches the given event ID.
+     * @param eventId The event ID to search for in the array.
+     * @return The index if found or -1 otherwise.
+     * @author Jared Gourley
+     */
+    public int findIndexWithEventId(String eventId) {
+        for (int i = 0; i < createdEvents.size(); i++) {
+            if (createdEvents.get(i).getEventId().equals(eventId)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
