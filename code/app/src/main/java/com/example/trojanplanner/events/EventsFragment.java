@@ -154,6 +154,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
 
     private void addDummyEvent() {
         Event dummyEvent = new Event(
+                "fakeId",
                 "Sample Event",
                 "This is a description for the sample event.",
                 0.0f, // Price

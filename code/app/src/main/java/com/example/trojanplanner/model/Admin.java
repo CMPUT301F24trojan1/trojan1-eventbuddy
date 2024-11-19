@@ -1,7 +1,6 @@
 package com.example.trojanplanner.model;
 
 
-import android.graphics.Bitmap;
 import java.util.List;
 
 /**
@@ -25,9 +24,20 @@ public class Admin extends User {
     public Admin(String lastName, String firstName, String email, String phoneNumber,
                  String deviceId, String role, boolean isOrganizer, boolean isAdmin) {
         super(lastName, firstName, email, phoneNumber, deviceId, "Admin", isOrganizer, true);
-//        this.setPfpFilePath(pfpFilePath); // This should be done in a User constructor since it's common to all user types
-//        this.setPfpBitmap(pfpBitmap);
     }
+
+
+    /**
+     * Alternate constructor to create an INCOMPLETE Admin object to allow
+     * setting attributes after object creation.
+     *
+     * @param deviceId The deviceId of the admin account
+     * @author Jared Gourley
+     */
+    public Admin(String deviceId) {
+        super(deviceId);
+    }
+
 
 
     /**
