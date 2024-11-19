@@ -80,6 +80,72 @@ public class Entrant extends User {
 
 
     /**
+     * A method to return one of the four arrays using an int, making looping over them easier.
+     * @param index 0 = currentEnrolledEvents, 1 = currentWaitlistedEvents, 2 = currentPendingEvents, 3 = currentDeclinedEvents
+     * @return One of the above arrays
+     */
+    public ArrayList<Event> returnEventsArrayByIndex(int index) {
+        if (index == 0) {
+            return currentEnrolledEvents;
+        }
+        if (index == 1) {
+            return currentWaitlistedEvents;
+        }
+        if (index == 2) {
+            return currentPendingEvents;
+        }
+        if (index == 3) {
+            return currentDeclinedEvents;
+        }
+        else {
+            throw new IndexOutOfBoundsException("Index must be between 0-3");
+        }
+    }
+
+
+    /**
+     * Method which returns the index in which the event matches the given event ID.
+     * @param array The array to search through
+     * @param eventId The event ID to search for in the array.
+     * @return The index if found or -1 otherwise.
+     * @author Jared Gourley
+     */
+    public int findIndexWithId(ArrayList<Event> array, String eventId) {
+        for (int i = 0; i < array.size(); i++) {
+            if (array.get(i).getEventId().equals(eventId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Replaces an event object from any of the event arrays with the new event object
+     * if the event ids match. Only replaces one instance under the assumption that no
+     * duplicates should ever appear.
+     * @param event The new event object to replace if ids match
+     * @return true if a replace happened, false if not
+     */
+    public boolean replaceEventMatchingId(Event event) {
+        String eventId = event.getEventId();
+        int foundIndex = -1;
+        ArrayList<Event> array;
+        for (int i = 0; i < 4; i++) {
+            array = returnEventsArrayByIndex(i);
+            foundIndex = findIndexWithId(array, eventId);
+            if (foundIndex != -1) {
+                array.set(foundIndex, event);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
+
+
+    /**
      * Method for adding event to waitlisted events array
      * @author Madelaine Dalangin
      * @param event
