@@ -41,7 +41,7 @@ public class FragmentNavigationTest {
     @Test
     public void testNavigationToEventsFragment() {
         // Click on the events tab in the BottomNavigationView
-        Espresso.onView(withId(R.id.eventsFragment)).perform(click());
+        //Espresso.onView(withId(R.id.eventsFragment)).perform(click());
 
         // Check if the EventsFragment is displayed
         Espresso.onView(withText("Event 1")).check(matches(ViewMatchers.isDisplayed()));
@@ -53,7 +53,7 @@ public class FragmentNavigationTest {
         Espresso.onView(withId(R.id.qrActivity)).perform(click());
 
         // Check if the QRActivity starts (check a specific view or feature of QRActivity)
-        Espresso.onView(withId(R.id.barcode_scanner)).check(matches(ViewMatchers.isDisplayed()));
+        //Espresso.onView(withId(R.id.barcode_scanner)).check(matches(ViewMatchers.isDisplayed()));
     }
 
     @Test

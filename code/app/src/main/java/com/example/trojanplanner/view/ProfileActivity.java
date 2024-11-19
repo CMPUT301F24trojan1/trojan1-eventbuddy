@@ -1,12 +1,8 @@
 package com.example.trojanplanner.view;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,13 +30,24 @@ public class ProfileActivity extends AppCompatActivity {
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Safely retrieve data from intent
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            deviceId = extras.getString("deviceId");
+            currentUser = (Entrant) extras.getSerializable("user");
 
-
-        // Get information from the intent received from activity switch
-        deviceId = getIntent().getExtras().getString("deviceId");
-        currentUser = (Entrant) getIntent().getExtras().getSerializable("user");
-        assert deviceId != null;
-
+            if (deviceId == null || currentUser == null) {
+                // Handle the case where essential data is missing
+                Toast.makeText(this, "Missing essential data", Toast.LENGTH_SHORT).show();
+                finish(); // Optionally finish the activity if the data is missing
+                return;
+            }
+        } else {
+            // Handle the case where extras are not provided
+            Toast.makeText(this, "No extras provided", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // Display ProfileFragment in the fragment container
         if (savedInstanceState == null) {
@@ -51,39 +58,25 @@ public class ProfileActivity extends AppCompatActivity {
                     .commit();
         }
 
-        // Init a photopicker which uses a callback set in ProfileFragment
+        // Initialize photo picker
         photoPicker = new PhotoPicker();
         photoPicker.initPhotoPicker(profileFragment.photoPickerCallback);
 
+        // Setup bottom navigation
         setupNavigation();
-
-        // Future code will be written in onStart to make sure the fragment fully loads properly
-
     }
 
-    // Call future things from here because in onCreate the fragment container is not fully set up yet
     @Override
     protected void onStart() {
         super.onStart();
-        profileFragment.resetState(currentUser);
+        // Ensure ProfileFragment is reset with the latest user data
+        if (profileFragment != null) {
+            profileFragment.resetState(currentUser);
+        }
     }
-
 
     /**
      * Sets up the navigation for the BottomNavigationView.
-     * <p>
-     * This method initializes the BottomNavigationView and sets the selected item
-     * to the profile activity. It also establishes a listener for item selection
-     * events. When the user selects an item in the navigation bar, the following
-     * actions occur:
-     * <ul>
-     *  <li>If the home navigation item is selected, {@link MainActivity} is launched.
-     *  <li>If the QR activity item is selected, {@link QRActivity} is launched.
-     *  <li>When the QR activity navigation item is selected, the user remains in the current {@link ProfileActivity}
-     * </ul>
-     * This method should be called in the onCreate method of ProfileActivity
-     * to properly set up the navigation when the activity is created.
-     *
      * @author Dricmoy Bhattacharjee
      */
     private void setupNavigation() {
@@ -91,11 +84,10 @@ public class ProfileActivity extends AppCompatActivity {
         // Set the selected item to profileActivity
         navView.setSelectedItemId(R.id.profileActivity);
 
-
-
         // Set up the listener to handle Bottom Navigation item selections
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
+                // Navigate to MainActivity
                 if (currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
                     intent.putExtra("deviceId", deviceId);
@@ -105,6 +97,7 @@ public class ProfileActivity extends AppCompatActivity {
                 }
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
+                // Navigate to QRActivity
                 if (currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, QRActivity.class);
                     intent.putExtra("deviceId", deviceId);
@@ -113,7 +106,10 @@ public class ProfileActivity extends AppCompatActivity {
                     finish();
                 }
                 return true;
-            } else return item.getItemId() == R.id.profileActivity; // Stay in the same activity
+            } else {
+                // Stay in the same activity
+                return item.getItemId() == R.id.profileActivity;
+            }
         });
     }
 }

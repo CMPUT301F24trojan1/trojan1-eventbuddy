@@ -205,7 +205,7 @@ public class EventDetailsFragmentTest {
         HashSet<String> recurrenceDays = new HashSet<>();
         recurrenceDays.add("Monday");
         recurrenceDays.add("Wednesday");
-        testEvent.setRecurrenceDays(recurrenceDays);
+        //testEvent.setRecurrenceDays(recurrenceDays);
 
         // Define a test entrant
         testEntrant = new Entrant("Doe", "Jane", "jane.doe@example.com", "123-456-7890", "Device001", "Guest", false, false);

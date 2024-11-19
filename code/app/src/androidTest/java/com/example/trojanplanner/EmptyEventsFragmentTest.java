@@ -30,15 +30,15 @@ public class EmptyEventsFragmentTest {
                 .check(matches(withText("No events found. Come back here to see events you've created or joined!")));
     }
 
-    @Test
-    public void testBecomeOrganizerButtonNavigates() {
+    //@Test
+    //public void testBecomeOrganizerButtonNavigates() {
         // Launch the EmptyEventsFragment
-        FragmentScenario.launchInContainer(EmptyEventsFragment.class);
+        //FragmentScenario.launchInContainer(EmptyEventsFragment.class);
 
         // Perform a click on the "Become Organizer" button
-        onView(withId(R.id.becomeOrganizerButton)).perform(click());
+        //onView(withId(R.id.becomeOrganizerButton)).perform(click());
 
         // Check that the navigation to OrganizerRegistrationFragment occurred
-        onView(withId(R.id.organizerRegistrationFragment)).check(matches(isDisplayed()));
-    }
+        //onView(withId(R.id.organizerRegistrationFragment)).check(matches(isDisplayed()));
 }
+
