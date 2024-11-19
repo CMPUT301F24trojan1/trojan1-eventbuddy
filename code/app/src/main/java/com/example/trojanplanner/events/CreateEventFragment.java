@@ -116,11 +116,10 @@ public class CreateEventFragment extends Fragment {
         Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
 
         // Create the event object
-        Event newEvent = new Event(name, description, price, null, startDateTime, endDateTime,
+        String newEventId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
+        Event newEvent = new Event(newEventId, name, description, price, null, startDateTime, endDateTime,
                 30, 100L, 100L); // Adjust parameters as needed
 
-        // Generate a unique event ID (simple logic)
-        newEvent.setEventId(currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis());
 
         // Insert the new event into the database
         database.insertEvent(new OnSuccessListener<Void>() {
