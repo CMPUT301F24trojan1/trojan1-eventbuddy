@@ -4,8 +4,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,19 +16,23 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.facility.FacilitySetupFragment;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
@@ -46,6 +53,7 @@ public class ProfileFragment extends Fragment {
     public PhotoPicker.PhotoPickerCallback photoPickerCallback;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch notificationsSwitch;
+    private Switch switchProfileFacility;
     private ActivityResultLauncher<String> requestNotificationPermissionLauncher;
 
     public ProfileFragment() {
@@ -54,11 +62,27 @@ public class ProfileFragment extends Fragment {
 
     public ProfileFragment(ProfileActivity profileActivity) {
         this.profileActivity = profileActivity; // can get the user from this object
+//        if (database == null) {
+//            database = new Database();
+//        }
+        // Database.getDatabase();
+        // Add a listener to the running getUser query if it's not set yet
+//        if (App.currentUser == null) {
+//            Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
+//                @Override
+//                public void OnSuccess(Object object) {
+//
+//                }
+//            }
+
+
+            //database.getEntrant(App.deviceId);
+//        }
 
         photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
             @Override
             public void OnPhotoPickerFinish(Bitmap bitmap) {
-                changePfpViewBitmap(bitmap);
+                onSelectedPhoto(bitmap);
             }
         };
     }
@@ -100,6 +124,20 @@ public class ProfileFragment extends Fragment {
             Log.e("ProfileFragment", "notificationsSwitch is null!");
         }
 
+        switchProfileFacility = view.findViewById(R.id.switch_profile_facility);
+
+        switchProfileFacility.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Display the FacilitySetupFragment
+                FacilitySetupFragment facilitySetupFragment = new FacilitySetupFragment();
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.profile_fragment_container, facilitySetupFragment)
+                        .addToBackStack(null) // Add to back stack for back navigation
+                        .commit();
+            }
+        });
+
         // Initialize the ActivityResultLauncher for requesting permissions
         requestNotificationPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
@@ -133,6 +171,11 @@ public class ProfileFragment extends Fragment {
      */
     private void handleCancel() {
         // Handle cancel action, e.g., clear fields or go back
+        System.out.println("Cancel!");
+        System.out.println("user: " + App.currentUser);
+        if (App.currentUser != null) {
+            System.out.println("firstname: " + App.currentUser.getFirstName() + ", lastname: " + App.currentUser.getLastName());
+        }
         resetState(App.currentUser); // for now, reset fields to current saved values
     }
 
@@ -275,6 +318,7 @@ public class ProfileFragment extends Fragment {
      * @author Jared Gourley
      */
     public void resetState(User user) {
+        // TODO: there's a bug here? if the user opens the app and switches to this tab before the initial query comes back, these fields don't populate (since user is still null)
         String firstName = "", lastName = "", email = "", phone = "";
         if (user != null) {
             if (user.getFirstName() != null) {
