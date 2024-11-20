@@ -83,6 +83,7 @@ public class Entrant extends User {
      * A method to return one of the four arrays using an int, making looping over them easier.
      * @param index 0 = currentEnrolledEvents, 1 = currentWaitlistedEvents, 2 = currentPendingEvents, 3 = currentDeclinedEvents
      * @return One of the above arrays
+     * @author Jared Gourley
      */
     public ArrayList<Event> returnEventsArrayByIndex(int index) {
         if (index == 0) {
@@ -125,6 +126,7 @@ public class Entrant extends User {
      * duplicates should ever appear.
      * @param event The new event object to replace if ids match
      * @return true if a replace happened, false if not
+     * @author Jared Gourley
      */
     public boolean replaceEventMatchingId(Event event) {
         String eventId = event.getEventId();
