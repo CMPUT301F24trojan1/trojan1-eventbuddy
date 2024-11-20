@@ -11,9 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -45,6 +47,12 @@ public class CreateEventFragment extends Fragment {
     private Button cancelEventButton;
     private Database database;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);  // Ensure options menu is handled by the fragment
+    }
+
     /**
      * Inflates the layout for this fragment and returns the root view.
      *
@@ -68,6 +76,13 @@ public class CreateEventFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if (requireActivity() instanceof AppCompatActivity) {
+            AppCompatActivity activity = (AppCompatActivity) requireActivity();
+            activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);  // Enable back button
+            activity.getSupportActionBar().setDisplayShowHomeEnabled(true);  // Ensure home button is shown
+        }
+
         // Initialize database
         database = Database.getDB();
 
@@ -198,21 +213,6 @@ public class CreateEventFragment extends Fragment {
     }
 
     /**
-     * Handles options menu item selections.
-     *
-     * @param item The menu item that was selected.
-     * @return True if the item was successfully handled, false otherwise.
-     */
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            requireActivity().onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    /**
      * Fills the event fields with dummy data for testing purposes.
      */
     private void fillFieldsWithDummyData() {
@@ -221,4 +221,50 @@ public class CreateEventFragment extends Fragment {
         eventDateEditText.setText("2024-12-25");  // Set a dummy date
         Toast.makeText(getContext(), "Fields filled with dummy data", Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Show the same confirmation dialog as the Cancel button
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Cancel Event Creation")
+                    .setMessage("Are you sure you want to discard this event?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        NavController navController = NavHostFragment.findNavController(CreateEventFragment.this);
+                        navController.navigateUp();
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
+
+
+    /*
+    /**
+     * Handles options menu item selections.
+     *
+     * @param item The menu item that was selected.
+     * @return True if the item was successfully handled, false otherwise.
+     *
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Show the same confirmation dialog as the Cancel button
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Cancel Event Creation")
+                    .setMessage("Are you sure you want to discard this event?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // Navigate up (equivalent to clicking Cancel)
+                        NavController navController = NavHostFragment.findNavController(this);
+                        navController.navigateUp();
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    */

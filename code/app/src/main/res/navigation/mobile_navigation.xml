@@ -44,6 +44,16 @@
         <action
             android:id="@+id/action_eventsListFragment_to_eventDetailsFragment"
             app:destination="@id/eventDetailsFragment" />
+
+        <action
+            android:id="@+id/action_eventsListFragment_to_facilitySetupFragment"
+            app:destination="@id/facilitySetupFragment"
+            app:popUpTo="@id/emptyEventsFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_eventsListFragment_to_eventEditFragment"
+            app:destination="@id/createEventsFragment" />
     </fragment>
 
 
