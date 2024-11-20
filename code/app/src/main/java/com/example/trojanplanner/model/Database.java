@@ -899,7 +899,7 @@ public class Database {
      * @author Jared Gourley
      */
     public void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId) {
-        getEvent(successAction, failureAction, eventId, false, new Facility("sorry still WIP"));
+        getEvent(successAction, failureAction, eventId, false, null);
     }
 
 
@@ -1929,7 +1929,121 @@ public class Database {
     }
 
 
+    /**
+     *
+     * @param successAction
+     * @param failureAction
+     * @param deviceId
+     * @author Jared Gourley
+     */
+    public void getAllEventsFromDeviceId(QuerySuccessAction successAction, QueryFailureAction failureAction, String deviceId) {
+        // Query the entrant version of the deviceId, and the organizer version if it is valid
 
+        DocumentReference docRef = db.collection("users").document(deviceId);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                // Failure handling
+                if (!task.isSuccessful()) { // If query got blocked completely
+                    // This case should not be happening under normal circumstances
+                    Log.d("WARN", "get failed with ", task.getException());
+                    failureAction.OnFailure();
+                    return;
+
+                }
+                DocumentSnapshot document = task.getResult();
+                if (!document.exists()) { // If document with requested ID doesn't exist
+                    failureAction.OnFailure();
+                    return;
+                }
+
+                // Actually get the events now
+
+                ArrayList<Event> eventsList = new ArrayList<Event>();
+                Map<String, Object> m = document.getData();
+
+                if (m.get("currentAcceptedEvents") != null) {
+                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentAcceptedEvents")) {
+                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
+                    }
+                }
+                if (m.get("currentPendingEvents") != null) {
+                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentPendingEvents")) {
+                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
+                    }
+                }
+                if (m.get("currentWaitlistedEvents") != null) {
+                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentWaitlistedEvents")) {
+                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
+                    }
+                }
+                if (m.get("currentDeclinedEvents") != null) {
+                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentDeclinedEvents")) {
+                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
+                    }
+                }
+                if ((boolean) m.get("hasOrganizerRights") && m.get("getCreatedEvents") != null) {
+                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("getCreatedEvents")) {
+                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
+                    }
+                }
+
+                int subQueryCount = eventsList.size();
+
+                QueryTracker queryTracker = new QueryTracker(subQueryCount);
+
+                QuerySuccessAction queryTrackerSuccess = new QuerySuccessAction() {
+                    @Override
+                    public void OnSuccess(Object object) {
+                        // Quit if a different query failed
+                        if (!queryTracker.stillGoing) {
+                            return;
+                        }
+
+                        // Actually assign the value
+                        Event event = (Event) object;
+                        for (int i = 0; i < eventsList.size(); i++) {
+                            if (eventsList.get(i).getEventId().equals(event.getEventId())) {
+                                eventsList.set(i, event);
+                                break;
+                            }
+                        }
+
+                        queryTracker.currentReceived += 1;
+                        System.out.println("queryTracker.currentReceived: " + queryTracker.currentReceived);
+
+                        // Call the success listeners if all sub queries finished
+                        if (queryTracker.currentReceived == queryTracker.totalNeeded) {
+                            System.out.println("finishing!");
+                            successAction.OnSuccess(eventsList);
+                        }
+
+                    }
+                };
+                QueryFailureAction queryTrackerFailure = new QueryFailureAction() {
+                    @Override
+                    public void OnFailure() {
+                        // Mark that this query has failed so other queries should not trigger successes
+                        System.out.println("queryTracker FAILED");
+                        queryTracker.stillGoing = false;
+                        return;
+                    }
+                };
+
+                // Launch queries
+                for (Event event : eventsList) {
+                    System.out.println("Launching query for event: " + event.getEventId());
+                    getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
+                }
+
+
+
+            }
+        });
+
+
+
+    }
 
 
 
@@ -2131,6 +2245,33 @@ public class Database {
 
         database.insertUserDocument(entrant);
 
+
+    }
+
+
+    public static void getAllEventsFromDeviceIdTest() {
+        Database database = Database.getDB();
+
+        Database.QuerySuccessAction successAction = new QuerySuccessAction() {
+            @Override
+            public void OnSuccess(Object object) {
+                ArrayList<Event> myEvents = (ArrayList<Event>) object;
+                for (int j = 0; j < myEvents.size(); j++) {
+                    System.out.println("Event id: " + myEvents.get(j).getEventId());
+                    System.out.println("Event name: " + myEvents.get(j).getName());
+                    System.out.println("Event description: " + myEvents.get(j).getDescription());
+                    System.out.println("Event price: " + myEvents.get(j).getPrice());
+                }
+            }
+        };
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("Query attempt failed!");
+            }
+        };
+
+        database.getAllEventsFromDeviceId(successAction, failureAction, "19cd6a862b96402f");
 
     }
 
