@@ -1,12 +1,15 @@
 package com.example.trojanplanner.events;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
 
+import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
 
@@ -130,8 +133,45 @@ public class EventOptionsDialogFragment extends DialogFragment {
      * Logic to show the event's check-in code (e.g., generating a QR code).
      */
     private void showCheckinCode() {
-        // Add your logic to show check-in code
-        Toast.makeText(getContext(), "Check-in Code clicked", Toast.LENGTH_SHORT).show();
+        if (event == null || event.getEventId() == null) {
+            Log.e("EventOptionsDialog", "Event or Event ID is null");
+            Toast.makeText(requireContext(), "No event data available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d("EventOptionsDialog", "Querying for Event ID: " + event.getEventId());
+
+        // Use application context for toast messages
+        Context appContext = requireContext().getApplicationContext();
+
+        // Define success and failure actions
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
+            @Override
+            public void OnSuccess(Object object) {
+                if (object instanceof Event) {
+                    Event fetchedEvent = (Event) object;
+                    String deviceId = fetchedEvent.getEventId(); // Assuming eventId is the device ID
+                    Log.d("EventOptionsDialog", "Fetched Device ID: " + deviceId);
+
+                    // Use application context for the toast
+                    Toast.makeText(appContext, "Checkin Code: " + deviceId, Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("EventOptionsDialog", "Unexpected data type received");
+                    Toast.makeText(appContext, "Unexpected data received", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
+            @Override
+            public void OnFailure() {
+                Log.e("EventOptionsDialog", "Query failed");
+                Toast.makeText(appContext, "Failed to fetch Device ID", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        // Execute the database query
+        Database.getDB().getEvent(successAction, failureAction, event.getEventId());
     }
 
     /**
