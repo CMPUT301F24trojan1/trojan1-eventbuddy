@@ -62,7 +62,7 @@ public class Event implements Serializable {
 
     public Event(){
         this.availableSpots = 0L;
-        this.waitingList = new ArrayList<>();
+        this.waitingList = new ArrayList<User>();
     }
 
 //    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
