@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -80,6 +81,13 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
         // Initialize Buttons
         buttonEnterNow = view.findViewById(R.id.button_enter_now);
+
+        // Initialize close button
+        ImageButton closeButton = view.findViewById(R.id.button_close);
+
+        // Set close button listener
+        closeButton.setOnClickListener(v -> dismiss());  // This will close the dialog
+
         // Populate event details
         if (event != null) {
             populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);

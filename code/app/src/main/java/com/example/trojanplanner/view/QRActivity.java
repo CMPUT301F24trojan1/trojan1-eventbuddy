@@ -224,6 +224,8 @@ public class QRActivity extends AppCompatActivity {
                 }
             }
         });
+
+        barcodeView.resume();
     }
 
     /**
