@@ -404,21 +404,38 @@ public class Database {
 
     private ArrayList<DocumentReference> convertEventArrayToDocRefs(ArrayList<Event> eventList) {
         ArrayList<DocumentReference> docRefList = new ArrayList<DocumentReference>();
-        for (Event event : eventList) {
-            DocumentReference docRef = db.document("events/" + event.getEventId());
-            docRefList.add(docRef);
+        if (eventList != null) { // Check if eventList is not null
+            for (Event event : eventList) {
+                if (event != null && event.getEventId() != null) {
+                    DocumentReference docRef = db.document("events/" + event.getEventId());
+                    docRefList.add(docRef);
+                } else {
+                    Log.e("Database", "Event or eventId is null");
+                }
+            }
+        } else {
+            Log.e("Database", "Event list is null");
         }
+
 
         return docRefList;
     }
 
     private ArrayList<DocumentReference> convertUserArrayToDocRefs(ArrayList<User> userList) {
-        ArrayList<DocumentReference> docRefList = new ArrayList<DocumentReference>();
-        for (User user : userList) {
-            DocumentReference docRef = db.document("users/" + user.getDeviceId());
-            docRefList.add(docRef);
-        }
+        ArrayList<DocumentReference> docRefList = new ArrayList<>();
 
+        if (userList != null) { // Check if userList is not null
+            for (User user : userList) {
+                if (user != null && user.getDeviceId() != null) {
+                    DocumentReference docRef = db.document("users/" + user.getDeviceId());
+                    docRefList.add(docRef);
+                } else {
+                    Log.e("Database", "User or deviceId is null");
+                }
+            }
+        } else {
+            Log.e("Database", "User list is null");
+        }
         return docRefList;
     }
 
@@ -1963,6 +1980,7 @@ public class Database {
                 ArrayList<Event> eventsList = new ArrayList<Event>();
                 Map<String, Object> m = document.getData();
 
+                assert m != null;
                 if (m.get("currentEnrolledEvents") != null) {
                     for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentEnrolledEvents")) {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));

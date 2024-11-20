@@ -66,7 +66,7 @@ public class EmptyEventsFragment extends Fragment {
      * the user to either become an event organizer or create a new event.
      *
      * @param view The root view of the fragment.
-     * @param savedInstanceState A bundle containing saved state data (if any).
+     * @param savedInstanceState A bundle containing saved state data (if an y).
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

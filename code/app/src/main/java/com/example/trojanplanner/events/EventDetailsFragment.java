@@ -25,7 +25,6 @@ import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -52,44 +51,9 @@ public class EventDetailsFragment extends Fragment {
     private Button buttonEnterNow;
     private Button buttonLeaveWaitlist;
     private Button manageButton;
+    private Button optionsButton;
 
-    /**
-     * Creates a new instance of this fragment with the given event and entrant.
-     *
-     * @param event   The event to be displayed.
-     * @param entrant The entrant associated with the event.
-     */
-    // Constructor with parameters
-    public EventDetailsFragment(ConcreteEvent event, Entrant entrant) {
-        this.event = event;
-        this.entrant = entrant;
-        this.database = Database.getDB(); // Initialize Database instance
-    }
-
-    public Event getEvent() {
-        return event;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
-    }
-
-    public Entrant getEntrant() {
-        return entrant;
-    }
-
-    public void setEntrant(Entrant entrant) {
-        this.entrant = entrant;
-    }
-
-    public Database getDatabase() {
-        return database;
-    }
-
-    public void setDatabase(Database database) {
-        this.database = database;
-    }
-
+    @NonNull
     public static EventDetailsFragment newInstance(Event event, Entrant entrant) {
         EventDetailsFragment fragment = new EventDetailsFragment();
         Bundle args = new Bundle();
@@ -99,157 +63,8 @@ public class EventDetailsFragment extends Fragment {
         return fragment;
     }
 
-    /**
-     * Initializes the fragment with the event and entrant data passed in arguments.
-     *
-     * @param savedInstanceState The saved instance state (if any).
-     */
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            event = (Event) getArguments().getSerializable("event");
-            entrant = (Entrant) getArguments().getSerializable("entrant");
-        }
-        database = Database.getDB();
-
-        // Ensure the activity is AppCompatActivity
-        if (getActivity() instanceof AppCompatActivity) {
-            AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
-            if (appCompatActivity.getSupportActionBar() != null) {
-                appCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            }
-        }
-        setHasOptionsMenu(true); // Inform FragmentManager to handle options menu}
-    }
-
     // Required empty constructor
     public EventDetailsFragment() {}
-
-    /**
-     * Called to create the view for the fragment.
-     * Initializes UI elements and populates the event details.
-     *
-     * @param inflater           The LayoutInflater to inflate the view.
-     * @param container          The parent view group.
-     * @param savedInstanceState The saved instance state (if any).
-     * @return The view for the fragment.
-     */
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_event_details, container, false);
-
-        // Initialize views
-        ImageView eventImageView = view.findViewById(R.id.eventImageView);
-        TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
-        TextView eventLocationTextView = view.findViewById(R.id.eventLocationTextView);
-        TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
-        TextView recurringDatesTextView = view.findViewById(R.id.recurringDatesTextView);
-        TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
-
-        buttonEnterNow = view.findViewById(R.id.button_enter_now);
-        buttonLeaveWaitlist = view.findViewById(R.id.button_leave_waitlist);
-        manageButton = view.findViewById(R.id.ManageEvents);  // Initialize manageButton
-
-        // Populate event details
-        if (event != null) {
-            populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
-        } else {
-            Log.e("EventDetailsFragment", "Event is null in onCreateView");
-        }
-
-        // Check entrant status
-        if (event != null) {
-            checkEntrantStatus();
-        } else {
-            Log.e("EventDetailsFragment", "Event is null in onCreateView");
-        }
-
-        // If the user is an organizer, show manage button
-        if (App.currentUser != null && App.currentUser.isOrganizer()) {
-            checkCreatedEventsFromDatabase(event.getEventId(), exists -> {
-                if (exists && manageButton != null) {
-                    manageButton.setVisibility(View.VISIBLE);
-                    manageButton.setOnClickListener(v -> {
-                        if (event != null) {
-                            EventOptionsDialogFragment dialogFragment = EventOptionsDialogFragment.newInstance(event);
-                            dialogFragment.show(getChildFragmentManager(), "EventOptionsDialog");
-                        }
-                    });
-                    System.out.println("Event created by current Organizer, displaying organizer options!");
-                } else if (manageButton != null) {
-                    manageButton.setVisibility(View.GONE);
-                    System.out.println("Event is not created by current Organizer.");
-                }
-            });
-        }
-
-        // Set button click listeners
-        buttonEnterNow.setOnClickListener(v -> joinWaitlist());
-        buttonLeaveWaitlist.setOnClickListener(v -> leaveWaitlist());
-
-        return view;
-    }
-
-    private void checkCreatedEventsFromDatabase(String eventIdToCheck, final EventCheckCallback callback) {
-        // Get current user ID (assuming App.currentUser holds this information)
-        String userId = App.currentUser.getDeviceId();
-
-        if (userId == null || userId.isEmpty()) {
-            System.out.println("No user is currently logged in.");
-            callback.onComplete(false);  // Return false if no user is logged in
-            return;
-        }
-
-        // Reference to the current user document in the "users" collection
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference userDocRef = db.collection("users").document(userId);
-
-        // Fetch the "createdEvents" field from the user document
-        userDocRef.get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        List<DocumentReference> createdEvents =
-                                (List<DocumentReference>) documentSnapshot.get("createdEvents");
-
-                        if (createdEvents != null && !createdEvents.isEmpty()) {
-                            // Check if the event ID matches any created event
-                            for (DocumentReference eventRef : createdEvents) {
-                                eventRef.get()
-                                        .addOnSuccessListener(eventSnapshot -> {
-                                            if (eventSnapshot.exists()) {
-                                                String retrievedEventId = eventSnapshot.getId();
-                                                if (retrievedEventId.equals(eventIdToCheck)) {
-                                                    // Return true if the event ID matches
-                                                    callback.onComplete(true);
-                                                    return; // Exit the loop once a match is found
-                                                }
-                                            }
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            System.out.println("Failed to fetch event: " + e.getMessage());
-                                            callback.onComplete(false);  // Return false on failure
-                                        });
-                            }
-                        } else {
-                            System.out.println("No created events found for this user.");
-                            callback.onComplete(false);  // Return false if no events are found
-                        }
-                    } else {
-                        System.out.println("No user document found for ID: " + userId);
-                        callback.onComplete(false);  // Return false if no user is found
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    System.out.println("Failed to load user document: " + e.getMessage());
-                    callback.onComplete(false);  // Return false on failure
-                });
-    }
-
-    public interface EventCheckCallback {
-        void onComplete(boolean exists);
-    }
 
     /**
      * Checks the current status of the entrant (whether they are in the waitlist).
@@ -266,26 +81,6 @@ public class EventDetailsFragment extends Fragment {
             }
         } else {
             Log.e("EventDetailsFragment", "Event or waiting list is null in checkEntrantStatus");
-        }
-    }
-
-    /**
-     * Converts a short abbreviation (e.g., "M" for Monday) to a full day name.
-     *
-     * @param abbreviation The abbreviation for the day of the week.
-     * @return The full day name (e.g., "Monday").
-     */
-    // Helper method to get the full name for the day of the week based on unique abbreviation
-    private String getFullDayName(String abbreviation) {
-        switch (abbreviation) {
-            case "U": return "Sunday";
-            case "M": return "Monday";
-            case "T": return "Tuesday";
-            case "W": return "Wednesday";
-            case "R": return "Thursday";
-            case "F": return "Friday";
-            case "S": return "Saturday";
-            default: return ""; // Handle invalid abbreviations
         }
     }
 
@@ -339,63 +134,45 @@ public class EventDetailsFragment extends Fragment {
      * If confirmed, the entrant will be added to the event's waitlist.
      */
     public void joinWaitlist() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirm_registration, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setView(dialogView);
-        AlertDialog dialog = builder.create();
+        if (event != null && App.currentUser != null) {
+            // Cast the current user to Entrant
+            Entrant currentEntrant = (Entrant) App.currentUser;
 
-        TextView textEventInfo = dialogView.findViewById(R.id.text_event_info);
-        textEventInfo.setText("Are you sure you want to join the waitlist for:\n" + event.getName());
+            // Ensure the event's waiting list is initialized
+            if (event.getWaitingList() == null) {
+                event.setWaitingList(new ArrayList<>());
+            }
 
-        dialogView.findViewById(R.id.button_cancel).setOnClickListener(v -> dialog.dismiss());
-        Log.d("EventDetailsFragment", "Attempting to hide buttonEnterNow");
-        buttonEnterNow.setVisibility(View.GONE);  // Ensure this line executes as expected
-        Log.d("EventDetailsFragment", "buttonEnterNow visibility set to GONE");
+            ArrayList<User> waitingList = event.getWaitingList();
 
-        dialogView.findViewById(R.id.button_confirm).setOnClickListener(v -> {
+            // Add the entrant to the waiting list if not already present
+            if (!waitingList.contains(currentEntrant)) {
+                waitingList.add(currentEntrant);
+                event.setWaitingList(waitingList);
 
-            event.addParticipant(entrant);
-            entrant.addWaitlistedEvent(event);
+                // Log the addition
+                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
+                        " successfully added to the waitlist for event " + event.getEventId());
+                Log.d("EventDetails", "Current Event Waitlist: " + waitingList);
+                Log.d("EventDetails", "Current Entrant Waitlisted Events: " + currentEntrant.getCurrentWaitlistedEvents());
 
-            database.insertEvent(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    database.getEntrant(new Database.QuerySuccessAction() {
-                        @Override
-                        public void OnSuccess(Object object) {
+                // Update the database
+                database.insertEvent(event); // Save the updated event
+                database.insertUserDocument(currentEntrant); // Save the updated entrant
 
-                            database.insertUserDocument(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
-                                    checkEntrantStatus();
-                                }
-                            }, new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getContext(), "Failed to update entrant in the database", Toast.LENGTH_SHORT).show();
-                                }
-                            }, entrant);
-                        }
-                    }, new Database.QueryFailureAction() {
-                        @Override
-                        public void OnFailure() {
-                            Toast.makeText(getContext(), "Entrant not found in the database", Toast.LENGTH_SHORT).show();
-                        }
-                    }, entrant.getDeviceId());
-                }
-            }, new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getContext(), "Failed to add event to the database", Toast.LENGTH_SHORT).show();
-                }
-            }, event);
-
-            dialog.dismiss();
-        });
-
-        dialog.show();
+                // Notify the user and update UI
+                Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
+                checkEntrantStatus(); // Refresh the UI
+            } else {
+                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
+                        " is already on the waitlist for event " + event.getEventId());
+                Toast.makeText(getContext(), "You are already on the waitlist.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     /**
      * Shows a confirmation dialog for the entrant to leave the event's waitlist.
@@ -458,66 +235,180 @@ public class EventDetailsFragment extends Fragment {
         dialog.show();
     }
 
-    // no longer used since we have joinWaitlist and leaveWaitlist
-    public void showConfirmDialog() {
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirm_registration, null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setView(dialogView);
-        AlertDialog dialog = builder.create();
+    private void checkCreatedEventsFromDatabase(String eventIdToCheck, final EventCheckCallback callback) {
+        // Get current user ID (assuming App.currentUser holds this information)
+        String userId = App.currentUser.getDeviceId();
 
-        TextView textEventInfo = dialogView.findViewById(R.id.text_event_info);
-        textEventInfo.setText(event.getName() + "\n" + event.getFacility().getFacilityId() + "\n" +
-                event.getStartDateTime() + " - " + event.getEndDateTime() + "\n" +
-                event.getRecurrenceDays() + "\n" + event.getDescription());
+        if (userId == null || userId.isEmpty()) {
+            System.out.println("No user is currently logged in.");
+            callback.onComplete(false);  // Return false if no user is logged in
+            return;
+        }
 
-        dialogView.findViewById(R.id.button_cancel).setOnClickListener(v -> dialog.dismiss());
-        dialogView.findViewById(R.id.button_confirm).setOnClickListener(v -> {
+        // Reference to the current user document in the "users" collection
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference userDocRef = db.collection("users").document(userId);
 
-            // IS THIS NEEDED
-            event.addParticipant(entrant);
-            entrant.addWaitlistedEvent(event);
+        // Fetch the "createdEvents" field from the user document
+        userDocRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<DocumentReference> createdEvents =
+                                (List<DocumentReference>) documentSnapshot.get("createdEvents");
 
-            database.insertEvent(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    // Check if the entrant exists in the database
-                    database.getEntrant(new Database.QuerySuccessAction() {
-                        @Override
-                        public void OnSuccess(Object object) {
-                            Entrant existingEntrant = (Entrant) object;
-                            existingEntrant.addWaitlistedEvent(event);
-
-                            // Update the entrant in the database
-                            database.insertUserDocument(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
-                                }
-                            }, new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getContext(), "Failed to update entrant in the database", Toast.LENGTH_SHORT).show();
-                                }
-                            }, existingEntrant);
+                        if (createdEvents != null && !createdEvents.isEmpty()) {
+                            // Check if the event ID matches any created event
+                            for (DocumentReference eventRef : createdEvents) {
+                                eventRef.get()
+                                        .addOnSuccessListener(eventSnapshot -> {
+                                            if (eventSnapshot.exists()) {
+                                                String retrievedEventId = eventSnapshot.getId();
+                                                if (retrievedEventId.equals(eventIdToCheck)) {
+                                                    // Return true if the event ID matches
+                                                    callback.onComplete(true);
+                                                    return; // Exit the loop once a match is found
+                                                }
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            System.out.println("Failed to fetch event: " + e.getMessage());
+                                            callback.onComplete(false);  // Return false on failure
+                                        });
+                            }
+                        } else {
+                            System.out.println("No created events found for this user.");
+                            callback.onComplete(false);  // Return false if no events are found
                         }
-                    }, new Database.QueryFailureAction() {
-                        @Override
-                        public void OnFailure() {
-                            Toast.makeText(getContext(), "Entrant not found in the database", Toast.LENGTH_SHORT).show();
+                    } else {
+                        System.out.println("No user document found for ID: " + userId);
+                        callback.onComplete(false);  // Return false if no user is found
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    System.out.println("Failed to load user document: " + e.getMessage());
+                    callback.onComplete(false);  // Return false on failure
+                });
+    }
+
+    public interface EventCheckCallback {
+        void onComplete(boolean exists);
+    }
+
+    /**
+     * Initializes the fragment with the event and entrant data passed in arguments.
+     *
+     * @param savedInstanceState The saved instance state (if any).
+     */
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            event = (Event) getArguments().getSerializable("event");
+            entrant = (Entrant) getArguments().getSerializable("entrant");
+        }
+        database = Database.getDB();
+
+        // Ensure the activity is AppCompatActivity
+        if (getActivity() instanceof AppCompatActivity) {
+            AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
+            if (appCompatActivity.getSupportActionBar() != null) {
+                appCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+        }
+        setHasOptionsMenu(true); // Inform FragmentManager to handle options menu}
+    }
+
+    /**
+     * Called to create the view for the fragment.
+     * Initializes UI elements and populates the event details.
+     *
+     * @param inflater           The LayoutInflater to inflate the view.
+     * @param container          The parent view group.
+     * @param savedInstanceState The saved instance state (if any).
+     * @return The view for the fragment.
+     */
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_event_details, container, false);
+
+        // Initialize views
+        ImageView eventImageView = view.findViewById(R.id.eventImageView);
+        TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
+        TextView eventLocationTextView = view.findViewById(R.id.eventLocationTextView);
+        TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
+        TextView recurringDatesTextView = view.findViewById(R.id.recurringDatesTextView);
+        TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
+
+        // Initialize Buttons
+        buttonEnterNow = view.findViewById(R.id.button_enter_now);
+        buttonLeaveWaitlist = view.findViewById(R.id.button_leave_waitlist);
+        manageButton = view.findViewById(R.id.ManageEvents);
+        optionsButton = view.findViewById(R.id.EntrantManageEvents);
+
+        // Populate event details
+        if (event != null) {
+            populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
+        } else {
+            Log.e("EventDetailsFragment", "Event is null in onCreateView");
+        }
+
+        // Check entrant status
+        if (event != null) {
+            checkEntrantStatus();
+        } else {
+            Log.e("EventDetailsFragment", "Event is null in onCreateView");
+        }
+
+        // If the user is an organizer, show manage button
+        if (App.currentUser != null && App.currentUser.isOrganizer()) {
+            checkCreatedEventsFromDatabase(event.getEventId(), exists -> {
+                if (exists && manageButton != null) {
+                    manageButton.setVisibility(View.VISIBLE);
+                    optionsButton.setVisibility(View.GONE);
+                    manageButton.setOnClickListener(v -> {
+                        if (event != null) {
+                            EventOptionsDialogFragment dialogFragment = EventOptionsDialogFragment.newInstance(event);
+                            dialogFragment.show(getChildFragmentManager(), "EventOptionsDialog");
                         }
-                    }, entrant.getDeviceId());
-                }
-            }, new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getContext(), "Failed to add event to the database", Toast.LENGTH_SHORT).show();
-                }
-            }, event);
+                    });
+                    System.out.println("Event created by current Organizer, displaying organizer options!");
+                } else {
+                    assert manageButton != null;
+                    manageButton.setVisibility(View.GONE);
+                    optionsButton.setVisibility(View.VISIBLE);
+                    System.out.println("Event is not created by current Organizer.");
+                }});
+        } else if (App.currentUser != null && optionsButton != null) {
+            optionsButton.setVisibility(View.VISIBLE);
+            System.out.println("User is not an organizer, displaying entrant options!");
+        }
 
-            dialog.dismiss();
-        });
+        // Set button click listeners
+        buttonEnterNow.setOnClickListener(v -> joinWaitlist());
+        buttonLeaveWaitlist.setOnClickListener(v -> leaveWaitlist());
 
-        dialog.show();
+        return view;
+    }
+
+    /**
+     * Converts a short abbreviation (e.g., "M" for Monday) to a full day name.
+     *
+     * @param abbreviation The abbreviation for the day of the week.
+     * @return The full day name (e.g., "Monday").
+     */
+    // Helper method to get the full name for the day of the week based on unique abbreviation
+    private String getFullDayName(String abbreviation) {
+        switch (abbreviation) {
+            case "U": return "Sunday";
+            case "M": return "Monday";
+            case "T": return "Tuesday";
+            case "W": return "Wednesday";
+            case "R": return "Thursday";
+            case "F": return "Friday";
+            case "S": return "Saturday";
+            default: return ""; // Handle invalid abbreviations
+        }
     }
 
     @Override
@@ -554,4 +445,121 @@ public class EventDetailsFragment extends Fragment {
         //         .replace(R.id.fragment_container, eventsListFragment)
         //         .commit();
     }
+
+
+    // ONLY FOR TESTING PURPOSES
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
+    }
+
+    public Entrant getEntrant() {
+        return entrant;
+    }
+
+    public void setEntrant(Entrant entrant) {
+        this.entrant = entrant;
+    }
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(Database database) {
+        this.database = database;
+    }
+
 }
+
+/*
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
+    }
+
+    public Entrant getEntrant() {
+        return entrant;
+    }
+
+    public void setEntrant(Entrant entrant) {
+        this.entrant = entrant;
+    }
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(Database database) {
+        this.database = database;
+    }
+
+
+// no longer used since we have joinWaitlist and leaveWaitlist
+public void showConfirmDialog() {
+    View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirm_registration, null);
+    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+    builder.setView(dialogView);
+    AlertDialog dialog = builder.create();
+
+    TextView textEventInfo = dialogView.findViewById(R.id.text_event_info);
+    textEventInfo.setText(event.getName() + "\n" + event.getFacility().getFacilityId() + "\n" +
+            event.getStartDateTime() + " - " + event.getEndDateTime() + "\n" +
+            event.getRecurrenceDays() + "\n" + event.getDescription());
+
+    dialogView.findViewById(R.id.button_cancel).setOnClickListener(v -> dialog.dismiss());
+    dialogView.findViewById(R.id.button_confirm).setOnClickListener(v -> {
+
+        // IS THIS NEEDED
+        event.addParticipant(entrant);
+        entrant.addWaitlistedEvent(event);
+
+        database.insertEvent(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                // Check if the entrant exists in the database
+                database.getEntrant(new Database.QuerySuccessAction() {
+                    @Override
+                    public void OnSuccess(Object object) {
+                        Entrant existingEntrant = (Entrant) object;
+                        existingEntrant.addWaitlistedEvent(event);
+
+                        // Update the entrant in the database
+                        database.insertUserDocument(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
+                            }
+                        }, new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getContext(), "Failed to update entrant in the database", Toast.LENGTH_SHORT).show();
+                            }
+                        }, existingEntrant);
+                    }
+                }, new Database.QueryFailureAction() {
+                    @Override
+                    public void OnFailure() {
+                        Toast.makeText(getContext(), "Entrant not found in the database", Toast.LENGTH_SHORT).show();
+                    }
+                }, entrant.getDeviceId());
+            }
+        }, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "Failed to add event to the database", Toast.LENGTH_SHORT).show();
+            }
+        }, event);
+
+        dialog.dismiss();
+    });
+
+    dialog.show();
+}
+ */
