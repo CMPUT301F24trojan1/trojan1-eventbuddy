@@ -79,7 +79,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         recyclerView.setAdapter(eventsAdapter);
 
         // Initialize database instance
-        Database database = Database.getDB();
+        Database.getDB();
 
         // Fetch the current user
         currentUser = App.currentUser; // This method needs to return the logged-in user
@@ -109,7 +109,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
                 createEventOrBecomeOrganizerButton.setOnClickListener(v -> {
                     // Navigate to the Event Edit Fragment
                     NavController navController = NavHostFragment.findNavController(this);
-                    navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
+                    navController.navigate(R.id.action_eventsListFragment_to_eventEditFragment);
                 });
             } else {
                 // If the user is not an organizer, show "Become an Organizer" option
@@ -120,7 +120,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
                 createEventOrBecomeOrganizerButton.setOnClickListener(v -> {
                     // Navigate to the Facility Setup Fragment
                     NavController navController = NavHostFragment.findNavController(this);
-                    navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
+                    navController.navigate(R.id.action_eventsListFragment_to_facilitySetupFragment);
                 });
             }
         } else {
