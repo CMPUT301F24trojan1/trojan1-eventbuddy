@@ -436,7 +436,20 @@ public class Database {
             userMap.put("currentDeclinedEvents", ((Entrant) user).getCurrentDeclinedEvents());
             userMap.put("currentPendingEvents", ((Entrant) user).getCurrentPendingEvents());
         } else if (user.getClass() == Organizer.class) {
-            userMap.put("createdEvents", ((Organizer) user).getCreatedEvents());
+            // Convert the list of Event objects to DocumentReference objects
+            ArrayList<DocumentReference> eventReferences = new ArrayList<>();
+
+            for (Event event : ((Organizer) user).getCreatedEvents()) {
+                // Create a DocumentReference for each event using its ID (assuming events are stored in the "events" collection)
+                DocumentReference eventRef = FirebaseFirestore.getInstance()
+                        .collection("events") // collection name for events
+                        .document(event.getEventId()); // the ID of the event
+                eventReferences.add(eventRef);
+            }
+
+            // Store the list of DocumentReference objects in the createdEvents field
+            userMap.put("createdEvents", eventReferences);
+            // userMap.put("facilityID", ((Organizer) user).getFacility().getFacilityId());
         } // (no special attributes for admins)
 
 
@@ -694,7 +707,7 @@ public class Database {
 
         event.setName((String) m.get("name"));
         event.setDescription((String) m.get("description"));
-        event.setPrice((double) m.get("price"));
+        event.setPriceDouble((double) m.get("price"));
 
         event.setPictureFilePath((String) m.get("eventPhoto"));
 
@@ -1063,11 +1076,23 @@ public class Database {
 
         // Get id of every created event document and split + make them into incomplete objects
         organizer.setCreatedEvents(new ArrayList<Event>());
-        ArrayList<DocumentReference> createdEventRefs = (ArrayList<DocumentReference>) m.get("createdEvents");
-        for (DocumentReference docRef : createdEventRefs) {
-            String[] eventIdPath = docRef.getId().split("/");
-            String eventId = eventIdPath[eventIdPath.length - 1];
-            organizer.addEvent(new Event(eventId));
+        // Check if "createdEvents" field exists and is a list
+        Object createdEvents = m.get("createdEvents");
+        if (createdEvents instanceof ArrayList) {
+            ArrayList<?> createdEventList = (ArrayList<?>) createdEvents;
+            for (Object eventObj : createdEventList) {
+                if (eventObj instanceof DocumentReference) {
+                    // Handle DocumentReference objects
+                    DocumentReference docRef = (DocumentReference) eventObj;
+                    String eventId = docRef.getId(); // Retrieve the ID from the document reference
+                    organizer.addEvent(new Event(eventId)); // Create event with ID and add to organizer
+                } else {
+                    // Handle other cases (if needed)
+                    Log.w("unpackOrganizerMap", "Unexpected type in createdEvents: " + eventObj.getClass().getName());
+                }
+            }
+        } else {
+            Log.w("unpackOrganizerMap", "createdEvents is not a list");
         }
 
         return organizer;
@@ -1656,7 +1681,7 @@ public class Database {
         };
 
         // Run the query outside of sharing mode so that it won't get blocked by different queries
-        getOrganizer(ownerReceivedSuccess, ownerReceivedFailure, facility.getOwner().getDeviceId(), true, facility);
+        getOrganizer(ownerReceivedSuccess, ownerReceivedFailure, facility.getOwner(), true, facility);
 
     }
 
@@ -1878,7 +1903,7 @@ public class Database {
         database.getOrganizer(successAction, failureAction, "testOrganizer");
     }
 
-
+/*
     public static void getFacilityTest() {
         Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
@@ -1913,7 +1938,7 @@ public class Database {
         database.getFacility(successAction, failureAction, "1a2b3c4567890-0001239389382");
     }
     
-    
+    */
     
     
     public static void getQRTest() {
@@ -1938,5 +1963,3 @@ public class Database {
 
 
 }
-
-

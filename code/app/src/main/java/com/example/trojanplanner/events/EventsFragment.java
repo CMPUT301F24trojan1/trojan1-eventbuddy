@@ -18,16 +18,20 @@ import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
 import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
+import com.example.trojanplanner.model.User;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-
 
 /**
  * A Fragment that displays a list of events using a RecyclerView.
@@ -41,6 +45,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
     private EventArrayAdapter eventsAdapter;
     private List<Event> eventList;
     private Database database;
+    private User currentUser; // Assuming you have a user object (Entrant or Organizer)
 
     /**
      * Called to create the view for this fragment. Initializes the RecyclerView, adapter, and loads the events.
@@ -70,86 +75,69 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         // Initialize database instance
         database = Database.getDB();
 
+        // Fetch the current user
+        currentUser = App.currentUser; // This method needs to return the logged-in user
+
+
         // Load events from the database
         loadEventsFromDatabase();
 
         return root;
     }
 
-
     private void loadEventsFromDatabase() {
         eventList.clear();
 
-        Database.QuerySuccessAction onSuccess = new Database.QuerySuccessAction() {
-            @Override
-            public void OnSuccess(Object result) {
-                if (result instanceof List) {
-                    List<?> genericList = (List<?>) result;
+        // Get current user ID (assuming App.currentUser holds this information)
+        String userId = App.currentUser.getDeviceId();
 
-                    if (!genericList.isEmpty() && genericList.get(0) instanceof Event) {
-                        @SuppressWarnings("unchecked")
-                        List<Event> events = (List<Event>) genericList;
-                        eventList.addAll(events);
+        if (userId == null || userId.isEmpty()) {
+            System.out.println("No user is currently logged in.");
+            return;
+        }
 
-                        // Log the events retrieved
-                        for (Event event : events) {
-                            System.out.println("Loaded event: " + event.getName());
+        // Reference to the current user document in the "users" collection
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference userDocRef = db.collection("users").document(userId);
+
+        // Fetch the "createdEvents" field from the user document
+        userDocRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<DocumentReference> createdEvents =
+                                (List<DocumentReference>) documentSnapshot.get("createdEvents");
+
+                        if (createdEvents != null && !createdEvents.isEmpty()) {
+                            // Fetch each event from the "createdEvents" references
+                            for (DocumentReference eventRef : createdEvents) {
+                                eventRef.get()
+                                        .addOnSuccessListener(eventSnapshot -> {
+                                            if (eventSnapshot.exists()) {
+                                                Event event = eventSnapshot.toObject(Event.class);
+                                                if (event != null) {
+                                                    eventList.add(event);
+                                                    System.out.println("Loaded event: " + event.getName());
+                                                }
+                                            } else {
+                                                System.out.println("No event found for reference: " + eventRef.getId());
+                                            }
+                                            eventsAdapter.notifyDataSetChanged();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            System.out.println("Failed to fetch event: " + e.getMessage());
+                                        });
+                            }
+                        } else {
+                            System.out.println("No created events found for this user.");
+                            eventsAdapter.notifyDataSetChanged();
                         }
-
-                        eventsAdapter.notifyDataSetChanged();
                     } else {
-                        System.out.println("No events found in the database. Adding a dummy event for testing.");
-
-                        // Adding a dummy event if no events were found
-                        addDummyEvent();
+                        System.out.println("No user document found for ID: " + userId);
                     }
-                } else {
-                    System.out.println("Unexpected data format received from database. Adding a dummy event for testing.");
-                    addDummyEvent();
-                }
-            }
-        };
-    }
-    /**
-     * Loads events into the list. If the list is empty, dummy events are generated and added.
-     */
-    private void loadEvents() {
-        if (eventList.isEmpty()) {
-            // Example date and time for events
-            Calendar calendar = Calendar.getInstance();
-            Date startDateTime = calendar.getTime();
-            calendar.add(Calendar.HOUR, 1); // End time one hour later
-            Date endDateTime = calendar.getTime();
-
-            // Placeholder values for Organizer fields
-            Organizer placeholderOrganizer = new Organizer("Doe", "John", "organizer@example.com",
-                    "123-456-7890", "device123", "Organizer", true, false, new ArrayList<>(), null);
-
-            // Populate with dummy events
-            for (int i = 0; i < 10; i++) {
-                eventList.add(new ConcreteEvent(
-                        "Sample Event " + (i + 1),
-                        "This is a description for sample event " + (i + 1),
-                        new Facility("Facility " + (i + 1), "facility" + (i + 1) + "_id",
-                                "Sample Address " + (i + 1), placeholderOrganizer, null, null),
-                        null,
-                        null)
-                );
-            }
-        };
-
-        Database.QuerySuccessAction onSuccess = null; // TODO: implement if this function need to call db?
-
-        Database.QueryFailureAction onFailure = new Database.QueryFailureAction() {
-            @Override
-            public void OnFailure() {
-                System.out.println("Failed to load events from database. Adding a dummy event for testing.");
-                addDummyEvent();
-            }
-        };
-
-        String placeholderId = "all_events"; // Adjust as needed
-        database.getEvent(onSuccess, onFailure, placeholderId);
+                })
+                .addOnFailureListener(e -> {
+                    System.out.println("Failed to load user document: " + e.getMessage());
+                });
     }
 
     private void addDummyEvent() {
@@ -189,17 +177,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         bundle.putSerializable("event", event);  // Pass the event data to the fragment
 
         // Navigate to EventEditFragment
-        navController.navigate(R.id.action_eventsFragment_to_eventEditFragment, bundle);
+        navController.navigate(R.id.action_eventsListFragment_to_eventDetailsFragment, bundle);
     }
-
-    /**
-     * Called when the fragment's view is being destroyed. This clears the binding to avoid memory leaks.
-     */
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
-
 
 }

@@ -60,6 +60,10 @@ public class Event implements Serializable {
     private Date recurrenceEndDate;
     private int Total_Occurrences;
 
+    public Event(){
+
+    }
+
 //    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
 //    }
 
@@ -264,7 +268,7 @@ public class Event implements Serializable {
     }
 
     // fuck you java
-    public void setPrice (Double price) {
+    public void setPriceDouble(Double price) {
         this.price = price.floatValue();
     }
 
@@ -272,7 +276,7 @@ public class Event implements Serializable {
         return waitlistCapacity;
     }
 
-    public void setWaitlistCapacity(int waitlistCapacity) {
+    public void setWaitlistCapacityint(int waitlistCapacity) {
         this.waitlistCapacity = waitlistCapacity;
     }
 
