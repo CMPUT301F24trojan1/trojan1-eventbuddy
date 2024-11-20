@@ -99,7 +99,6 @@ public class EventDetailsFragment extends Fragment {
         return fragment;
     }
 
-
     /**
      * Initializes the fragment with the event and entrant data passed in arguments.
      *
@@ -126,7 +125,6 @@ public class EventDetailsFragment extends Fragment {
 
     // Required empty constructor
     public EventDetailsFragment() {}
-
 
     /**
      * Called to create the view for the fragment.

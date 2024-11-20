@@ -34,6 +34,7 @@ public class EmptyEventsFragment extends Fragment {
 
     // TextView to display a message about no events
     private TextView messageTextView;
+    private View loadingIndicator; // Optional loading indicator to show while data is loading
 
     /**
      * Called to create the view for this fragment. Inflates the layout and initializes the message view.
@@ -51,9 +52,11 @@ public class EmptyEventsFragment extends Fragment {
 
         // Initialize the TextView to show the no events message
         messageTextView = view.findViewById(R.id.messageTextView);
+        loadingIndicator = view.findViewById(R.id.loadingIndicator); // Initialize loading indicator
 
-        // Show the "no events" message
-        showNoEventsMessage();
+        // Initially hide the content and show the loading indicator
+        loadingIndicator.setVisibility(View.VISIBLE);
+        messageTextView.setVisibility(View.GONE);
 
         return view;
     }
@@ -78,6 +81,11 @@ public class EmptyEventsFragment extends Fragment {
                 @Override
                 public void OnSuccess(Object object) {
                     List<Event> events = (List<Event>) object;
+
+                    // Hide loading indicator and show message or navigate based on the result
+                    loadingIndicator.setVisibility(View.GONE);
+                    messageTextView.setVisibility(View.VISIBLE);
+
                     if (events != null && !events.isEmpty()) {
                         // Navigate to EventsListFragment if there are any events
                         NavController navController = NavHostFragment.findNavController(EmptyEventsFragment.this);
@@ -90,7 +98,9 @@ public class EmptyEventsFragment extends Fragment {
             }, new Database.QueryFailureAction() {
                 @Override
                 public void OnFailure() {
-                    // Handle failure (e.g., show a toast or log an error)
+                    // Hide loading indicator and show error message
+                    loadingIndicator.setVisibility(View.GONE);
+                    messageTextView.setVisibility(View.VISIBLE);
                     Toast.makeText(requireContext(), "Failed to load events. Please try again.", Toast.LENGTH_SHORT).show();
                 }
             }, deviceId);
