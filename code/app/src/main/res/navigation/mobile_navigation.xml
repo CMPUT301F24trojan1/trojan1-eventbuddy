@@ -20,6 +20,10 @@
         <action
             android:id="@+id/action_eventsFragment_to_eventEditFragment"
             app:destination="@id/createEventsFragment" />
+
+        <action
+            android:id="@+id/action_emptyEventsFragment_to_eventsListFragment"
+            app:destination="@id/eventsListFragment" />
     </fragment>
 
     <!-- Define facilitySetupFragment -->
@@ -34,7 +38,12 @@
         android:id="@+id/eventsListFragment"
         android:name="com.example.trojanplanner.events.EventsFragment"
         android:label="Events List"
-        tools:layout="@layout/fragment_events_list" />
+        tools:layout="@layout/fragment_events_list">
+        <action
+            android:id="@+id/action_eventsListFragment_to_eventDetailsFragment"
+            app:destination="@id/eventDetailsFragment" />
+    </fragment>
+
 
     <!-- Define eventEditFragment and its navigation to eventsListFragment -->
     <fragment

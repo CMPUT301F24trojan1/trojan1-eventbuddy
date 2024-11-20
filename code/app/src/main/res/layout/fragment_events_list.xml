@@ -23,8 +23,9 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="56dp"
         android:text="Click on Events to view details"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:layout_editor_absoluteX="16dp" />
+        app:layout_constraintEnd_toEndOf="@+id/eventsRecyclerView"
+        app:layout_constraintStart_toStartOf="@+id/eventsRecyclerView" />
 </androidx.constraintlayout.widget.ConstraintLayout>

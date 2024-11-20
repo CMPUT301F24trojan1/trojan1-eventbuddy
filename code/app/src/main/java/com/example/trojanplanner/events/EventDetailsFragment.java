@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -13,19 +14,27 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.ConcreteEvent;
 
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Organizer;
+import com.example.trojanplanner.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -43,13 +52,7 @@ public class EventDetailsFragment extends Fragment {
     private Database database;
     private Button buttonEnterNow;
     private Button buttonLeaveWaitlist;
-
-    /**
-     * Constructor for creating an instance of this fragment with event and entrant data.
-     *
-     * @param event  The event to be displayed.
-     * @param entrant The entrant associated with the event.
-     */
+    private Button manageButton;
 
     /**
      * Creates a new instance of this fragment with the given event and entrant.
@@ -111,6 +114,15 @@ public class EventDetailsFragment extends Fragment {
             entrant = (Entrant) getArguments().getSerializable("entrant");
         }
         database = Database.getDB();
+
+        // Ensure the activity is AppCompatActivity
+        if (getActivity() instanceof AppCompatActivity) {
+            AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
+            if (appCompatActivity.getSupportActionBar() != null) {
+                appCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+        }
+        setHasOptionsMenu(true); // Inform FragmentManager to handle options menu}
     }
 
     // Required empty constructor
@@ -158,11 +170,92 @@ public class EventDetailsFragment extends Fragment {
             Log.e("EventDetailsFragment", "Event is null in onCreateView");
         };
 
+        // Check if the user is an organizer
+        if (App.currentUser != null && App.currentUser.isOrganizer()) {
+            checkCreatedEventsFromDatabase(event.getEventId(), exists -> {
+                if (exists) {
+                    // If the event exists, make the "Manage" button visible
+                    manageButton.setVisibility(View.VISIBLE);
+                    manageButton.setOnClickListener(v -> {
+                        // When "Manage" button is clicked, show the event options dialog
+                        if (event != null) {
+                            EventOptionsDialogFragment dialogFragment = EventOptionsDialogFragment.newInstance(event);
+                            dialogFragment.show(getChildFragmentManager(), "EventOptionsDialog");
+                        }
+                    });
+                    System.out.println("Event created by current Organizer, displaying organizer options!");
+                } else {
+                    // Otherwise, ensure the button is hidden
+                    manageButton.setVisibility(View.GONE);
+                    System.out.println("Event is not created by current Organizer.");
+                }
+            });
+        }
+
         // Set button click listeners
         buttonEnterNow.setOnClickListener(v -> joinWaitlist());
         buttonLeaveWaitlist.setOnClickListener(v -> leaveWaitlist());
 
         return view;
+    }
+
+    private void checkCreatedEventsFromDatabase(String eventIdToCheck, final EventCheckCallback callback) {
+        // Get current user ID (assuming App.currentUser holds this information)
+        String userId = App.currentUser.getDeviceId();
+
+        if (userId == null || userId.isEmpty()) {
+            System.out.println("No user is currently logged in.");
+            callback.onComplete(false);  // Return false if no user is logged in
+            return;
+        }
+
+        // Reference to the current user document in the "users" collection
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference userDocRef = db.collection("users").document(userId);
+
+        // Fetch the "createdEvents" field from the user document
+        userDocRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<DocumentReference> createdEvents =
+                                (List<DocumentReference>) documentSnapshot.get("createdEvents");
+
+                        if (createdEvents != null && !createdEvents.isEmpty()) {
+                            // Check if the event ID matches any created event
+                            for (DocumentReference eventRef : createdEvents) {
+                                eventRef.get()
+                                        .addOnSuccessListener(eventSnapshot -> {
+                                            if (eventSnapshot.exists()) {
+                                                String retrievedEventId = eventSnapshot.getId();
+                                                if (retrievedEventId.equals(eventIdToCheck)) {
+                                                    // Return true if the event ID matches
+                                                    callback.onComplete(true);
+                                                    return; // Exit the loop once a match is found
+                                                }
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            System.out.println("Failed to fetch event: " + e.getMessage());
+                                            callback.onComplete(false);  // Return false on failure
+                                        });
+                            }
+                        } else {
+                            System.out.println("No created events found for this user.");
+                            callback.onComplete(false);  // Return false if no events are found
+                        }
+                    } else {
+                        System.out.println("No user document found for ID: " + userId);
+                        callback.onComplete(false);  // Return false if no user is found
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    System.out.println("Failed to load user document: " + e.getMessage());
+                    callback.onComplete(false);  // Return false on failure
+                });
+    }
+
+    public interface EventCheckCallback {
+        void onComplete(boolean exists);
     }
 
     /**
@@ -218,7 +311,9 @@ public class EventDetailsFragment extends Fragment {
                                      TextView eventDescriptionTextView) {
 
         eventNameTextView.setText(event.getName());
-        eventLocationTextView.setText(event.getFacility().getFacilityId());
+        if (event.getFacility() != null) {
+            eventLocationTextView.setText(event.getFacility().getFacilityId());
+        }
 
         // Default values for dates in case they are null
         String defaultDate = "Not Available";  // Default date if event date is null
@@ -232,14 +327,18 @@ public class EventDetailsFragment extends Fragment {
 
         // Convert abbreviations in recurrenceDays to full day names
         ArrayList<String> recurrenceDays = event.getRecurrenceDays();
-        String recurrenceDaysText = recurrenceDays.stream()
-                .map(this::getFullDayName) // Convert each unique abbreviation to full day name
-                .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
-                .reduce((a, b) -> a + ", " + b) // Join with commas
-                .orElse("No recurrence");
 
-        recurringDatesTextView.setText(recurrenceDaysText);
+        if (recurrenceDays != null) {
+            String recurrenceDaysText = recurrenceDays.stream()
+                    .map(this::getFullDayName) // Convert each unique abbreviation to full day name
+                    .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
+                    .reduce((a, b) -> a + ", " + b) // Join with commas
+                    .orElse("No recurrence");
+
+            recurringDatesTextView.setText(recurrenceDaysText);
+        }
         eventDescriptionTextView.setText(event.getDescription());
+
     }
 
     /**
@@ -426,5 +525,40 @@ public class EventDetailsFragment extends Fragment {
         });
 
         dialog.show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // Disable the back button in the action bar when exiting the fragment
+        if (getActivity() instanceof AppCompatActivity) {
+            AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
+            if (appCompatActivity.getSupportActionBar() != null) {
+                appCompatActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            }
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            // Handle the back button press
+            navigateBackToEventList();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void navigateBackToEventList() {
+        // Assuming you have a `EventsListFragment` to return to
+        FragmentManager fragmentManager = getParentFragmentManager();
+        fragmentManager.popBackStack(); // Navigate back in the fragment stack
+
+        // Alternatively, if no back stack is used:
+        // Fragment eventsListFragment = new EventsListFragment();
+        // fragmentManager.beginTransaction()
+        //         .replace(R.id.fragment_container, eventsListFragment)
+        //         .commit();
     }
 }

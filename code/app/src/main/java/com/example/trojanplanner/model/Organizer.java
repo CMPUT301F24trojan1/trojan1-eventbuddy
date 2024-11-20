@@ -29,7 +29,11 @@ public class Organizer extends User {
      */
     public Organizer(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, ArrayList<Event> createdEvents, Facility facility) {
         super(lastName, firstName, email, phoneNumber, deviceId, role, isOrganizer, isAdmin);
-        this.createdEvents = createdEvents;
+        if (createdEvents == null) {
+            this.createdEvents = new ArrayList<>();  // Ensure the list is never null
+        } else {
+            this.createdEvents = createdEvents;
+        }
         this.facility = facility;
     }
 
@@ -43,9 +47,10 @@ public class Organizer extends User {
      */
     public Organizer(String deviceId) {
         super(deviceId);
-        facility = null;
-        createdEvents = new ArrayList<Event>();
+        this.facility = null; // Initialize to an empty Facility object
+        this.createdEvents = new ArrayList<Event>(); // Ensures createdEvents is never null
     }
+
 
 
     /**
@@ -67,8 +72,8 @@ public class Organizer extends User {
      * @param event, Event
      */
     public void addEvent(Event event) {
-        if (!createdEvents.contains(event)) {
-            createdEvents.add(event);
+        if (!this.createdEvents.contains(event)) {
+            this.createdEvents.add(event);
         }
         else {
             throw new IllegalArgumentException("Event is already in organizer list");
@@ -81,8 +86,8 @@ public class Organizer extends User {
      * @param event The event object to remove
      */
     public void removeEvent(Event event) {
-        if (createdEvents.contains(event)){
-            createdEvents.remove(event);
+        if (this.createdEvents.contains(event)){
+            this.createdEvents.remove(event);
         }
         else {
             throw new IllegalArgumentException("Event doesn't exist in the list.");

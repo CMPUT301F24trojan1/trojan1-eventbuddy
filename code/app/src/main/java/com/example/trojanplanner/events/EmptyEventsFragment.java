@@ -16,6 +16,10 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.List;
 
 /**
  * A Fragment that is displayed when there are no events available for the user.
@@ -64,6 +68,34 @@ public class EmptyEventsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Check if the user is already an organizer
+        if (App.currentUser != null) {
+            // Reference to the user's document in the database
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            DocumentReference userDocRef = db
+                    .collection("users")
+                    .document(App.currentUser.getDeviceId());
+
+            // Fetch the user's created events
+            userDocRef.get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            List<DocumentReference> createdEvents =
+                                    (List<DocumentReference>) documentSnapshot.get("createdEvents");
+
+                            // If there are created events, navigate to EventsListFragment
+                            if (createdEvents != null && !createdEvents.isEmpty()) {
+                                NavController navController = NavHostFragment.findNavController(this);
+                                navController.navigate(R.id.action_emptyEventsFragment_to_eventsListFragment);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Log or handle the error (optional)
+                        System.out.println("Error fetching user document: " + e.getMessage());
+                    });
+        }
+
+        // Check if the user is logged in
         if (App.currentUser != null) {
             if (App.currentUser.isOrganizer()) {
                 // If the user is an organizer, show the "Create Event" button and hide "Become Organizer" button

@@ -1,14 +1,9 @@
 package com.example.trojanplanner.view;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.trojanplanner.App;
