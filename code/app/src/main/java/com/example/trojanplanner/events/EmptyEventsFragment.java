@@ -16,6 +16,8 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Event;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -67,65 +69,68 @@ public class EmptyEventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Check if the user is already an organizer
+        // Check if the user is logged in
         if (App.currentUser != null) {
-            // Reference to the user's document in the database
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            DocumentReference userDocRef = db
-                    .collection("users")
-                    .document(App.currentUser.getDeviceId());
+            String deviceId = App.currentUser.getDeviceId();
 
-            // Fetch the user's created events
-            userDocRef.get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            List<DocumentReference> createdEvents =
-                                    (List<DocumentReference>) documentSnapshot.get("createdEvents");
-
-                            // If there are created events, navigate to EventsListFragment
-                            if (createdEvents != null && !createdEvents.isEmpty()) {
-                                NavController navController = NavHostFragment.findNavController(this);
-                                navController.navigate(R.id.action_emptyEventsFragment_to_eventsListFragment);
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        // Log or handle the error (optional)
-                        System.out.println("Error fetching user document: " + e.getMessage());
-                    });
+            // Fetch all events for the current user using the new query method
+            Database.getDB().getAllEventsFromDeviceId(new Database.QuerySuccessAction() {
+                @Override
+                public void OnSuccess(Object object) {
+                    List<Event> events = (List<Event>) object;
+                    if (events != null && !events.isEmpty()) {
+                        // Navigate to EventsListFragment if there are any events
+                        NavController navController = NavHostFragment.findNavController(EmptyEventsFragment.this);
+                        navController.navigate(R.id.action_emptyEventsFragment_to_eventsListFragment);
+                    } else {
+                        // No events found; display the "no events" message
+                        showNoEventsMessage();
+                    }
+                }
+            }, new Database.QueryFailureAction() {
+                @Override
+                public void OnFailure() {
+                    // Handle failure (e.g., show a toast or log an error)
+                    Toast.makeText(requireContext(), "Failed to load events. Please try again.", Toast.LENGTH_SHORT).show();
+                }
+            }, deviceId);
         }
 
+        // Set up the buttons based on user role
+        setupButtons(view);
+    }
+
+    private void setupButtons(View view) {
         // Check if the user is logged in
         if (App.currentUser != null) {
             if (App.currentUser.isOrganizer()) {
-                // If the user is an organizer, show the "Create Event" button and hide "Become Organizer" button
+                // Show the "Create Event" button for organizers
                 view.findViewById(R.id.createEventButton).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.becomeOrganizerButton).setVisibility(View.GONE);
 
-                // Set up a click listener for the "Create Event" button
+                // Set click listener for the "Create Event" button
                 view.findViewById(R.id.createEventButton).setOnClickListener(v -> {
-                    // Navigate to the Create Event fragment
                     NavController navController = NavHostFragment.findNavController(this);
                     navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
                 });
             } else {
-                // If the user is not an organizer, show the "Become Organizer" button
+                // Show the "Become Organizer" button for non-organizers
                 view.findViewById(R.id.becomeOrganizerButton).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.createEventButton).setVisibility(View.GONE);
 
-                // Set up a click listener for the "Become Organizer" button
+                // Set click listener for the "Become Organizer" button
                 view.findViewById(R.id.becomeOrganizerButton).setOnClickListener(v -> {
-                    // Navigate to the Facility Setup fragment
                     NavController navController = NavHostFragment.findNavController(this);
                     navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
                 });
             }
         } else {
-            // If the user is not logged in or no user exists, hide both buttons
-            view.findViewById(R.id.becomeOrganizerButton).setVisibility(View.GONE);
+            // If no user is logged in, hide both buttons
             view.findViewById(R.id.createEventButton).setVisibility(View.GONE);
+            view.findViewById(R.id.becomeOrganizerButton).setVisibility(View.GONE);
         }
     }
+
 
     /**
      * Displays a message to the user when there are no events available.
