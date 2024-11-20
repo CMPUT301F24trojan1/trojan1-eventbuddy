@@ -744,7 +744,7 @@ public class Database {
 
         event.setName((String) m.get("name"));
         event.setDescription((String) m.get("description"));
-        event.setPrice((double) m.get("price"));
+        event.setPriceDouble((double) m.get("price"));
 
         event.setPictureFilePath((String) m.get("eventPhoto"));
 
