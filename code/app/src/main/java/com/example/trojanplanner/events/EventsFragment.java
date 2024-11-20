@@ -1,14 +1,22 @@
 package com.example.trojanplanner.events;
 
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,22 +24,13 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.EventArrayAdapter;
 import com.example.trojanplanner.databinding.FragmentEventsListBinding;
-import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Facility;
-import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.model.User;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A Fragment that displays a list of events using a RecyclerView.
@@ -44,8 +43,10 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
     private List<Event> eventList;
-    private Database database;
-    private User currentUser; // Assuming you have a user object (Entrant or Organizer)
+    private User currentUser;
+
+    // SharedPreferences key to track first-time user
+    private static final String PREF_FIRST_TIME_VISIT = "first_time_visit";
 
     /**
      * Called to create the view for this fragment. Initializes the RecyclerView, adapter, and loads the events.
@@ -63,6 +64,11 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         binding = FragmentEventsListBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        // Disable the back button in the app bar
+        if (getActivity() != null) {
+            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        }
+
         // Initialize the RecyclerView
         RecyclerView recyclerView = binding.eventsRecyclerView;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -73,16 +79,86 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         recyclerView.setAdapter(eventsAdapter);
 
         // Initialize database instance
-        database = Database.getDB();
+        Database database = Database.getDB();
 
         // Fetch the current user
         currentUser = App.currentUser; // This method needs to return the logged-in user
 
+        Button createEventOrBecomeOrganizerButton = root.findViewById(R.id.createEvent_or_become_an_organizer_button);
+
+        // Set button text and navigation based on user's role
+        setButton(createEventOrBecomeOrganizerButton);
 
         // Load events from the database
         loadEventsFromDatabase();
 
+        // Show first-time visit dialog
+        checkFirstTimeVisit();
         return root;
+    }
+
+    private void setButton(Button createEventOrBecomeOrganizerButton) {
+        // Check if the user is logged in and update the button visibility based on their role
+        if (currentUser != null) {
+            if (currentUser.isOrganizer()) {
+                // If the user is an organizer, show "Create Event" option
+                createEventOrBecomeOrganizerButton.setVisibility(View.VISIBLE);
+                createEventOrBecomeOrganizerButton.setText("Create an Event");
+
+                // Set up click listener for the "Create Event" button
+                createEventOrBecomeOrganizerButton.setOnClickListener(v -> {
+                    // Navigate to the Event Edit Fragment
+                    NavController navController = NavHostFragment.findNavController(this);
+                    navController.navigate(R.id.action_eventsFragment_to_eventEditFragment);
+                });
+            } else {
+                // If the user is not an organizer, show "Become an Organizer" option
+                createEventOrBecomeOrganizerButton.setVisibility(View.VISIBLE);
+                createEventOrBecomeOrganizerButton.setText("Become an Organizer");
+
+                // Set up click listener for the "Become Organizer" button
+                createEventOrBecomeOrganizerButton.setOnClickListener(v -> {
+                    // Navigate to the Facility Setup Fragment
+                    NavController navController = NavHostFragment.findNavController(this);
+                    navController.navigate(R.id.action_emptyEventsFragment_to_facilitySetupFragment);
+                });
+            }
+        } else {
+            // If the user is not logged in or no user exists, hide the button
+            createEventOrBecomeOrganizerButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void checkFirstTimeVisit() {
+        // Get SharedPreferences
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+        // Check if it's the first time visiting the fragment
+        boolean isFirstTime = sharedPreferences.getBoolean(PREF_FIRST_TIME_VISIT, true);
+
+        if (isFirstTime) {
+            // Show the dialog
+            showFirstTimeDialog();
+
+            // Update SharedPreferences to mark that the user has visited the fragment
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(PREF_FIRST_TIME_VISIT, false);  // Set flag to false after first visit
+            editor.apply();
+        }
+    }
+
+    private void showFirstTimeDialog() {
+        // Create an AlertDialog
+        new AlertDialog.Builder(getContext())
+                .setTitle("Your Events will always show up here")
+                .setMessage("Click on an Event to view details")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Dismiss dialog
+                    }
+                })
+                .setCancelable(false)  // Prevent dialog from being dismissed by tapping outside
+                .show();
     }
 
     private void loadEventsFromDatabase() {
@@ -120,25 +196,6 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         }, userId);  // Pass the userId to get events related to the current device/user
     }
 
-    private void addDummyEvent() {
-        Event dummyEvent = new Event(
-                "fakeId",
-                "Sample Event",
-                "This is a description for the sample event.",
-                0.0f, // Price
-                null, // Facility (can be null or a placeholder)
-                new Date(), // Start date
-                new Date(), // End date
-                10, // Total spots
-                10L, // Available spots
-                0L  // Registered participants
-        );
-
-        dummyEvent.setEventId("dummy_event_id");
-        eventList.add(dummyEvent);
-        eventsAdapter.notifyDataSetChanged();
-    }
-
     /**
      * Called when an event in the list is clicked. It navigates the user to the EventEditFragment where the
      * event can be edited.
@@ -159,5 +216,27 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         // Navigate to EventEditFragment
         navController.navigate(R.id.action_eventsListFragment_to_eventDetailsFragment, bundle);
     }
-
 }
+
+
+
+/* can be used to test easily
+*     private void addDummyEvent() {
+        Event dummyEvent = new Event(
+                "fakeId",
+                "Sample Event",
+                "This is a description for the sample event.",
+                0.0f, // Price
+                null, // Facility (can be null or a placeholder)
+                new Date(), // Start date
+                new Date(), // End date
+                10, // Total spots
+                10L, // Available spots
+                0L  // Registered participants
+        );
+
+        dummyEvent.setEventId("dummy_event_id");
+        eventList.add(dummyEvent);
+        eventsAdapter.notifyDataSetChanged();
+    }
+* */

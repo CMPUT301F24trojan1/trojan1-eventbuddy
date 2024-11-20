@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.emptyEventsFragment, R.id.eventsListFragment)
+                R.id.emptyEventsFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
