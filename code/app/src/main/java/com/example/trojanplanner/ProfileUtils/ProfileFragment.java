@@ -27,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
@@ -76,7 +77,7 @@ public class ProfileFragment extends Fragment {
 //            }
 
 
-            //database.getEntrant(App.deviceId);
+        //database.getEntrant(App.deviceId);
 //        }
 
         photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
@@ -155,20 +156,12 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
-    /**
-     * Creates the popup triggered when the profile picture is clicked. Prompts to either remove
-     * or change their profile picture.
-     * @author Jared Gourley
-     */
+
     private void createPfpPopup() {
         new PfpClickPopupFragment(profileActivity).show(profileActivity.getSupportFragmentManager(), "Change Profile Picture");
     }
 
-    /**
-     * Action to be taken when the cancel button is pressed. Currently simply resets fields to
-     * current saved user values.
-     * @author Jared Gourley
-     */
+
     private void handleCancel() {
         // Handle cancel action, e.g., clear fields or go back
         System.out.println("Cancel!");
@@ -179,11 +172,6 @@ public class ProfileFragment extends Fragment {
         resetState(App.currentUser); // for now, reset fields to current saved values
     }
 
-    /**
-     * Action to be taken when the save button is pressed. Validates input so that only valid user
-     * info can be saved, then uploads the new data to the user document in Firestore.
-     * @author Jared Gourley
-     */
     private void handleSave() {
         // Handle save action, e.g., validate input and save to a database or API
         System.out.println("Save!");
@@ -294,13 +282,9 @@ public class ProfileFragment extends Fragment {
     }
 
 
-    /**
-     * Changes the profile picture ImageView to the given bitmap. This is set as the callback function
-     * for the PhotoPicker.
-     * @param bitmap The image bitmap to change the ImageView to
-     * @author Jared Gourley
-     */
-    public void changePfpViewBitmap(Bitmap bitmap) {
+
+
+    public void onSelectedPhoto(Bitmap bitmap) {
         if (bitmap != null && bitmap != profileImageBitmap) {
             changedPfp = true;
             profileImageBitmap = bitmap;
@@ -311,10 +295,8 @@ public class ProfileFragment extends Fragment {
 
 
     /**
-     * Resets all text fields and the profile picture to the current saved values for the user
-     * (or blank if no user yet)
      *
-     * @param user The user data to reset the fields with (can be null - will set to blank then)
+     * @param user
      * @author Jared Gourley
      */
     public void resetState(User user) {

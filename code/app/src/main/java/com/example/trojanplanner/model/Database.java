@@ -2303,7 +2303,13 @@ public class Database {
     }
 
 
+    public void getEventDocumentById(String eventId, OnSuccessListener<DocumentSnapshot> successListener, OnFailureListener failureListener) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
 
+        eventRef.get()
+                .addOnSuccessListener(successListener)
+                .addOnFailureListener(failureListener);
+    }
 }
 
 

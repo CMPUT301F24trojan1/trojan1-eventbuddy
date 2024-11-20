@@ -164,13 +164,14 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
     private void loadEventsFromDatabase() {
         eventList.clear();
 
-        // Get current user ID (assuming App.currentUser holds this information)
-        String userId = App.currentUser.getDeviceId();
 
-        if (userId == null || userId.isEmpty()) {
+
+        if (App.currentUser == null || App.currentUser.getDeviceId() == null) {
             System.out.println("No user is currently logged in.");
             return;
         }
+        // Get current user ID (assuming App.currentUser holds this information)
+        String userId = App.currentUser.getDeviceId();
 
         // Call getAllEventsFromDeviceId method to get events based on the user device ID
         Database.getDB().getAllEventsFromDeviceId(new Database.QuerySuccessAction() {
