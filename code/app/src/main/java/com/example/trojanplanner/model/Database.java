@@ -1943,6 +1943,7 @@ public class Database {
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                System.out.println("onComplete");
                 // Failure handling
                 if (!task.isSuccessful()) { // If query got blocked completely
                     // This case should not be happening under normal circumstances
@@ -1962,8 +1963,8 @@ public class Database {
                 ArrayList<Event> eventsList = new ArrayList<Event>();
                 Map<String, Object> m = document.getData();
 
-                if (m.get("currentAcceptedEvents") != null) {
-                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentAcceptedEvents")) {
+                if (m.get("currentEnrolledEvents") != null) {
+                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentEnrolledEvents")) {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
                     }
                 }
@@ -1982,13 +1983,18 @@ public class Database {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
                     }
                 }
-                if ((boolean) m.get("hasOrganizerRights") && m.get("getCreatedEvents") != null) {
-                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("getCreatedEvents")) {
+                if ((boolean) m.get("hasOrganizerRights") && m.get("createdEvents") != null) {
+                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("createdEvents")) {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
                     }
                 }
 
                 int subQueryCount = eventsList.size();
+
+                if (subQueryCount == 0) {
+                    successAction.OnSuccess(eventsList);
+                    return;
+                }
 
                 QueryTracker queryTracker = new QueryTracker(subQueryCount);
 
@@ -2031,6 +2037,8 @@ public class Database {
                 };
 
                 // Launch queries
+
+                System.out.println("eventsList: " + eventsList);
                 for (Event event : eventsList) {
                     System.out.println("Launching query for event: " + event.getEventId());
                     getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
@@ -2251,6 +2259,7 @@ public class Database {
 
     public static void getAllEventsFromDeviceIdTest() {
         Database database = Database.getDB();
+        System.out.println("getAllEventsFromDeviceIdTest started");
 
         Database.QuerySuccessAction successAction = new QuerySuccessAction() {
             @Override
@@ -2271,7 +2280,7 @@ public class Database {
             }
         };
 
-        database.getAllEventsFromDeviceId(successAction, failureAction, "19cd6a862b96402f");
+        database.getAllEventsFromDeviceId(successAction, failureAction, "596d9cfa05df31a6");
 
     }
 
