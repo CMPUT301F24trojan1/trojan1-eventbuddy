@@ -45,7 +45,6 @@ import java.util.Set;
  * The event's details will be displayed, and based on the entrant's current status, appropriate
  * buttons will be shown for joining or leaving the waitlist.
  */
-//NOTE THIS IS FOR THE ENTRANT NOT ORGANIZER, same with event_details_fragment.xml
 public class EventDetailsFragment extends Fragment {
     private Event event;
     private Entrant entrant;
@@ -143,7 +142,7 @@ public class EventDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_event_details, container, false);
 
-        // initialize views
+        // Initialize views
         ImageView eventImageView = view.findViewById(R.id.eventImageView);
         TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
         TextView eventLocationTextView = view.findViewById(R.id.eventLocationTextView);
@@ -153,39 +152,35 @@ public class EventDetailsFragment extends Fragment {
 
         buttonEnterNow = view.findViewById(R.id.button_enter_now);
         buttonLeaveWaitlist = view.findViewById(R.id.button_leave_waitlist);
+        manageButton = view.findViewById(R.id.ManageEvents);  // Initialize manageButton
 
-//        // Populate event details
-//        populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
-        // Ensure `event` is initialized
+        // Populate event details
         if (event != null) {
             populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
         } else {
-            // Log or handle the error
             Log.e("EventDetailsFragment", "Event is null in onCreateView");
         }
-        // Ensure 'event' is initialized before calling 'checkEntrantStatus'
+
+        // Check entrant status
         if (event != null) {
             checkEntrantStatus();
         } else {
             Log.e("EventDetailsFragment", "Event is null in onCreateView");
-        };
+        }
 
-        // Check if the user is an organizer
+        // If the user is an organizer, show manage button
         if (App.currentUser != null && App.currentUser.isOrganizer()) {
             checkCreatedEventsFromDatabase(event.getEventId(), exists -> {
-                if (exists) {
-                    // If the event exists, make the "Manage" button visible
+                if (exists && manageButton != null) {
                     manageButton.setVisibility(View.VISIBLE);
                     manageButton.setOnClickListener(v -> {
-                        // When "Manage" button is clicked, show the event options dialog
                         if (event != null) {
                             EventOptionsDialogFragment dialogFragment = EventOptionsDialogFragment.newInstance(event);
                             dialogFragment.show(getChildFragmentManager(), "EventOptionsDialog");
                         }
                     });
                     System.out.println("Event created by current Organizer, displaying organizer options!");
-                } else {
-                    // Otherwise, ensure the button is hidden
+                } else if (manageButton != null) {
                     manageButton.setVisibility(View.GONE);
                     System.out.println("Event is not created by current Organizer.");
                 }

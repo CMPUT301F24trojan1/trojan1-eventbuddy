@@ -2,17 +2,15 @@ package com.example.trojanplanner.model;
 
 import android.graphics.Bitmap;
 
-import java.io.Serializable;
-
 /**
  * Facility class that keeps the location of the Event
  * @author Madelaine Dalangin
  */
-public class Facility implements Serializable {
+public class Facility {
     private String facilityId;
     private String name;
     private String location;
-    private String owner;
+    private Organizer owner;
     private String pfpFacilityFilePath;
     private Bitmap pfpFacilityBitmap;
 
@@ -30,7 +28,7 @@ public class Facility implements Serializable {
         this.name = name;
         this.facilityId = facilityId;
         this.location = location;
-        this.owner = owner.getDeviceId();
+        this.owner = owner;
         this.pfpFacilityFilePath = pfpFacilityFilePath;
     }
 
@@ -49,7 +47,7 @@ public class Facility implements Serializable {
         this.name = name;
         this.facilityId = facilityId;
         this.location = location;
-        this.owner = owner.getDeviceId();
+        this.owner = owner;
         this.pfpFacilityFilePath = pfpFacilityFilePath;
         this.pfpFacilityBitmap = pfpFacilityBitmap;
     }
@@ -86,13 +84,13 @@ public class Facility implements Serializable {
      * @author Madelaine Dalangin
      * @return
      */
-    public String getOwner() {
+    public Organizer getOwner() {
         return owner;
     }
 
 
     public void setOwner(Organizer owner) {
-        this.owner = owner.getDeviceId();
+        this.owner = owner;
     }
 
     public String getFacilityId() {

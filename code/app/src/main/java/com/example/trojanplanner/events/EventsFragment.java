@@ -96,48 +96,28 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
             return;
         }
 
-        // Reference to the current user document in the "users" collection
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        DocumentReference userDocRef = db.collection("users").document(userId);
-
-        // Fetch the "createdEvents" field from the user document
-        userDocRef.get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        List<DocumentReference> createdEvents =
-                                (List<DocumentReference>) documentSnapshot.get("createdEvents");
-
-                        if (createdEvents != null && !createdEvents.isEmpty()) {
-                            // Fetch each event from the "createdEvents" references
-                            for (DocumentReference eventRef : createdEvents) {
-                                eventRef.get()
-                                        .addOnSuccessListener(eventSnapshot -> {
-                                            if (eventSnapshot.exists()) {
-                                                Event event = eventSnapshot.toObject(Event.class);
-                                                if (event != null) {
-                                                    eventList.add(event);
-                                                    System.out.println("Loaded event: " + event.getName());
-                                                }
-                                            } else {
-                                                System.out.println("No event found for reference: " + eventRef.getId());
-                                            }
-                                            eventsAdapter.notifyDataSetChanged();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            System.out.println("Failed to fetch event: " + e.getMessage());
-                                        });
-                            }
-                        } else {
-                            System.out.println("No created events found for this user.");
-                            eventsAdapter.notifyDataSetChanged();
-                        }
-                    } else {
-                        System.out.println("No user document found for ID: " + userId);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    System.out.println("Failed to load user document: " + e.getMessage());
-                });
+        // Call getAllEventsFromDeviceId method to get events based on the user device ID
+        Database.getDB().getAllEventsFromDeviceId(new Database.QuerySuccessAction() {
+            @Override
+            public void OnSuccess(Object object) {
+                // This will be triggered when the events are successfully retrieved
+                ArrayList<Event> events = (ArrayList<Event>) object;
+                if (events != null && !events.isEmpty()) {
+                    eventList.addAll(events);
+                    System.out.println("Loaded events: " + events.size());
+                } else {
+                    System.out.println("No events found for this user.");
+                }
+                // Notify the adapter that the event list has been updated
+                eventsAdapter.notifyDataSetChanged();
+            }
+        }, new Database.QueryFailureAction() {
+            @Override
+            public void OnFailure() {
+                // This will be triggered if there's an error retrieving the events
+                System.out.println("Failed to load events.");
+            }
+        }, userId);  // Pass the userId to get events related to the current device/user
     }
 
     private void addDummyEvent() {
