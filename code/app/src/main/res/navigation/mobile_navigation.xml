@@ -23,7 +23,9 @@
 
         <action
             android:id="@+id/action_emptyEventsFragment_to_eventsListFragment"
-            app:destination="@id/eventsListFragment" />
+            app:destination="@id/eventsListFragment"
+            app:popUpTo="@id/eventsListFragment"
+            app:popUpToInclusive="true"/>
     </fragment>
 
     <!-- Define facilitySetupFragment -->
