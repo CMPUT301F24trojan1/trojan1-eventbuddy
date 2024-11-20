@@ -61,7 +61,8 @@ public class Event implements Serializable {
     private int Total_Occurrences;
 
     public Event(){
-
+        this.availableSpots = 0L;
+        this.waitingList = new ArrayList<>();
     }
 
 //    public Event(String name, String description, float price, String facility, Date startDateTime, Date endDateTime, int daysLeftToRegister, long totalSpots, long availableSpots) {
@@ -557,12 +558,12 @@ public class Event implements Serializable {
     }
 
     public boolean addParticipant(User user) {
-        if (availableSpots > 0 && !waitingList.contains(user)) {
+        if (availableSpots != null && availableSpots > 0 && waitingList != null && !waitingList.contains(user)) {
             waitingList.add(user);
-            availableSpots--;
+            availableSpots--;  // Assuming availableSpots is an integer or Long initialized to a value
             return true;
         }
-        return false; // if no spots are available or user already exists
+        return false;  // No spots available, or user is already in the list
     }
 
     public boolean removeParticipant(User user) {
