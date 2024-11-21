@@ -43,6 +43,4 @@ public class SerialBitmap implements Serializable {
         byteArray = new byte[length];
         in.readFully(byteArray);
     }
-
-
 }

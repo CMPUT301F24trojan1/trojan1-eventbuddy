@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -14,22 +13,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.QRUtils.QRHelpFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.databinding.ActivityQrBinding;
-import com.example.trojanplanner.events.EventDetailsFragment;
+import com.example.trojanplanner.events.entrant.EventDetailsDialogFragment;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.zxing.BarcodeFormat;
-import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
@@ -56,7 +53,7 @@ import java.util.List;
 public class QRActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private BarcodeView barcodeView;
-    private EditText etInput;
+    private FocusOverlayView focusOverlayView;
     private @NonNull ActivityQrBinding binding;
     private Database database;
     private String deviceId;
@@ -78,9 +75,10 @@ public class QRActivity extends AppCompatActivity {
         deviceId = App.deviceId;
         currentUser = (Entrant) App.currentUser;
 
-        Database db = Database.getDB();
+        database = Database.getDB();  // or use a singleton if you have one
 
         barcodeView = findViewById(R.id.barcode_scanner);
+        focusOverlayView = findViewById(R.id.focus_overlay);
         ImageButton helpButton = findViewById(R.id.qr_help_button);
 
         setupNavigation();
@@ -98,6 +96,9 @@ public class QRActivity extends AppCompatActivity {
             }
         };
         getOnBackPressedDispatcher().addCallback(this, callback);
+
+        startQRScanner();
+
     }
 
     /**
@@ -130,47 +131,81 @@ public class QRActivity extends AppCompatActivity {
      * result is displayed in an EditText field and a toast message is shown.
      */
     private void startQRScanner() {
+        // Set the formats for the scanner
         Collection<BarcodeFormat> formats = Collections.singletonList(BarcodeFormat.QR_CODE);
         barcodeView.setDecoderFactory(new DefaultDecoderFactory(formats));
+
+        // Get the preview size and set it to the overlay
+        barcodeView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            int previewWidth = barcodeView.getWidth();
+            int previewHeight = barcodeView.getHeight();
+            focusOverlayView.setPreviewSize(previewWidth, previewHeight);
+        });
+
+        // Continuous decoding
         barcodeView.decodeContinuous(new BarcodeCallback() {
-            public void barcodeResult(Result result) {
-                if (result != null) {
-                    String eventCode = result.getText();  // Use the scanned QR code as the eventId
-
-                    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
-                        @Override
-                        public void OnSuccess(Object object) {
-                            if (object instanceof Event) {
-                                Event event = (Event) object;  // Cast to Event
-                                Log.d("QRActivity", "Event retrieved: " + event.getName());
-
-                                // Now you can pass the event data to another fragment or perform other actions
-                                navigateToEventDetailsFragment(event);
-                            }
-                        }
-                    };
-
-                    // Define failure action
-                    Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
-                        @Override
-                        public void OnFailure() {
-                            // Handle failure (e.g., show an error message)
-                            Log.d("QRActivity", "Failed to retrieve event");
-                            Toast.makeText(QRActivity.this, "Failed to fetch event", Toast.LENGTH_SHORT).show();
-                        }
-                    };
-
-                    database.getEvent(successAction, failureAction,eventCode);  // Fetch the event using the eventId
-                    barcodeView.pause();  // Pause scanning after a successful scan
+            @Override
+            public void barcodeResult(BarcodeResult result) {
+                if (result == null) {
+                    Log.d("QRActivity", "No result from barcode scanner.");
+                    return;
                 }
+
+                String eventCode = result.getText();  // Use the scanned QR code text
+
+                // Show a toast with the scanned result
+                Toast.makeText(QRActivity.this, "Scanned: " + eventCode, Toast.LENGTH_SHORT).show();
+
+                // Define the success action for retrieving the event
+                OnSuccessListener<DocumentSnapshot> successAction = documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Manually create the Event object
+                        Event event = new Event();
+                        event.setEventId(documentSnapshot.getString("eventID"));
+                        event.setName(documentSnapshot.getString("name"));
+                        event.setDescription(documentSnapshot.getString("description"));
+                        event.setPrice(0);
+                        event.setStatus(documentSnapshot.getString("status"));
+                        event.setTotalSpots(4L);
+                        event.setWaitlistCapacity(2L);
+                        event.setPictureFilePath(documentSnapshot.getString("eventPhoto"));
+
+                        // Log the retrieved event
+                        Log.d("QRActivity", "Event retrieved: " + event.getName());
+
+                        // Navigate to the EventDetailsFragment
+                        navigateToEventDetailsFragment(event);
+                    } else {
+                        Log.d("QRActivity", "Event not found");
+                        Toast.makeText(QRActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
+                    }
+                };
+
+                // Define the failure action
+                OnFailureListener failureAction = e -> {
+                    Log.d("QRActivity", "Failed to retrieve event");
+                    Toast.makeText(QRActivity.this, "Failed to fetch event", Toast.LENGTH_SHORT).show();
+                };
+
+                Log.d("QRActivity", "Querying for event with ID: " + eventCode);
+                // Query Firestore for the event document by its ID
+                database.getEventDocumentById(eventCode, successAction, failureAction);
+
+                Log.d("QRActivity", "Pausing barcode right now for event code: " + eventCode);
+                barcodeView.pause();  // Pause scanning after a successful scan
             }
 
             @Override
-            public void barcodeResult(BarcodeResult result) { }
+            public void possibleResultPoints(List<ResultPoint> resultPoints) {
+                // Pass the detected points to the overlay for visualization
+                if (!resultPoints.isEmpty()) {
+                    Log.d("QRActivity", "Possible result points: " + resultPoints.size());
 
-            @Override
-            public void possibleResultPoints(List<ResultPoint> resultPoints) { }
+                    //focusOverlayView.addFocusPoints(resultPoints);  // Update the overlay with new points
+                }
+            }
         });
+
         barcodeView.resume();
     }
 
@@ -180,15 +215,13 @@ public class QRActivity extends AppCompatActivity {
      * @param event The event data that should be passed to the EventDetailsFragment.
      */
     private void navigateToEventDetailsFragment(Event event) {
-        // Create a bundle to pass the event and currentUser data
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("event", event);  // Put the event object in the Bundle
-        bundle.putSerializable("currentUser", currentUser);  // Put the currentUser in the Bundle
+        // Show the EventDetailsDialogFragment as a Dialog
+        EventDetailsDialogFragment eventDetailsDialogFragment = EventDetailsDialogFragment.newInstance(event, (Entrant) App.currentUser); // Assuming you still need the Entrant object
 
-        // Use NavController to navigate to the EventDetailsFragment and pass the data
-        NavController navController = Navigation.findNavController(this, R.id.qrActivity);  // Assuming you have a NavHostFragment in your layout
-        navController.navigate(R.id.eventDetailsFragment, bundle);
+        // Show the dialog fragment
+        eventDetailsDialogFragment.show(getSupportFragmentManager(), "EventDetailsDialog");
     }
+
 
     /**
      * Opens the help fragment to provide guidance to the user on using the QR scanner.

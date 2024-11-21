@@ -57,8 +57,8 @@ public class EventTest {
      */
     @Test
     public void testDailyRecurringEventWithEndDateAndOccurrences() {
-        Event dailyEventWithEndDate = new Event("Daily Workout", "Gym session", 0.0f, facility, startDateTime, endDateTime, 2, 100L, 100L);
-        Event dailyEventWithOccurrences = new Event("Daily Workout", "Gym session", 0.0f, facility, startDateTime, endDateTime, 2, 100L, 100L);
+        Event dailyEventWithEndDate = new Event("Daily Workout", "Gym session", "", 0.0f, facility, startDateTime, endDateTime, 2, 100L, 100L);
+        Event dailyEventWithOccurrences = new Event("Daily Workout", "Gym session", "", 0.0f, facility, startDateTime, endDateTime, 2, 100L, 100L);
 
         // Set both events to recur on weekdays (Monday - Friday)
         for (String day : new String[]{"M", "T", "W", "R", "F"}) {
@@ -100,7 +100,7 @@ public class EventTest {
      */
     @Test
     public void testAddAndRemoveParticipant() {
-        Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
+        Event event = new Event("Morning Yoga", "Relaxing session", "", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
         Entrant entrant = new Entrant("Doe", "John", "johndoe@example.com", "1234567890", "device123", "participant", false, false);
 
         // Test adding a participant
@@ -120,7 +120,7 @@ public class EventTest {
      */
     @Test
     public void testRecurringEventWithTotalOccurrences() {
-        Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
+        Event event = new Event("Morning Yoga", "Relaxing session", "", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
         event.setRecurring(true);
         event.setRecurrenceType(Event.RecurrenceType.AFTER_OCCURRENCES);
         event.setTotal_Occurrences(10);
@@ -156,7 +156,7 @@ public class EventTest {
         Date currentDate = calendar.getTime();
 
         // Create an event with start and end times
-        Event event = new Event("Test Event", "This is a test event description.", 10.0f, facility, startDateTime, endDateTime, 0, 100L, 100L);
+        Event event = new Event("Test Event", "This is a test event description.", "", 10.0f, facility, startDateTime, endDateTime, 0, 100L, 100L);
 
         // Use the overloaded updateStatus() with the specified currentDate
         event.updateStatus(currentDate);
@@ -172,7 +172,7 @@ public class EventTest {
     @Test
     public void testIsWaitlistFull() {
         // Assume the maximum capacity of the waitlist is set to 2 for testing
-        Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
+        Event event = new Event("Morning Yoga", "Relaxing session", "", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
         event.addToWaitlist(new Entrant("Smith", "Alice", "alice@example.com", "1112223333", "device456", "participant", false, false));
         event.addToWaitlist(new Entrant("Johnson", "Bob", "bob@example.com", "4445556666", "device789", "participant", false, false));
         assertTrue("Waitlist should be full", event.isWaitlistFull(2));
@@ -184,7 +184,7 @@ public class EventTest {
      */
     @Test
     public void testIsRegistrationOpen() {
-        Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
+        Event event = new Event("Morning Yoga", "Relaxing session", "", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
         // Set registration deadline to a future date
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, 2);
@@ -207,7 +207,7 @@ public class EventTest {
      */
     @Test
     public void testRecurringEventWithEndDate() {
-        Event event = new Event("Morning Yoga", "Relaxing session", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
+        Event event = new Event("Morning Yoga", "Relaxing session", "", 0.0f, facility, startDateTime, endDateTime, 2, 30L, 10L);
         // Set event recurrence to weekdays (Monday - Friday) ending on a specific date
         event.setRecurring(true);
         event.setRecurrenceType(Event.RecurrenceType.UNTIL_DATE);
