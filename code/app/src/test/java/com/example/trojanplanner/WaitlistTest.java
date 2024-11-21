@@ -45,7 +45,7 @@ public class WaitlistTest {
         Long availableSpots = 10L;
 
         // Create Event object using the correct constructor
-        testEvent = new Event(name, description, price, facility, startDateTime, endDateTime, daysLeftToRegister, totalSpots, availableSpots);
+        testEvent = (ConcreteEvent) new Event("",name, description, price, facility, startDateTime, endDateTime, daysLeftToRegister, totalSpots, availableSpots);
 
         // Add sample entrants to the waitlist
         List<Entrant> waitlistEntrants = new ArrayList<>();
