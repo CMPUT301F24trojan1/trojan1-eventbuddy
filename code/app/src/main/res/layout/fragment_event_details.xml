@@ -105,15 +105,6 @@
         android:layout_marginTop="4dp" />
 
     <!-- Enter Now Button -->
-    <Button
-        android:id="@+id/button_enter_now"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enter Now!"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/totalSpotsTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Leave now button (both can't exist at the same time, logic handled in eventdetailfragment.java-->
     <Button

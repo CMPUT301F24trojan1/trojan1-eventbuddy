@@ -14,7 +14,10 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
+import com.example.trojanplanner.HelperFragments.WaitlistFragment;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
@@ -111,6 +114,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 break;
             case 5:
                 deleteEvent();
+                break;
+            case 6: // View Waitlist
+                viewWaitlist();
+                break;
+            case 7: // Initiate Lottery
+                initiateLottery();
                 break;
             default:
                 break;
@@ -297,5 +306,42 @@ public class EventOptionsDialogFragment extends DialogFragment {
     private void deleteEvent() {
         // Add your logic to delete the event
         Toast.makeText(getContext(), "Delete Event clicked", Toast.LENGTH_SHORT).show();
+    }
+
+    private void viewWaitlist() {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
+    }
+
+
+    private void initiateLottery() {
+        if (event == null || event.getWaitingList() == null || event.getWaitingList().isEmpty()) {
+            Toast.makeText(requireContext(), "Cannot initiate a lottery. Waitlist is empty or missing.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ArrayList<User> waitlist = event.getWaitingList();
+
+        // Simple random lottery logic
+        int winnerIndex = (int) (Math.random() * waitlist.size());
+        User winner = waitlist.get(winnerIndex);
+
+        // Notify the winner and log
+        String winnerMessage = "Congratulations! " + winner.getFirstName() + " " + winner.getLastName() + " has won the lottery.";
+        Log.d("EventOptionsDialog", "Lottery Winner: " + winnerMessage);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Lottery Winner")
+                .setMessage(winnerMessage)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+
+        // Optionally, update the event or database with the winner's details
+        // database.updateLotteryWinner(event.getEventId(), winner);
     }
 }
