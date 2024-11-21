@@ -1,16 +1,27 @@
 package com.example.trojanplanner.events;
 
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.User;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A DialogFragment that provides a set of options for an event. The options include actions like
@@ -80,7 +91,10 @@ public class EventOptionsDialogFragment extends DialogFragment {
     private void handleOptionSelection(int optionIndex) {
         switch (optionIndex) {
             case 0:
-                sendAnnouncement();
+                String eventId = event.getEventId();
+                String message = "You're getting this because you expressed interest for this event!";
+                String title = "Announcement Title";
+                sendAnnouncement(eventId, title, message);
                 break;
             case 1:
                 viewAttendees();
@@ -105,17 +119,86 @@ public class EventOptionsDialogFragment extends DialogFragment {
     /**
      * Logic to send an announcement for the event.
      */
-    private void sendAnnouncement() {
-        // Add your logic to send an announcement
-        Toast.makeText(getContext(), "Send Announcement clicked", Toast.LENGTH_SHORT).show();
+    private void sendAnnouncement(String eventId, String title, String message) {
+        if (eventId == null || title == null || message == null) {
+            Toast.makeText(getContext(), "Invalid event details. Cannot send announcement.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String channelId = "EventChannel_" + eventId; // Use the eventId to identify the channel
+
+        // Create a Notification Manager
+        NotificationManager notificationManager =
+                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // For Android 8.0+ (Oreo and above), create a notification channel dynamically
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(
+                    channelId,
+                    "Event Updates for " + eventId,
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            notificationChannel.setDescription("Notifications for updates on event " + eventId);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+        // Create the notification
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getContext(), channelId)
+                .setSmallIcon(R.drawable.logo) // Replace with your app's notification icon
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        // Show the notification
+        notificationManager.notify(eventId.hashCode(), notificationBuilder.build()); // Use eventId's hash as a unique ID
+
+        // Store the announcement in Firestore (optional, for record-keeping)
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> announcement = new HashMap<>();
+        announcement.put("eventId", eventId);
+        announcement.put("title", title);
+        announcement.put("message", message);
+        announcement.put("timestamp", FieldValue.serverTimestamp());
+
+        db.collection("announcements")
+                .add(announcement)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(getContext(), "Announcement sent and saved to Firestore.", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Failed to save announcement: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
+
+
 
     /**
      * Logic to view attendees of the event.
      */
     private void viewAttendees() {
-        // Add your logic to view attendees
-        Toast.makeText(getContext(), "View Attendees clicked", Toast.LENGTH_SHORT).show();
+        if (event != null && event.getWaitingList() != null) {
+            ArrayList<User> waitingList = event.getWaitingList();
+
+            if (!waitingList.isEmpty()) {
+                // Build a string with the list of waiting attendees
+                StringBuilder attendeesList = new StringBuilder("Waiting List:\n");
+                for (User user : waitingList) {
+                    attendeesList.append(user.getFirstName()).append("\n");
+                }
+
+                // Display the waiting list in a dialog
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Event Waiting List")
+                        .setMessage(attendeesList.toString())
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .show();
+            } else {
+                Toast.makeText(getContext(), "No attendees in the waiting list.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "Event data is missing or invalid.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

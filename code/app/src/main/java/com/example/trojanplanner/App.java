@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.provider.Settings;
 
+import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.model.User;
 
 // https://stackoverflow.com/questions/11411395/how-to-get-current-foreground-activity-context-in-android
@@ -17,7 +18,6 @@ import com.example.trojanplanner.model.User;
  * on the app in case they need to register actions or access UI components (e.g. PhotoPicker)
  */
 public class App extends Application {
-
     private static ActivityManager activityManager; // Keeps the App activity attribute up to date
 
     public static Activity activity;

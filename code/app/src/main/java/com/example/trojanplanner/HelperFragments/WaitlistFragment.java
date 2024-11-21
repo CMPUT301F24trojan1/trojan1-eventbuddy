@@ -1,15 +1,10 @@
 package com.example.trojanplanner.HelperFragments;
 
-import static java.security.AccessController.getContext;
-
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
@@ -27,9 +22,6 @@ import androidx.navigation.Navigation;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Event;
-
-
-
 
 public class WaitlistFragment extends Fragment {
 

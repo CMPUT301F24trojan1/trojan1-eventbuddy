@@ -6,21 +6,21 @@
     android:layout_height="wrap_content"
     android:padding="16dp">
 
-    <!-- Enlarged Back Button -->
-
     <!-- Event Image -->
+
+    <!-- Event Title -->
+
     <ImageView
         android:id="@+id/eventImageView"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="88dp"
+        android:layout_width="400dp"
+        android:layout_height="265dp"
+        android:layout_marginTop="14dp"
         android:contentDescription="Event image"
         android:src="@drawable/event_placeholder"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Event Title -->
     <TextView
         android:id="@+id/eventNameTextView"
         android:layout_width="wrap_content"
@@ -104,7 +104,7 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="4dp" />
 
-    <!-- Enter Now Button -->
+    <!-- Start Button -->
     <Button
         android:id="@+id/button_enter_now"
         android:layout_width="wrap_content"
@@ -115,44 +115,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Leave now button (both can't exist at the same time, logic handled in eventdetailfragment.java-->
-    <Button
-        android:id="@+id/button_leave_waitlist"
+    <ImageButton
+        android:id="@+id/button_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Leave Waitlist"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        android:layout_marginStart="320dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/totalSpotsTextView" />
-
-    <Button
-        android:id="@+id/ManageEvents"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="12dp"
-        android:text="Manage"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="@+id/view"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/eventNameTextView"
-        app:layout_constraintTop_toBottomOf="@+id/eventImageView" />
-
-    <Button
-        android:id="@+id/EntrantManageEvents"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="12dp"
-        android:text="Options"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="@+id/view"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/eventNameTextView"
-        app:layout_constraintTop_toBottomOf="@+id/eventImageView" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,27 +1,22 @@
 package com.example.trojanplanner.view;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.EventDetailsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
+import com.example.trojanplanner.model.Event;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -45,10 +40,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
 
         database = Database.getDB();
         facilityPhotoPicker = new PhotoPicker();
@@ -62,8 +56,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         setupNavigation();
+
     }
 
+    private void navigateToEventDetailsFragment(Event event) {
+        System.out.println("Navigating to EventDetailsFragment with event: " + event.getName());
+        // Create the EventDetailsFragment and pass the event data
+        EventDetailsFragment eventDetailsFragment = EventDetailsFragment.newInstance(event, (Entrant) App.currentUser);
+
+        // Replace the current fragment with EventDetailsFragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.nav_host_fragment_activity_main, eventDetailsFragment) // R.id.fragment_container is your fragment container
+                .commit();
+    }
 
     /**
      *
@@ -138,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
      * <p>
@@ -162,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.emptyEventsFragment, R.id.eventsListFragment)
+                R.id.emptyEventsFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
@@ -196,5 +200,4 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
-
 }

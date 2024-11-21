@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,9 +27,15 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Facility;
+import com.example.trojanplanner.model.Organizer;
+import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.MainActivity;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -68,7 +75,10 @@ public class FacilitySetupFragment extends Fragment {
         uploadPhotoButton.setOnClickListener(v -> openImagePicker());
         saveButton.setOnClickListener(v -> saveFacility());
 
-        cancelButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
+        cancelButton.setOnClickListener(v -> {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.emptyEventsFragment);
+        });
 
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();
@@ -78,7 +88,6 @@ public class FacilitySetupFragment extends Fragment {
                 @Override
                 public void OnPhotoPickerFinish(Bitmap bitmap) {
                     facilityPhoto.setImageBitmap(bitmap);
-                    System.out.println("does it work??");
                 }
             };
 
@@ -146,44 +155,87 @@ public class FacilitySetupFragment extends Fragment {
             return;
         }
 
-        Bitmap bitmap = null;
+        Bitmap bitmap;
+        Entrant currentUser = (Entrant) App.currentUser;
+        Organizer currentOrganizer = currentUser.returnOrganizer();
 
         // If no photo is selected, use a default image from resources
         if (facilityPhotoUri == null) {
-            // Use a default image from resources
             bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-            // Optionally, use a default string path for the image (could be a placeholder URL)
-            String defaultUriString = "default_image_uri";
-            // Create the Facility with the default image URI string
-            Facility facility = new Facility(name, "generatedFacilityId", location, null, defaultUriString, bitmap);
+            String defaultUriString = "default_image_uri"; // Default placeholder image URI
+
+            String newFacilityId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
+            Facility facility = new Facility(
+                    name,
+                    newFacilityId,
+                    location,
+                    currentOrganizer,
+                    defaultUriString,  // Save URI string for default image
+                    bitmap);  // Store the bitmap itself (for the case of default image)
+
+            currentOrganizer.setFacility(facility);
+            App.currentUser.setIsOrganizer(true);
 
             // Insert the facility into the database
             Database db = Database.getDB();
             db.insertFacility(facility);
+            db.insertUserDocument(currentOrganizer);
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.facilitySetupFragment);  // Navigate after saving
-          
+
+            // Navigate after saving with a delay
+            new android.os.Handler().postDelayed(() -> {
+                NavController navController = NavHostFragment.findNavController(this);
+                navController.navigate(R.id.facilitySetupFragment);
+            }, 2000);  // Delay in milliseconds
         } else {
-            // If the photo was selected, proceed as usual
+            // If a photo was selected, get the bitmap from the URI
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), facilityPhotoUri);
+
+                // If the bitmap is using HARDWARE config, copy it to ARGB_8888 format
+                if (bitmap.getConfig() == Bitmap.Config.HARDWARE) {
+                    bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false);  // Convert to ARGB_8888 format
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
                 Toast.makeText(getActivity(), "Failed to save photo", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Create the Facility with the selected photo URI
-            Facility facility = new Facility(name, "generatedFacilityId", location, null, facilityPhotoUri.toString(), bitmap);
+            // Upload the image to Firebase Storage and get the URI
+            // Call the `uploadImage` method that you already have
+            Database.getDB().uploadImage(bitmap, currentUser); // Upload image and get URI asynchronously
+
+            // After uploading, use the returned URI (firebase storage path) to save it in the database
+            String imageUriString = currentUser.getPfpFilePath(); // Assuming the URI is saved in the pfpFilePath
+
+            String newFacilityId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
+
+            // Now use the URI (string) instead of directly storing the Bitmap in Firestore
+            Facility facility = new Facility(
+                    name,
+                    newFacilityId,
+                    location,
+                    currentOrganizer,
+                    imageUriString,  // Use the URI string after upload
+                    bitmap);  // Optionally, store the bitmap if you need it locally
+
+            currentOrganizer.setFacility(facility);
+            App.currentUser.setIsOrganizer(true);
 
             // Insert the facility into the database
             Database db = Database.getDB();
             db.insertFacility(facility);
+            db.insertUserDocument(currentOrganizer);
 
             Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(requireView()).navigateUp();  // Navigate back after saving
+
+            // Navigate after saving
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.emptyEventsFragment);
         }
     }
+
 }
