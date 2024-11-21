@@ -52,7 +52,6 @@ public class EventDetailsFragment extends Fragment {
     private Event event;
     private Entrant entrant;
     private Database database;
-    private Button buttonEnterNow;
     private Button buttonLeaveWaitlist;
     private Button manageButton;
     private Button optionsButton;
@@ -554,7 +553,6 @@ public class EventDetailsFragment extends Fragment {
         TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
 
         // Initialize Buttons
-        buttonEnterNow = view.findViewById(R.id.button_enter_now);
         buttonLeaveWaitlist = view.findViewById(R.id.button_leave_waitlist);
         manageButton = view.findViewById(R.id.ManageEvents);
         optionsButton = view.findViewById(R.id.EntrantManageEvents);
@@ -582,8 +580,7 @@ public class EventDetailsFragment extends Fragment {
                     manageButton.setVisibility(View.VISIBLE);
                     optionsButton.setVisibility(View.GONE);
 
-                    // Hide Enter Now and Leave Waitlist buttons
-                    buttonEnterNow.setVisibility(View.GONE);
+                    // Hide Leave Waitlist buttons
                     buttonLeaveWaitlist.setVisibility(View.GONE);
 
                     manageButton.setOnClickListener(v -> {
@@ -604,17 +601,10 @@ public class EventDetailsFragment extends Fragment {
 
         // Check if the user is waitlisted for this event
         if (((Entrant) App.currentUser).getCurrentWaitlistedEvents().contains(event)) {
-            buttonEnterNow.setVisibility(View.GONE);
             buttonLeaveWaitlist.setVisibility(View.VISIBLE);
         } else {
-            buttonEnterNow.setVisibility(View.VISIBLE);
             buttonLeaveWaitlist.setVisibility(View.GONE);
         }
-
-        // Set button click listeners
-        buttonEnterNow.setOnClickListener(v -> {
-            joinWaitlist();
-        });
 
         buttonLeaveWaitlist.setOnClickListener(v -> {
             leaveWaitlist();
@@ -625,7 +615,6 @@ public class EventDetailsFragment extends Fragment {
     private void updateButtonVisibility() {
         if (event == null || event.getWaitingList() == null) {
             // Default to showing "Enter Now" if there's no event or waitlist
-            buttonEnterNow.setVisibility(View.VISIBLE);
             buttonLeaveWaitlist.setVisibility(View.GONE);
             return;
         }
@@ -644,11 +633,9 @@ public class EventDetailsFragment extends Fragment {
 
         if (userIsInWaitlist) {
             Log.d("updateButtonVisibility", "User is on the waitlist. Showing 'Leave Waitlist' button.");
-            buttonEnterNow.setVisibility(View.GONE);
             buttonLeaveWaitlist.setVisibility(View.VISIBLE);
         } else {
             Log.d("updateButtonVisibility", "User is not on the waitlist. Showing 'Enter Now' button.");
-            buttonEnterNow.setVisibility(View.VISIBLE);
             buttonLeaveWaitlist.setVisibility(View.GONE);
         }
     }
