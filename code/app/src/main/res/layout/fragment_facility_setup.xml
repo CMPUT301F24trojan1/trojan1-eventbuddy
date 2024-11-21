@@ -11,7 +11,7 @@
         android:layout_height="150dp"
         android:layout_marginTop="76dp"
         android:contentDescription="Facility photo"
-        android:src="@drawable/event_image"
+        android:src="@drawable/default_facility_pic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"

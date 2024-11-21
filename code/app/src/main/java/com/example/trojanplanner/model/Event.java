@@ -25,8 +25,8 @@ public class Event implements Serializable {
     private float price;
     private int daysLeftToRegister;
     private String qrCodePath;
-    private Bitmap qrCodeBitmap;
-    private Bitmap picture; // Event picture bitmap
+    private SerialBitmap qrCodeBitmap;
+    private SerialBitmap picture; // Event picture bitmap
     private String pictureFilePath; // Path to where the picture bitmap is stored in Firebase Storage
 
     //participant lists
@@ -159,7 +159,7 @@ public class Event implements Serializable {
         this.name = eventName;
         this.description = eventDescription;
         this.price = price;
-        this.picture = imageBitmap;
+        this.setPicture(imageBitmap); // Converts the bitmap to SerialBitmap
     }
 
     /**
@@ -170,7 +170,73 @@ public class Event implements Serializable {
      * @author Jared Gourley
      */
     public Event(String eventId) {
-        this(eventId, "Test", "testing", 0);
+        this(eventId, "UNKNOWN", "UNKNOWN", 0);
+    }
+
+
+
+    /**
+     * A method to return one of the four arrays using an int, making looping over them easier.
+     * @param index 0 = enrolledList, 1 = pendingList, 2 = waitingList, 3 = cancelledList
+     * @return One of the above arrays
+     * @author Jared Gourley
+     */
+    public ArrayList<User> returnEntrantsArrayByIndex(int index) {
+        if (index == 0) {
+            return enrolledList;
+        }
+        if (index == 1) {
+            return pendingList;
+        }
+        if (index == 2) {
+            return waitingList;
+        }
+        if (index == 3) {
+            return cancelledList;
+        }
+        else {
+            throw new IndexOutOfBoundsException("Index must be between 0-3");
+        }
+    }
+
+
+    /**
+     * Method which returns the index in which the entrant matches the given event ID.
+     * @param array The array to search through
+     * @param deviceId The device ID to search for in the array.
+     * @return The index if found or -1 otherwise.
+     * @author Jared Gourley
+     */
+    public int findIndexWithId(ArrayList<User> array, String deviceId) {
+        for (int i = 0; i < array.size(); i++) {
+            if (array.get(i).getDeviceId().equals(deviceId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Replaces an entrant object from any of the entrant arrays with the new entrant object
+     * if the device ids match. Only replaces one instance under the assumption that no
+     * duplicates should ever appear.
+     * @param entrant The new entrant object to replace if ids match
+     * @return true if a replace happened, false if not
+     * @author Jared Gourley
+     */
+    public boolean replaceEntrantMatchingId(Entrant entrant) {
+        String entrantId = entrant.getDeviceId();
+        int foundIndex = -1;
+        ArrayList<User> array;
+        for (int i = 0; i < 4; i++) {
+            array = returnEntrantsArrayByIndex(i);
+            foundIndex = findIndexWithId(array, entrantId);
+            if (foundIndex != -1) {
+                array.set(foundIndex, entrant);
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -205,11 +271,21 @@ public class Event implements Serializable {
     }
 
     public Bitmap getQrCodeBitmap() {
-        return qrCodeBitmap;
+        if (this.qrCodeBitmap == null) {
+            return null;
+        }
+        else {
+            return qrCodeBitmap.getBitmap();
+        }
     }
 
     public void setQrCodeBitmap(Bitmap qrCodeBitmap) {
-        this.qrCodeBitmap = qrCodeBitmap;
+        if (qrCodeBitmap == null) {
+            this.qrCodeBitmap = null;
+        }
+        else {
+            this.qrCodeBitmap = new SerialBitmap(qrCodeBitmap);
+        }
     }
 
     public String getQrCodePath() {
@@ -608,25 +684,29 @@ public class Event implements Serializable {
     public void setPicture(Bitmap picture) {
         if (picture == null) {
             // Assign a default picture if the provided one is null
-            this.picture = getDefaultPicture();
+            this.picture = new SerialBitmap(getDefaultPicture());
         } else {
-            this.picture = picture;
+            this.picture = new SerialBitmap(picture);
         }
     }
 
+    /**
+     * Returns the bitmap picture for the event. If null, assigns the default picture and
+     * returns it to avoid null errors
+     * @return The current bitmap for the event or the default bitmap
+     */
     public Bitmap getPicture(Context context) {
+        // If the picture attribute is null, assign it the default value since it should have a value
         if (picture == null) {
-            picture = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_event_pic);
+            picture = new SerialBitmap(getDefaultPicture());
         }
-        return picture;
+        return picture.getBitmap();
     }
-
 
     // helper method to load a default picture
     private Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
-        // replace R.drawable.default_image with  actual default image resource ID TO DOOOOOOgit
-        return BitmapFactory.decodeResource(Resources.getSystem(), android.R.drawable.ic_menu_gallery);
+        return BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.default_event_pic);
     }
 
     public List<Date> getOccurrenceDates() {
