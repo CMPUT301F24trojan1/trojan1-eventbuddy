@@ -3,7 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:gravity="center"
+    android:background="@drawable/rectangle_background"
+    android:padding="30dp">
+
 
     <TextView
         android:id="@+id/firstNameTextView"

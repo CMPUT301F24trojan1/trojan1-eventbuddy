@@ -15,7 +15,8 @@
         android:background="@drawable/circle_shape"
         android:contentDescription="Profile Picture"
         android:scaleType="centerCrop"
-        android:src="@drawable/placeholder_avatar"
+        android:src="@drawable/profile_trump"
+        android:clipToOutline="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
@@ -72,46 +73,70 @@
         android:id="@+id/cancel_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:backgroundTint="@android:color/holo_red_dark"
         android:text="Cancel"
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/phone_input" />
+        app:layout_constraintTop_toBottomOf="@+id/save_button" />
 
     <Button
         android:id="@+id/save_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="23dp"
         android:backgroundTint="@android:color/holo_red_light"
         android:text="Save"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cancel_button" />
+        app:layout_constraintTop_toBottomOf="@+id/phone_input" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="222dp"
         android:layout_height="38dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="84dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="55dp"
         android:text="Enable/disable notifications from Organizers and Admins"
         app:layout_constraintEnd_toStartOf="@+id/switch1"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/save_button" />
+        app:layout_constraintTop_toBottomOf="@+id/cancel_button" />
+
+    <Switch
+        android:id="@+id/switch_profile_facility"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="36dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switch1"
+        app:layout_constraintVertical_bias="0.625" />
+
+    <TextView
+        android:id="@+id/toggle_screen_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Switch between Profile and Facility"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/switch_profile_facility"
+        app:layout_constraintHorizontal_bias="0.253"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <Switch
         android:id="@+id/switch1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="92dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="36dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/save_button" />
+        app:layout_constraintTop_toBottomOf="@+id/cancel_button" />
+
+    <!-- Additional toggle switch for switching between Profile and Facility screens -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

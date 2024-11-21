@@ -32,7 +32,7 @@ public class DatabaseTest {
 
     @Before
     public void initDatabase() {
-        database = new Database();
+        database = Database.getDB();
     }
 
     //@Test

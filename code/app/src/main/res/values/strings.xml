@@ -1,4 +1,7 @@
 <resources>
+    <string name="splash_description">Trojan Planner welcome page logo</string>
+    <string name="welcomeText">Testing if it\'s running</string>
+    <string name="welcomeSubtext"></string>
     <string name="app_name">TrojanPlanner</string>
     <string name="title_events">MyEvents</string>
     <string name="title_qr">QR Scanner</string>
@@ -15,8 +18,11 @@
         <item>Send Announcement</item>
         <item>View Attendees</item>
         <item>View Map</item>
-        <item>Show Check-in Code</item>
+        <item>Show Check-In Code</item>
         <item>Generate Event Code</item>
         <item>Delete Event</item>
+        <item>View Waitlist</item>
+        <item>Initiate Lottery</item>
     </string-array>
+
 </resources>

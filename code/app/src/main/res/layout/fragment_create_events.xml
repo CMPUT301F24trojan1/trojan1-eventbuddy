@@ -6,6 +6,15 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Add this inside the layout -->
+    <Button
+        android:id="@+id/testButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal" />
+
     <!-- Event Image -->
     <ImageView
         android:id="@+id/eventImageView"
