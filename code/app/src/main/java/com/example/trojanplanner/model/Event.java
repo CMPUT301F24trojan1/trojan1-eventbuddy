@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 
 import java.io.Serializable;
@@ -695,7 +696,7 @@ public class Event implements Serializable {
      * returns it to avoid null errors
      * @return The current bitmap for the event or the default bitmap
      */
-    public Bitmap getPicture(Context context) {
+    public Bitmap getPicture() {
         // If the picture attribute is null, assign it the default value since it should have a value
         if (picture == null) {
             picture = new SerialBitmap(getDefaultPicture());
@@ -706,7 +707,7 @@ public class Event implements Serializable {
     // helper method to load a default picture
     private Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.default_event_pic);
+        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_event_pic);
     }
 
     public List<Date> getOccurrenceDates() {
