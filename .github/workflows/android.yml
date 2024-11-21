@@ -46,6 +46,9 @@ jobs:
 
   UI-Tests:
     runs-on: [ macos-12 ]
+    defaults:
+        run:
+          working-directory: ./code
     steps:
       - uses: actions/checkout@v3
       - name: set up JDK 17
@@ -54,6 +57,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+
+      - name: Debug repository structure
+        run: ls -R ${{ github.workspace }}
+      - name: Create necessary directories
+        run: mkdir -p ./code/app
+
+      - name: Debug Secret
+        run: echo $GOOGLE_SERVICES_JSON
+        env:
+            GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
       - name: Create Google Services JSON File
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
