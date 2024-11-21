@@ -152,23 +152,6 @@ public class EventOptionsDialogFragment extends DialogFragment {
 
         // Show the notification
         notificationManager.notify(eventId.hashCode(), notificationBuilder.build()); // Use eventId's hash as a unique ID
-
-        // Store the announcement in Firestore (optional, for record-keeping)
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> announcement = new HashMap<>();
-        announcement.put("eventId", eventId);
-        announcement.put("title", title);
-        announcement.put("message", message);
-        announcement.put("timestamp", FieldValue.serverTimestamp());
-
-        db.collection("announcements")
-                .add(announcement)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(getContext(), "Announcement sent and saved to Firestore.", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Failed to save announcement: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
     }
 
 

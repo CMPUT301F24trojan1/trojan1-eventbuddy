@@ -208,7 +208,7 @@ public class CreateEventFragment extends Fragment {
         // Ensure the view is valid and the fragment is properly attached to its host activity
         if (getView() != null) {
             NavController navController = Navigation.findNavController(getView());
-            navController.navigate(R.id.eventsListFragment);
+            navController.navigate(R.id.emptyEventsFragment);
         }
     }
 
