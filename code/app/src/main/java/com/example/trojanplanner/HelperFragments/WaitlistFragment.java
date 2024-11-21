@@ -1,10 +1,14 @@
 package com.example.trojanplanner.HelperFragments;
 
+import android.app.ActionBar;
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
@@ -19,13 +23,19 @@ import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class WaitlistFragment extends Fragment {
 
     private ListView waitlistListView;
     private WaitlistAdapter waitlistAdapter;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Enable options menu for this fragment
+        setHasOptionsMenu(true);
+    }
 
     @Nullable
     @Override
@@ -33,7 +43,13 @@ public class WaitlistFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_waitlist, container, false);
 
         waitlistListView = view.findViewById(R.id.waitlistListView);
+        Button goBackButton = view.findViewById(R.id.goBackButton);  // Initialize the goBackButton
 
+        // Set up the goBackButton click listener
+        goBackButton.setOnClickListener(v -> {
+            requireActivity().onBackPressed();  // Handle back press
+        });
+        
         // Retrieve the event object from the arguments
         Event event = null;
         Bundle arguments = getArguments();
@@ -51,6 +67,7 @@ public class WaitlistFragment extends Fragment {
 
         // Fetch event from the database asynchronously
         fetchEventFromDatabase(event);
+
 
         return view;
     }
@@ -96,4 +113,5 @@ public class WaitlistFragment extends Fragment {
         // Fetch event data from the database
         Database.getDB().getEvent(successAction, failureAction, event.getEventId(), false, null);
     }
+
 }
