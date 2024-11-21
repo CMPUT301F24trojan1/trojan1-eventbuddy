@@ -56,8 +56,6 @@ public class QRActivity extends AppCompatActivity {
     private FocusOverlayView focusOverlayView;
     private @NonNull ActivityQrBinding binding;
     private Database database;
-    private String deviceId;
-    private Entrant currentUser;
 
     /**
      * Called when the activity is created. It sets up the layout, camera permissions,
@@ -71,9 +69,6 @@ public class QRActivity extends AppCompatActivity {
 
         binding = ActivityQrBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        deviceId = App.deviceId;
-        currentUser = (Entrant) App.currentUser;
 
         database = Database.getDB();  // or use a singleton if you have one
 
@@ -151,48 +146,60 @@ public class QRActivity extends AppCompatActivity {
                     return;
                 }
 
-                String eventCode = result.getText();  // Use the scanned QR code text
+                String qrHash = result.getText();  // Use the scanned QR code text
+                Log.d("QRActivity", "Scanned QR Hash: " + qrHash);
 
-                // Show a toast with the scanned result
-                Toast.makeText(QRActivity.this, "Scanned: " + eventCode, Toast.LENGTH_SHORT).show();
+                Toast.makeText(QRActivity.this, "Scanned: " + qrHash, Toast.LENGTH_SHORT).show();
 
-                // Define the success action for retrieving the event
-                OnSuccessListener<DocumentSnapshot> successAction = documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        // Manually create the Event object
-                        Event event = new Event();
-                        event.setEventId(documentSnapshot.getString("eventID"));
-                        event.setName(documentSnapshot.getString("name"));
-                        event.setDescription(documentSnapshot.getString("description"));
-                        event.setPrice(0);
-                        event.setStatus(documentSnapshot.getString("status"));
-                        event.setTotalSpots(4L);
-                        event.setWaitlistCapacity(2L);
-                        event.setPictureFilePath(documentSnapshot.getString("eventPhoto"));
+                // Define the success and failure actions for the `getQRData` query
+                Database.QuerySuccessAction getQRDataSuccessAction = eventId -> {
+                    Log.d("QRActivity", "QR Data success. Event ID: " + eventId);
 
-                        // Log the retrieved event
-                        Log.d("QRActivity", "Event retrieved: " + event.getName());
+                    // Define success and failure actions for retrieving the event document
+                    OnSuccessListener<DocumentSnapshot> getEventSuccessAction = documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            // Manually create the Event object
+                            Event event = new Event();
+                            event.setEventId(documentSnapshot.getString("eventID"));
+                            event.setName(documentSnapshot.getString("name"));
+                            event.setDescription(documentSnapshot.getString("description"));
+                            event.setPrice(0);
+                            event.setStatus(documentSnapshot.getString("status"));
+                            event.setTotalSpots(4L);
+                            event.setWaitlistCapacity(2L);
+                            event.setPictureFilePath(documentSnapshot.getString("eventPhoto"));
 
-                        // Navigate to the EventDetailsFragment
-                        navigateToEventDetailsFragment(event);
-                    } else {
-                        Log.d("QRActivity", "Event not found");
-                        Toast.makeText(QRActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
-                    }
+                            // Log the retrieved event
+                            Log.d("QRActivity", "Event retrieved: " + event.getName());
+
+                            // Navigate to the EventDetailsFragment
+                            navigateToEventDetailsFragment(event);
+                        } else {
+                            Log.d("QRActivity", "Event not found");
+                            Toast.makeText(QRActivity.this, "Event not found", Toast.LENGTH_SHORT).show();
+                        }
+                    };
+
+                    OnFailureListener getEventFailureAction = e -> {
+                        Log.d("QRActivity", "Failed to retrieve event: " + e.getMessage());
+                        Toast.makeText(QRActivity.this, "Failed to fetch event", Toast.LENGTH_SHORT).show();
+                    };
+
+                    // Query Firestore for the event document by its ID
+                    database.getEventDocumentById((String) eventId, getEventSuccessAction, getEventFailureAction);
                 };
 
-                // Define the failure action
-                OnFailureListener failureAction = e -> {
-                    Log.d("QRActivity", "Failed to retrieve event");
-                    Toast.makeText(QRActivity.this, "Failed to fetch event", Toast.LENGTH_SHORT).show();
+                Database.QueryFailureAction getQRDataFailureAction = () -> {
+                    Log.d("QRActivity", "QR Data failure. Invalid QR Hash or missing event.");
+                    Toast.makeText(QRActivity.this, "Invalid QR Code", Toast.LENGTH_SHORT).show();
                 };
 
-                Log.d("QRActivity", "Querying for event with ID: " + eventCode);
-                // Query Firestore for the event document by its ID
-                database.getEventDocumentById(eventCode, successAction, failureAction);
+                // Query the `getQRData` method with the scanned QR hash
+                Log.d("QRActivity", "Querying for QR Data with hash: " + qrHash);
+                database.getQRData(getQRDataSuccessAction, getQRDataFailureAction, qrHash);
 
-                Log.d("QRActivity", "Pausing barcode right now for event code: " + eventCode);
-                barcodeView.pause();  // Pause scanning after a successful scan
+                Log.d("QRActivity", "Pausing barcode scanner after processing QR Hash: " + qrHash);
+                barcodeView.pause();  // Pause scanning after processing the QR code
             }
 
             @Override
@@ -200,8 +207,8 @@ public class QRActivity extends AppCompatActivity {
                 // Pass the detected points to the overlay for visualization
                 if (!resultPoints.isEmpty()) {
                     Log.d("QRActivity", "Possible result points: " + resultPoints.size());
-
-                    //focusOverlayView.addFocusPoints(resultPoints);  // Update the overlay with new points
+                    // Update the overlay with new points
+                    //focusOverlayView.addFocusPoints(resultPoints);
                 }
             }
         });
