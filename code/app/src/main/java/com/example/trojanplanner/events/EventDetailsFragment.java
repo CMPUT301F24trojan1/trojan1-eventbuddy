@@ -1,6 +1,10 @@
 package com.example.trojanplanner.events;
 
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +34,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -151,6 +156,10 @@ public class EventDetailsFragment extends Fragment {
                 waitingList.add(currentEntrant);
                 event.setWaitingList(waitingList);
 
+                ArrayList<Event> eventList = currentEntrant.getCurrentWaitlistedEvents();
+                eventList.add(event);
+                currentEntrant.setCurrentWaitlistedEvents(eventList);
+
                 // Log the addition
                 Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
                         " successfully added to the waitlist for event " + event.getEventId());
@@ -163,6 +172,7 @@ public class EventDetailsFragment extends Fragment {
 
                 // Notify the user and update UI
                 Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
+                addtoNotifications();
                 checkEntrantStatus(); // Refresh the UI
             } else {
                 Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
@@ -173,6 +183,45 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private void addtoNotifications() {
+        if (event != null) {
+            String eventId = event.getEventId(); // Use eventId for channel and topic
+            String channelId = "EventChannel_" + eventId; // Dynamic channel ID
+            String channelName = "Event Updates for " + eventId;
+
+            // Create a Notification Manager
+            NotificationManager notificationManager =
+                    (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+            // For Android 8.0+ (Oreo and above), create a notification channel
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel notificationChannel = new NotificationChannel(
+                        channelId,
+                        channelName,
+                        NotificationManager.IMPORTANCE_HIGH
+                );
+                notificationChannel.setDescription("Notifications for updates on event " + eventId);
+                notificationManager.createNotificationChannel(notificationChannel);
+            }
+
+            // Subscribe the user to the event's notification topic
+            FirebaseMessaging.getInstance().subscribeToTopic(eventId)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d("Notifications", "Successfully subscribed to notifications for event: " + eventId);
+                            Toast.makeText(getContext(), "Subscribed to event notifications.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Notifications", "Failed to subscribe to event notifications: " + task.getException());
+                            Toast.makeText(getContext(), "Failed to subscribe to notifications.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            Log.e("Notifications", "Event data is missing. Cannot create notification channel.");
+            Toast.makeText(getContext(), "Event data is missing.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
 
     /**
