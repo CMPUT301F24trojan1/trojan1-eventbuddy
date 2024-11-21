@@ -2002,6 +2002,7 @@ public class Database {
                     }
                 }
                 if ((boolean) m.get("hasOrganizerRights") && m.get("createdEvents") != null) {
+                    System.out.println();
                     for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("createdEvents")) {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
                     }

@@ -222,8 +222,6 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
-
-
     /**
      * Shows a confirmation dialog for the entrant to leave the event's waitlist.
      * If confirmed, the entrant will be removed from the event's waitlist.
@@ -432,6 +430,11 @@ public class EventDetailsFragment extends Fragment {
         } else if (App.currentUser != null && optionsButton != null) {
             optionsButton.setVisibility(View.VISIBLE);
             System.out.println("User is not an organizer, displaying entrant options!");
+        }
+
+        if ((((Entrant) App.currentUser).getCurrentWaitlistedEvents()).contains(event)){
+            buttonEnterNow.setVisibility(View.GONE);
+            buttonLeaveWaitlist.setVisibility(View.VISIBLE);
         }
 
         // Set button click listeners

@@ -170,7 +170,7 @@ public class Event implements Serializable {
      * @author Jared Gourley
      */
     public Event(String eventId) {
-        this(eventId, "NAME", "DESCRIPTION", 0);
+        this(eventId, "Test", "testing", 0);
     }
 
 
