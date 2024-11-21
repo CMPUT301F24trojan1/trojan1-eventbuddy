@@ -845,7 +845,7 @@ public class Database {
      * @param facility If non-null, use this facility instead of querying for it (prevents infinite loop)
      * @author Jared Gourley
      */
-    private void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId, boolean escapeSharing, Facility facility) {
+    public void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId, boolean escapeSharing, Facility facility) {
         if (!escapeSharing) { // escapeSharing can only be set true by the Database class itself for backdoor functionality
             // If this query is already happening, simply add listeners instead of re-running
             if (activeEventQuery != null && activeEventQuery == eventId) {
@@ -2042,7 +2042,6 @@ public class Database {
                 }
             }
         });
-
     }
 
 
@@ -2100,6 +2099,7 @@ public class Database {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
                     }
                 }
+
                 if ((boolean) m.get("hasOrganizerRights") && m.get("createdEvents") != null) {
                     System.out.println();
                     for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("createdEvents")) {

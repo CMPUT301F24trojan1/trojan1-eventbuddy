@@ -6,13 +6,19 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
+import com.example.trojanplanner.HelperFragments.WaitlistFragment;
+import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
@@ -109,6 +115,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
             case 5:
                 deleteEvent();
                 break;
+            case 6: // View Waitlist
+                viewWaitlist();
+                break;
+            case 7: // Initiate Lottery
+                initiateLottery();
+                break;
             default:
                 break;
         }
@@ -200,48 +212,93 @@ public class EventOptionsDialogFragment extends DialogFragment {
             return;
         }
 
-        Log.d("EventOptionsDialog", "Querying for Event ID: " + event.getEventId());
+        String eventId = event.getEventId();
+        Log.d("EventOptionsDialog", "Fetched Event ID: " + eventId);
 
-        // Use application context for toast messages
-        Context appContext = requireContext().getApplicationContext();
+        // Hash the event ID
+        String hashedEventId = QRCodeUtil.hashText(eventId);
+        if (hashedEventId == null) {
+            Log.e("EventOptionsDialog", "Failed to hash Event ID.");
+            Toast.makeText(requireContext(), "Failed to process Event ID.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Define success and failure actions
+        Log.d("EventOptionsDialog", "Hashed Event ID: " + hashedEventId);
+
+        // Generate QR code bitmap
+        Bitmap qrCodeBitmap = QRCodeUtil.generateQRCode(hashedEventId);
+        if (qrCodeBitmap == null) {
+            Log.e("EventOptionsDialog", "QR Code generation failed.");
+            Toast.makeText(requireContext(), "QR Code generation failed.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Display QR Code in a dialog
+        showQRCodeInDialog(qrCodeBitmap);
+    }
+
+    private void generateEventCode() {
+        if (event == null || event.getEventId() == null) {
+            Log.e("EventOptionsDialog", "Event or Event ID is null");
+            Toast.makeText(requireContext(), "No event data available to generate event code.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String eventId = event.getEventId();
+        Log.d("EventOptionsDialog", "Generating event code for Event ID: " + eventId);
+
+        // Hash the event ID
+        String hashedEventId = QRCodeUtil.hashText(eventId);
+        if (hashedEventId == null) {
+            Log.e("EventOptionsDialog", "Failed to hash Event ID.");
+            Toast.makeText(requireContext(), "Failed to generate event code.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d("EventOptionsDialog", "Generated Hashed Event ID: " + hashedEventId);
+
+        // Upload the hashed event ID to the database
+        uploadQRHashToDatabase(hashedEventId, event);
+    }
+
+    private void uploadQRHashToDatabase(String qrHash, Event event) {
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
             public void OnSuccess(Object object) {
-                if (object instanceof Event) {
-                    Event fetchedEvent = (Event) object;
-                    String deviceId = fetchedEvent.getEventId(); // Assuming eventId is the device ID
-                    Log.d("EventOptionsDialog", "Fetched Device ID: " + deviceId);
-
-                    // Use application context for the toast
-                    Toast.makeText(appContext, "Checkin Code: " + deviceId, Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.e("EventOptionsDialog", "Unexpected data type received");
-                    Toast.makeText(appContext, "Unexpected data received", Toast.LENGTH_SHORT).show();
-                }
+                Log.d("EventOptionsDialog", "QR hash successfully uploaded to database.");
+                Toast.makeText(requireContext(), "Event code saved successfully.", Toast.LENGTH_SHORT).show();
             }
         };
 
         Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
             @Override
             public void OnFailure() {
-                Log.e("EventOptionsDialog", "Query failed");
-                Toast.makeText(appContext, "Failed to fetch Device ID", Toast.LENGTH_SHORT).show();
+                Log.e("EventOptionsDialog", "Failed to upload QR hash to database.");
+                Toast.makeText(requireContext(), "Failed to save event code to database.", Toast.LENGTH_SHORT).show();
             }
         };
 
-        // Execute the database query
-        Database.getDB().getEvent(successAction, failureAction, event.getEventId());
+        Database.getDB().insertQRHash(qrHash, event);
     }
 
-    /**
-     * Logic to generate an event code for the event.
-     */
-    private void generateEventCode() {
-        // Add your logic to generate an event code
-        Toast.makeText(getContext(), "Generate Event Code clicked", Toast.LENGTH_SHORT).show();
+    private void showQRCodeInDialog(Bitmap qrCodeBitmap) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+
+        // Create an ImageView for the QR Code
+        ImageView qrCodeImageView = new ImageView(requireContext());
+        qrCodeImageView.setImageBitmap(qrCodeBitmap);
+        qrCodeImageView.setPadding(50, 50, 50, 50); // Optional: add padding for better display
+
+        // Configure the dialog
+        builder.setTitle("Check-In QR Code")
+                .setView(qrCodeImageView)
+                .setPositiveButton("Close", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+
+        Log.d("EventOptionsDialog", "QR Code displayed in dialog successfully.");
     }
+
 
     /**
      * Logic to delete the event, potentially by calling an API or updating the database.
@@ -249,5 +306,42 @@ public class EventOptionsDialogFragment extends DialogFragment {
     private void deleteEvent() {
         // Add your logic to delete the event
         Toast.makeText(getContext(), "Delete Event clicked", Toast.LENGTH_SHORT).show();
+    }
+
+    private void viewWaitlist() {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
+    }
+
+
+    private void initiateLottery() {
+        if (event == null || event.getWaitingList() == null || event.getWaitingList().isEmpty()) {
+            Toast.makeText(requireContext(), "Cannot initiate a lottery. Waitlist is empty or missing.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ArrayList<User> waitlist = event.getWaitingList();
+
+        // Simple random lottery logic
+        int winnerIndex = (int) (Math.random() * waitlist.size());
+        User winner = waitlist.get(winnerIndex);
+
+        // Notify the winner and log
+        String winnerMessage = "Congratulations! " + winner.getFirstName() + " " + winner.getLastName() + " has won the lottery.";
+        Log.d("EventOptionsDialog", "Lottery Winner: " + winnerMessage);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Lottery Winner")
+                .setMessage(winnerMessage)
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+
+        // Optionally, update the event or database with the winner's details
+        // database.updateLotteryWinner(event.getEventId(), winner);
     }
 }

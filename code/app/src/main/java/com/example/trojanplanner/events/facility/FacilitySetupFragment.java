@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,22 +19,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
-import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
-import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.MainActivity;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -83,13 +75,8 @@ public class FacilitySetupFragment extends Fragment {
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();
 
-            // Override default photopicker callback function
-            mainActivity.facilityPhotoPicker.dummyCallback = new PhotoPicker.PhotoPickerCallback() {
-                @Override
-                public void OnPhotoPickerFinish(Bitmap bitmap) {
-                    facilityPhoto.setImageBitmap(bitmap);
-                }
-            };
+            // Override default photo picker callback function
+            mainActivity.facilityPhotoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
 
         }
 
@@ -186,7 +173,7 @@ public class FacilitySetupFragment extends Fragment {
             // Navigate after saving with a delay
             new android.os.Handler().postDelayed(() -> {
                 NavController navController = NavHostFragment.findNavController(this);
-                navController.navigate(R.id.facilitySetupFragment);
+                navController.navigate(R.id.emptyEventsFragment);
             }, 2000);  // Delay in milliseconds
         } else {
             // If a photo was selected, get the bitmap from the URI
@@ -237,5 +224,4 @@ public class FacilitySetupFragment extends Fragment {
             navController.navigate(R.id.emptyEventsFragment);
         }
     }
-
 }
