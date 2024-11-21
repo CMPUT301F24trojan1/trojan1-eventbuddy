@@ -1,18 +1,24 @@
 package com.example.trojanplanner.model;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import com.example.trojanplanner.R;
+
+import java.io.Serializable;
 
 /**
  * Facility class that keeps the location of the Event
  * @author Madelaine Dalangin
  */
-public class Facility {
+public class Facility implements Serializable {
     private String facilityId;
     private String name;
     private String location;
     private Organizer owner;
     private String pfpFacilityFilePath;
-    private Bitmap pfpFacilityBitmap;
+    private SerialBitmap pfpFacilityBitmap;
 
 
     /**
@@ -49,7 +55,7 @@ public class Facility {
         this.location = location;
         this.owner = owner;
         this.pfpFacilityFilePath = pfpFacilityFilePath;
-        this.pfpFacilityBitmap = pfpFacilityBitmap;
+        this.setPfpFacilityBitmap(pfpFacilityBitmap);
     }
 
 
@@ -128,20 +134,37 @@ public class Facility {
     }
 
     /**
-     * Method for getting pfp Facility
-     * @author Madelaine Dalangin
-     * @return pfpFacilityBitmap, Bitmap
+     * Returns the bitmap picture for the event. If null, assigns the default picture and
+     * returns it to avoid null errors
+     * @return The current bitmap for the event or the default bitmap
      */
     public Bitmap getPfpFacilityBitmap() {
-        return pfpFacilityBitmap;
+        // If the picture attribute is null, assign it the default value since it should have a value
+        if (pfpFacilityBitmap == null) {
+            pfpFacilityBitmap = new SerialBitmap(getDefaultPicture());
+        }
+        return pfpFacilityBitmap.getBitmap();
     }
 
     /**
      * Method for setting pfp Facility
-     * @author Madelaine Dalangin
-     * @param pfpFacilityBitmap, Bitmap
+     * @param pfpFacilityBitmap Bitmap to set
+     * @author Jared Gourley
      */
     public void setPfpFacilityBitmap(Bitmap pfpFacilityBitmap) {
-        this.pfpFacilityBitmap = pfpFacilityBitmap;
+        if (pfpFacilityBitmap == null) {
+            // Assign a default picture if the provided one is null
+            this.pfpFacilityBitmap = new SerialBitmap(getDefaultPicture());
+        } else {
+            this.pfpFacilityBitmap = new SerialBitmap(pfpFacilityBitmap);
+        }
     }
+
+
+    // Helper method to load a default picture
+    private Bitmap getDefaultPicture() {
+        // load a default image resource as a Bitmap
+        return BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.default_facility_pic);
+    }
+
 }

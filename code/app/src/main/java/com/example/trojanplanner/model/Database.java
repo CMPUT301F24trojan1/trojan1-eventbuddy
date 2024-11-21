@@ -779,12 +779,6 @@ public class Database {
         event.setWaitlistCapacity((Long) m.get("waitlistCapacity"));
         event.setStatus((String) m.get("status"));
 
-        // TODO convert these to incomplete user arrays instead of docRef arrays
-        event.setEnrolledList((ArrayList<User>) m.get("enrolledList"));
-        event.setWaitingList((ArrayList<User>) m.get("waitlist"));
-        event.setPendingList((ArrayList<User>) m.get("pendingList"));
-        event.setCancelledList((ArrayList<User>) m.get("cancelledList"));
-
         event.setRecurring((boolean) m.get("isRecurring"));
         if (event.isRecurring()) {
             event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
@@ -795,16 +789,42 @@ public class Database {
         // Create incomplete facility from document id
         Facility facility;
         if ((DocumentReference) m.get("facility") != null) {
-            String[] facilityIdPath = ((DocumentReference) m.get("facility")).getId().split("/");
-            String facilityId = facilityIdPath[facilityIdPath.length - 1];
-            facility = new Facility(facilityId);
+            facility = new Facility(getIdFromDocRef((DocumentReference) m.get("facility")));
         }
         else {
             facility = null;
         }
         event.setFacility(facility);
-        // Get id of every created event document and split + make them into incomplete objects
 
+        // Create incomplete entrant objects from document id
+        ArrayList<User> userArray = new ArrayList<User>();
+        if (m.get("enrolledList") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("enrolledList")) {
+                userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
+            }
+        }
+        event.setEnrolledList(userArray);
+        userArray = new ArrayList<User>(); // This instead of .clear in case it clears the entrant current enrolled array because same reference
+        if (m.get("pendingList") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("pendingList")) {
+                userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
+            }
+        }
+        event.setPendingList(userArray);
+        userArray = new ArrayList<User>();
+        if (m.get("waitlist") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("waitlist")) {
+                userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
+            }
+        }
+        event.setWaitingList(userArray);
+        userArray = new ArrayList<User>();
+        if (m.get("cancelledList") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("cancelledList")) {
+                userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
+            }
+        }
+        event.setCancelledList(userArray);
 
         return event;
     }
@@ -850,44 +870,8 @@ public class Database {
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Event event = unpackEventMap(document.getData());
-                        if (event != null) {
-
-                            // Now that we have the event object, either send success signals or expand the facility if needed
-                            // TODO expand user arrays
-                            // If facility is provided by parameter or there is no facility, we are done
-                            if (facility != null || event.getFacility() == null) {
-                                event.setFacility(facility);
-                                // Send success signals
-                                if (!finalEscapeSharing) {
-                                    sendToEventListeners(event, true);
-                                } else {
-                                    successAction.OnSuccess(event);
-                                }
-                                return;
-                            }
-                            // Otherwise we have to query for the facility TODO
-                            else {
-                                System.out.println("WAIT NO HOW");
-                                event.setFacility(new Facility("sorry dric this is still a wip"));
-                                return;
-                                //expandOwnerAttribute(successAction, failureAction, facility, finalEscapeSharing);
-                            }
-                        }
-                    }
-                    // Send failure signals
-                    if (!finalEscapeSharing) {
-                        sendToEventListeners(null, false);
-                    } else {
-                        failureAction.OnFailure();
-                    }
-                    return;
-
-                }
-                else {
+                // Failure handling
+                if (!task.isSuccessful()) { // If query got blocked completely
                     // This case should not be happening under normal circumstances
                     Log.d("WARN", "get failed with ", task.getException());
                     System.out.println("WARN: get failed with " + task.getException());
@@ -896,8 +880,132 @@ public class Database {
                     } else {
                         failureAction.OnFailure();
                     }
+                    return;
                 }
+                DocumentSnapshot document = task.getResult();
+                if (!document.exists()) { // If document with requested ID doesn't exist
+                    if (!finalEscapeSharing) {
+                        sendToEventListeners(null, false);
+                    } else {
+                        failureAction.OnFailure();
+                    }
+                    return;
+                }
+                Event event = unpackEventMap(document.getData());
+                if (event == null) { // If received event is invalid (hopefully should always be valid)
+                    if (!finalEscapeSharing) {
+                        sendToEventListeners(null, false);
+                    } else {
+                        failureAction.OnFailure();
+                    }
+                    return;
+                }
+
+                // Now that we have the event object, either send success signals or expand the facility and users if needed
+
+                // Figure out how many sub-queries we need
+                int subQueryCount = 0;
+                boolean facilityNeeded = false;
+                subQueryCount += event.getEnrolledList().size();
+                subQueryCount += event.getPendingList().size();
+                subQueryCount += event.getWaitingList().size();
+                subQueryCount += event.getCancelledList().size();
+                if (facility != null || event.getFacility() == null) {
+                    event.setFacility(facility);
+                }
+                else {
+                    facilityNeeded = true;
+                    subQueryCount += 1;
+                }
+
+
+
+
+                if (subQueryCount > 0) {
+                    QueryTracker queryTracker = new QueryTracker(subQueryCount);
+
+                    QuerySuccessAction queryTrackerSuccess = new QuerySuccessAction() {
+                        @Override
+                        public void OnSuccess(Object object) {
+                            // Quit if a different query failed
+                            if (!queryTracker.stillGoing) {
+                                return;
+                            }
+
+                            // Actually assign the value
+                            // Object could be an entrant (from any of the lists) or the facility
+                            if (Facility.class.isAssignableFrom(object.getClass())) {
+                                System.out.println("getEvent QueryTracker success!" + ((Facility) object));
+                                event.setFacility((Facility) object);
+                            }
+                            else {
+                                Entrant entrant = (Entrant) object;
+                                System.out.println("getEvent QueryTracker success! " + event);
+                                if (event.replaceEntrantMatchingId(entrant) == false) {
+                                    throw new RuntimeException("Could not find the entrant to replace!");
+                                }
+                            }
+
+                            queryTracker.currentReceived += 1;
+                            System.out.println("getEvent queryTracker.currentReceived: " + queryTracker.currentReceived);
+
+                            // Call the success listeners if all sub queries finished
+                            if (queryTracker.currentReceived == queryTracker.totalNeeded) {
+                                System.out.println("getEvent queryTracker finishing!");
+                                if (!finalEscapeSharing) {
+                                    sendToEventListeners(event, true);
+                                } else {
+                                    successAction.OnSuccess(event);
+                                }
+                            }
+
+                        }
+                    };
+                    QueryFailureAction queryTrackerFailure = new QueryFailureAction() {
+                        @Override
+                        public void OnFailure() {
+                            // Mark that this query has failed so other queries should not trigger successes
+                            System.out.println("getEvent queryTracker FAILED");
+                            queryTracker.stillGoing = false;
+                            return;
+                        }
+                    };
+
+                    // Launch necessary queries
+                    for (User user : event.getEnrolledList()) {
+                        System.out.println("Launching query for entrant: " + user.getDeviceId());
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                    }
+                    for (User user : event.getPendingList()) {
+                        System.out.println("Launching query for entrant: " + user.getDeviceId());
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                    }
+                    for (User user : event.getWaitingList()) {
+                        System.out.println("Launching query for entrant: " + user.getDeviceId());
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                    }
+                    for (User user : event.getCancelledList()) {
+                        System.out.println("Launching query for entrant: " + user.getDeviceId());
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                    }
+
+                    if (facilityNeeded) {
+                        System.out.println("Launching query for facility: " + event.getFacility().getFacilityId());
+                        getFacility(queryTrackerSuccess, queryTrackerFailure, event.getFacility().getFacilityId(), true, null, false);
+                    }
+
+                }
+                // Otherwise just consider this a success!
+                else {
+                    if (!finalEscapeSharing) {
+                        sendToEventListeners(event, true);
+                    } else {
+                        successAction.OnSuccess(event);
+                    }
+                }
+
             }
+
         });
 
     }
@@ -1101,11 +1209,11 @@ public class Database {
                             }
 
                             queryTracker.currentReceived += 1;
-                            System.out.println("queryTracker.currentReceived: " + queryTracker.currentReceived);
+                            System.out.println("getEntrant queryTracker.currentReceived: " + queryTracker.currentReceived);
 
                             // Call the success listeners if all sub queries finished
                             if (queryTracker.currentReceived == queryTracker.totalNeeded) {
-                                System.out.println("finishing!");
+                                System.out.println("getEntrant queryTracker finishing!");
                                 if (!finalEscapeSharing) {
                                     sendToEntrantListeners(entrant, true);
                                 } else {
@@ -1119,7 +1227,7 @@ public class Database {
                         @Override
                         public void OnFailure() {
                             // Mark that this query has failed so other queries should not trigger successes
-                            System.out.println("queryTracker FAILED");
+                            System.out.println("getEntrant queryTracker FAILED");
                             queryTracker.stillGoing = false;
                             return;
                         }
@@ -1276,9 +1384,10 @@ public class Database {
      * @param androidId The android ID of the organizer desired to be received
      * @param escapeSharing If true, ignore the activeOrganizer query and listeners and run a private separate query
      * @param facility If non-null, use this facility instead of querying for it (prevents Organizer-Facility infinite loop)
+     * @param expandEvents If true, send subqueries for all events, if false then leave them as only eventIds. (can be toggled to prevent events querying facilities querying organizers querying events etc...)
      * @author Jared Gourley
      */
-    private void getOrganizer(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId, boolean escapeSharing, Facility facility) {
+    private void getOrganizer(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId, boolean escapeSharing, Facility facility, boolean expandEvents) {
         if (!escapeSharing) { // escapeSharing can only be set true by the Database class itself for backdoor functionality
             // If this query is already happening, simply add listeners instead of re-running
             if (activeOrganizerQuery != null && activeOrganizerQuery == androidId) {
@@ -1345,7 +1454,11 @@ public class Database {
                     facilityNeeded = true;
                     subQueryCount += 1;
                 }
-                if (organizer.getCreatedEvents().size() > 0) {
+                else {
+                    organizer.setFacility(facility);
+                }
+                // Only send subqueries for events if expandEvents is true, else leave them as only eventIds
+                if (expandEvents && organizer.getCreatedEvents().size() > 0) {
                      createdEventsNeeded = true;
                      subQueryCount += organizer.getCreatedEvents().size();
                 }
@@ -1365,14 +1478,13 @@ public class Database {
 
                             // Actually assign the value
                             // If it's not a facility then it must be an event
-                            System.out.println("OBJECT'S CLASS:" + object.getClass());
                             if (Facility.class.isAssignableFrom(object.getClass())) {
-                                System.out.println("QueryTracker success!" + ((Facility) object));
+                                System.out.println("getOrganizer QueryTracker success!" + ((Facility) object));
                                 organizer.setFacility((Facility) object);
                             }
                             else {
                                 Event event = (Event) object;
-                                System.out.println("QueryTracker success! " + event);
+                                System.out.println("getOrganizer QueryTracker success! " + event);
                                 int index = organizer.findIndexWithEventId(event.getEventId());
                                 System.out.println("createdEvents: " + organizer.getCreatedEvents());
                                 System.out.println("index to insert: " + index);
@@ -1380,12 +1492,12 @@ public class Database {
                             }
 
                             queryTracker.currentReceived += 1;
-                            System.out.println("queryTracker.currentReceived: " + queryTracker.currentReceived);
+                            System.out.println("getOrganizer queryTracker.currentReceived: " + queryTracker.currentReceived);
 
                             // Call the success listeners if all sub queries finished
                             // We also need to set the facility of all of the events since we put in the fake facility attribute
                             if (queryTracker.currentReceived == queryTracker.totalNeeded) {
-                                System.out.println("finishing!");
+                                System.out.println("getOrganizer queryTracker finishing!");
                                 for (Event event : organizer.getCreatedEvents()) {
                                     event.setFacility(organizer.getFacility());
                                 }
@@ -1402,7 +1514,7 @@ public class Database {
                         @Override
                         public void OnFailure() {
                             // Mark that this query has failed so other queries should not trigger successes
-                            System.out.println("queryTracker FAILED");
+                            System.out.println("getOrganizer queryTracker FAILED");
                             queryTracker.stillGoing = false;
                             return;
                         }
@@ -1410,7 +1522,7 @@ public class Database {
 
                     if (facilityNeeded) {
                         System.out.println("Launching query for facility: " + organizer.getFacility().getFacilityId());
-                        expandFacilityAttribute(queryTrackerSuccess, queryTrackerFailure, organizer, true);
+                        expandFacilityAttribute(queryTrackerSuccess, queryTrackerFailure, organizer, true); // TODO i think making this funciton was overrated i could just call getFacility directly
                     }
                     if (createdEventsNeeded) {
                         for (Event event : organizer.getCreatedEvents()) {
@@ -1429,20 +1541,6 @@ public class Database {
                     }
                 }
 
-
-//                if (true) { // TODO: rework this. Call expandFacilityAttribute if needed but don't call the success unless this and events are good. Make a QueryTracker
-//                    organizer.setFacility(facility);
-//                    // Send success signals
-//                    if (!finalEscapeSharing) {
-//                        sendToOrganizerListeners(organizer, true);
-//                    } else {
-//                        successAction.OnSuccess(organizer);
-//                    }
-//                }
-//                // Otherwise we have to get the owner which currently has not been expanded yet
-//                else {
-//                    expandFacilityAttribute(successAction, failureAction, organizer, finalEscapeSharing);
-//                }
             }
 
         });
@@ -1486,7 +1584,7 @@ public class Database {
         };
 
         // Run the query outside of sharing mode so that it won't get blocked by different queries
-        getFacility(facilityReceivedSuccess, facilityReceivedFailure, organizer.getFacility().getFacilityId(), true, organizer);
+        getFacility(facilityReceivedSuccess, facilityReceivedFailure, organizer.getFacility().getFacilityId(), true, organizer, false);
     }
 
 
@@ -1507,7 +1605,7 @@ public class Database {
      * @author Jared Gourley
      */
     public void getOrganizer(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId) {
-        getOrganizer(successAction, failureAction, androidId, false, null);
+        getOrganizer(successAction, failureAction, androidId, false, null, true);
     }
 
     /**
@@ -1724,9 +1822,10 @@ public class Database {
      * @param facilityId The facility ID of the facility desired to be received
      * @param escapeSharing If true, ignore the activeFacility query and listeners and run a private separate query
      * @param owner If non-null, use this owner instead of querying for it (prevents Organizer-Facility infinite loop)
+     * @param expandOwnerEvents If true, send subqueries for all created events of the owner, if false then leave them as only eventIds. (can be toggled to prevent events querying facilities querying organizers querying events etc...)
      * @author Jared Gourley
      */
-    private void getFacility(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String facilityId, boolean escapeSharing, Organizer owner) {
+    private void getFacility(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String facilityId, boolean escapeSharing, Organizer owner, boolean expandOwnerEvents) {
         if (!escapeSharing) { // escapeSharing can only be set true by the Database class itself for backdoor functionality
             // If this query is already happening, simply add listeners instead of re-running
             if (activeFacilityQuery != null && activeFacilityQuery == facilityId) {
@@ -1797,7 +1896,7 @@ public class Database {
                 }
                 // Otherwise we have to get the owner which currently has not been expanded yet
                 else {
-                    expandOwnerAttribute(successAction, failureAction, facility, finalEscapeSharing);
+                    expandOwnerAttribute(successAction, failureAction, facility, finalEscapeSharing, expandOwnerEvents);
                 }
 
             }
@@ -1815,8 +1914,9 @@ public class Database {
      * @param failureAction The action to take on failed organizer query
      * @param facility The facility object to expand the owner of
      * @param escapeSharing Whether the success/failure parameter should be called or all listeners
+     * @param expandEvents If true, send subqueries for all events, if false then leave them as only eventIds. (can be toggled to prevent events querying facilities querying organizers querying events etc...)
      */
-    private void expandOwnerAttribute(QuerySuccessAction successAction, QueryFailureAction failureAction, Facility facility, boolean escapeSharing) {
+    private void expandOwnerAttribute(QuerySuccessAction successAction, QueryFailureAction failureAction, Facility facility, boolean escapeSharing, boolean expandEvents) {
 
         QuerySuccessAction ownerReceivedSuccess = new QuerySuccessAction() {
             @Override
@@ -1826,7 +1926,7 @@ public class Database {
                     sendToFacilityListeners(facility, true);
                 }
                 else {
-                    successAction.OnSuccess(object);
+                    successAction.OnSuccess(facility);
                 }
             }
         };
@@ -1843,7 +1943,7 @@ public class Database {
         };
 
         // Run the query outside of sharing mode so that it won't get blocked by different queries
-        getOrganizer(ownerReceivedSuccess, ownerReceivedFailure, facility.getOwner().getDeviceId(), true, facility);
+        getOrganizer(ownerReceivedSuccess, ownerReceivedFailure, facility.getOwner().getDeviceId(), true, facility, expandEvents);
 
     }
 
@@ -1861,7 +1961,7 @@ public class Database {
      * @author Jared Gourley
      */
     public void getFacility(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String facilityId) {
-        getFacility(successAction, failureAction, facilityId, false, null);
+        getFacility(successAction, failureAction, facilityId, false, null, true);
     }
 
     /**
@@ -1960,7 +2060,6 @@ public class Database {
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                System.out.println("onComplete");
                 // Failure handling
                 if (!task.isSuccessful()) { // If query got blocked completely
                     // This case should not be happening under normal circumstances
@@ -2034,11 +2133,11 @@ public class Database {
                         }
 
                         queryTracker.currentReceived += 1;
-                        System.out.println("queryTracker.currentReceived: " + queryTracker.currentReceived);
+                        System.out.println("getAllEventsFromDeviceId queryTracker.currentReceived: " + queryTracker.currentReceived);
 
                         // Call the success listeners if all sub queries finished
                         if (queryTracker.currentReceived == queryTracker.totalNeeded) {
-                            System.out.println("finishing!");
+                            System.out.println("getAllEventsFromDeviceId queryTracker finishing!");
                             successAction.OnSuccess(eventsList);
                         }
 
@@ -2048,7 +2147,7 @@ public class Database {
                     @Override
                     public void OnFailure() {
                         // Mark that this query has failed so other queries should not trigger successes
-                        System.out.println("queryTracker FAILED");
+                        System.out.println("getAllEventsFromDeviceId queryTracker FAILED");
                         queryTracker.stillGoing = false;
                         return;
                     }
@@ -2138,11 +2237,50 @@ public class Database {
             public void OnSuccess(Object object) {
                 Event event = (Event) object;
 
+                // Check out the event details themselves:
                 System.out.println("Event id: " + event.getEventId());
                 System.out.println("Event name: " + event.getName());
                 System.out.println("Event description: " + event.getDescription());
                 System.out.println("Event price: " + event.getPrice());
 
+                // Check out all the entrants
+                for (int i = 0; i < 4; i++) {
+                    ArrayList<User> userArray = event.returnEntrantsArrayByIndex(i);
+                    System.out.println("ENTRANT ARRAY NUMBER " + i);
+                    for (int j = 0; j < userArray.size(); j++) {
+                        Entrant entrant = (Entrant) userArray.get(j);
+                        System.out.println("\tEntrant id: " + entrant.getDeviceId());
+                        System.out.println("\tEntrant name: " + entrant.getFirstName() + " " + entrant.getLastName());
+                        System.out.println("\tEntrant email: " + entrant.getEmail());
+                        System.out.println("\tEvent phone number: " + entrant.getPhoneNumber());
+                        System.out.println("\tEvent enrolled events: " + entrant.getCurrentEnrolledEvents());
+                        System.out.println("\tEvent pending events: " + entrant.getCurrentPendingEvents());
+                        System.out.println("\tEvent waitlisted events: " + entrant.getCurrentWaitlistedEvents());
+                        System.out.println("\tEvent declined events: " + entrant.getCurrentDeclinedEvents());
+                    }
+                }
+
+                // Check out the facility
+                Facility facility = (Facility) event.getFacility();
+                if (facility == null) {
+                    System.out.println("Facility: null");
+                    return;
+                }
+                System.out.println("facilityId: " + facility.getFacilityId());
+                System.out.println("Name: " + facility.getName());
+                System.out.println("Location: " + facility.getLocation());
+                System.out.println("Owner: " + facility.getOwner());
+                Organizer owner = facility.getOwner();
+                if (owner != null) {
+                    System.out.println("\tdeviceId: " + owner.getDeviceId());
+                    System.out.println("\temail: " + owner.getEmail());
+                    System.out.println("\tfirstName: " + owner.getFirstName());
+                    System.out.println("\tlastName: " + owner.getLastName());
+                    System.out.println("\thasAdminRights: " + owner.isAdmin());
+                    System.out.println("\thasOwnerRights: " + owner.isOrganizer());
+                    System.out.println("\tcreatedEvents: " + owner.getCreatedEvents());
+                    System.out.println("\tfacility: " + owner.getFacility());
+                }
 
             }
         };
@@ -2323,7 +2461,7 @@ public class Database {
             }
         };
 
-        database.getAllEventsFromDeviceId(successAction, failureAction, "596d9cfa05df31a6");
+        database.getAllEventsFromDeviceId(successAction, failureAction, "4f73207b9240b980");
 
     }
 
