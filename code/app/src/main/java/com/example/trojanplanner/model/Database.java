@@ -2088,6 +2088,57 @@ public class Database {
     }
 
 
+    public static void insertEventTest() {
+        // fake user with android id "Testfolder" (uploads to testfolder folder)
+        Database database = Database.getDB();
+        Event event = new Event("UPLOAD_EVENT_TEST", "TESTEVENTNAME", "TESTEVENT DESC", 0);
+        database.insertEvent(event);
+    }
+
+
+    public static void insertEntrantTest() {
+        Database database = Database.getDB();
+
+        Entrant entrant = new Entrant("testlastname", "testfirstname", "testemail", "testphonenumber", "TESTENTRANT", "entrant", false, false);
+
+        Event event1 = new Event("TESTEVENT1", "TESTNAME1", "TESTDESC1", 1);
+        Event event2 = new Event("TESTEVENT2", "TESTNAME2", "TESTDESC2", 2);
+        Event event3 = new Event("TESTEVENT3", "TESTNAME3", "TESTDESC3", 3);
+        entrant.addPendingEvent(event1);
+        entrant.addWaitlistedEvent(event2);
+        entrant.addWaitlistedEvent(event3);
+
+        database.insertUserDocument(entrant);
+    }
+
+
+    public static void getEventTest() {
+        Database database = Database.getDB();
+
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+            @Override
+            public void OnSuccess(Object object) {
+                Event event = (Event) object;
+
+                System.out.println("Event id: " + event.getEventId());
+                System.out.println("Event name: " + event.getName());
+                System.out.println("Event description: " + event.getDescription());
+                System.out.println("Event price: " + event.getPrice());
+
+
+            }
+        };
+
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+            @Override
+            public void OnFailure() {
+                System.out.println("Query attempt failed!");
+            }
+        };
+
+        database.getEvent(successAction, failureAction, "testEvent");
+
+    }
 
 
     /**
@@ -2133,14 +2184,6 @@ public class Database {
         database.getEntrant(successAction, failureAction, "testEntrant");
     }
 
-
-    public static void uploadEventTest() {
-        // fake user with android id "Testfolder" (uploads to testfolder folder)
-        Database database = Database.getDB();
-        Event event = new Event("0", "TESTEVENTNAME", "TESTEVENT DESC", 0);
-        event.setEventId("UPLOAD_EVENT_TEST");
-        database.insertEvent(event);
-    }
 
     public static void getOrganizerTest() {
         Database database = Database.getDB();
@@ -2236,24 +2279,6 @@ public class Database {
         };
 
         database.getQRData(successAction, failureAction, "awoi42A(*@M#NFAOaskwlqo");
-    }
-
-
-    public static void insertEntrantTest() {
-        Database database = Database.getDB();
-
-        Entrant entrant = new Entrant("testlastname", "testfirstname", "testemail", "testphonenumber", "TESTENTRANT", "entrant", false, false);
-
-        Event event1 = new Event("TESTEVENT1", "TESTNAME1", "TESTDESC1", 1);
-        Event event2 = new Event("TESTEVENT2", "TESTNAME2", "TESTDESC2", 2);
-        Event event3 = new Event("TESTEVENT3", "TESTNAME3", "TESTDESC3", 3);
-        entrant.addPendingEvent(event1);
-        entrant.addWaitlistedEvent(event2);
-        entrant.addWaitlistedEvent(event3);
-
-        database.insertUserDocument(entrant);
-
-
     }
 
 
