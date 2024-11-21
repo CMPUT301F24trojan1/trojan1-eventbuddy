@@ -122,7 +122,9 @@ public class EventDetailsDialogFragment extends DialogFragment {
             if (!waitingList.contains(currentEntrant)) {
                 waitingList.add(currentEntrant);
                 event.setWaitingList(waitingList);
-
+                ArrayList<Event> eventList = currentEntrant.getCurrentWaitlistedEvents();
+                eventList.add(event);
+                currentEntrant.setCurrentWaitlistedEvents(eventList);
                 // Log the addition
                 Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
                         " successfully added to the waitlist for event " + event.getEventId());
