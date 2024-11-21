@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 
 import java.io.Serializable;
@@ -164,7 +165,7 @@ public class Facility implements Serializable {
     // Helper method to load a default picture
     private Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.default_facility_pic);
+        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_facility_pic);
     }
 
 }

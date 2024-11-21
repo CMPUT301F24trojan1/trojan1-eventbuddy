@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.provider.Settings;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 
 import java.io.Serializable;
@@ -256,7 +257,7 @@ public abstract class User implements Serializable {
     // Helper method to load a default picture
     private Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.placeholder_avatar);
+        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.placeholder_avatar);
     }
 
 }
