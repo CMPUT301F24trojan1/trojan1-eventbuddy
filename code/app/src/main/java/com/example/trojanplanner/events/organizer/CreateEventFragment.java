@@ -1,4 +1,4 @@
-package com.example.trojanplanner.events;
+package com.example.trojanplanner.events.organizer;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -24,15 +23,10 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
-import com.example.trojanplanner.view.MainActivity;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 /**

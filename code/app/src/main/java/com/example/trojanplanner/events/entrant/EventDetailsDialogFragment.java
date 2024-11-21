@@ -1,4 +1,4 @@
-package com.example.trojanplanner.events;
+package com.example.trojanplanner.events.entrant;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.trojanplanner.App;

@@ -58,8 +58,6 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
      */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        EventsViewModel eventsViewModel =
-                new ViewModelProvider(this).get(EventsViewModel.class);
 
         binding = FragmentEventsListBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -215,8 +213,6 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
                 .show();
     }
 }
-
-
 
 /* can be used to test easily
 *     private void addDummyEvent() {
