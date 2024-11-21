@@ -24,7 +24,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
-import com.example.trojanplanner.model.ConcreteEvent;
+import com.example.trojanplanner.events.organizer.EventOptionsDialogFragment;
 
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
@@ -39,7 +39,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A fragment to display event details to an entrant. It provides functionality to join or leave
@@ -414,6 +413,11 @@ public class EventDetailsFragment extends Fragment {
                 if (exists && manageButton != null) {
                     manageButton.setVisibility(View.VISIBLE);
                     optionsButton.setVisibility(View.GONE);
+
+                    // Hide Enter Now and Leave Waitlist buttons
+                    buttonEnterNow.setVisibility(View.GONE);
+                    buttonLeaveWaitlist.setVisibility(View.GONE);
+
                     manageButton.setOnClickListener(v -> {
                         if (event != null) {
                             EventOptionsDialogFragment dialogFragment = EventOptionsDialogFragment.newInstance(event);
@@ -432,9 +436,13 @@ public class EventDetailsFragment extends Fragment {
             System.out.println("User is not an organizer, displaying entrant options!");
         }
 
-        if ((((Entrant) App.currentUser).getCurrentWaitlistedEvents()).contains(event)){
+        // Check if the user is waitlisted for this event
+        if (((Entrant) App.currentUser).getCurrentWaitlistedEvents().contains(event)) {
             buttonEnterNow.setVisibility(View.GONE);
             buttonLeaveWaitlist.setVisibility(View.VISIBLE);
+        } else {
+            buttonEnterNow.setVisibility(View.VISIBLE);
+            buttonLeaveWaitlist.setVisibility(View.GONE);
         }
 
         // Set button click listeners

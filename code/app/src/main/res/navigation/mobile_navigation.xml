@@ -86,7 +86,7 @@
     <!-- Define createEventsFragment and its navigation to eventsListFragment -->
     <fragment
         android:id="@+id/createEventsFragment"
-        android:name="com.example.trojanplanner.events.CreateEventFragment"
+        android:name="com.example.trojanplanner.events.organizer.CreateEventFragment"
         android:label="Create Event"
         tools:layout="@layout/fragment_create_events" >
         <action

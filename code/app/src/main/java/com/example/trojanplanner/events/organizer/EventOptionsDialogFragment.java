@@ -1,4 +1,4 @@
-package com.example.trojanplanner.events;
+package com.example.trojanplanner.events.organizer;
 
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
@@ -17,13 +17,9 @@ import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.User;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A DialogFragment that provides a set of options for an event. The options include actions like
