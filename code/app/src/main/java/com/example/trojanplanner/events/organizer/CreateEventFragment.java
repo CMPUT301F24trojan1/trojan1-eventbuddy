@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -40,6 +41,7 @@ public class CreateEventFragment extends Fragment {
     private Button createEventButton;
     private Button cancelEventButton;
     private Database database;
+    private Switch eventGeolocationSwitch;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,7 +81,7 @@ public class CreateEventFragment extends Fragment {
 
         // Initialize database
         database = Database.getDB();
-
+        eventGeolocationSwitch = view.findViewById(R.id.eventGeolocationSwitch);
         eventNameEditText = view.findViewById(R.id.eventNameEditText);
         eventDescriptionEditText = view.findViewById(R.id.eventDescriptionEditText);
         eventDateEditText = view.findViewById(R.id.eventDateEditText); // Add other fields as needed
@@ -157,6 +159,7 @@ public class CreateEventFragment extends Fragment {
                     Event newEvent = new Event(newEventId, name, description, 0.0f, facility, startDateTime, endDateTime,
                             30, 100L, 100L); // Adjust parameters as needed
 
+                    newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation by default for testing
                     // Insert the new event into the database
                     database.insertEvent(newEvent);
 

@@ -170,28 +170,13 @@ public class EventOptionsDialogFragment extends DialogFragment {
      * Logic to view attendees of the event.
      */
     private void viewAttendees() {
-        if (event != null && event.getWaitingList() != null) {
-            ArrayList<User> waitingList = event.getWaitingList();
+        Bundle args = new Bundle();
+        event.setWaitingList(event.getCancelledList());
+        args.putSerializable("event", event);
 
-            if (!waitingList.isEmpty()) {
-                // Build a string with the list of waiting attendees
-                StringBuilder attendeesList = new StringBuilder("Waiting List:\n");
-                for (User user : waitingList) {
-                    attendeesList.append(user.getFirstName()).append("\n");
-                }
-
-                // Display the waiting list in a dialog
-                new AlertDialog.Builder(getContext())
-                        .setTitle("Event Waiting List")
-                        .setMessage(attendeesList.toString())
-                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                        .show();
-            } else {
-                Toast.makeText(getContext(), "No attendees in the waiting list.", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Toast.makeText(getContext(), "Event data is missing or invalid.", Toast.LENGTH_SHORT).show();
-        }
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
     }
 
     /**
