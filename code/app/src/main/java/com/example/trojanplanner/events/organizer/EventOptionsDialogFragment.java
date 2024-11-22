@@ -188,10 +188,30 @@ public class EventOptionsDialogFragment extends DialogFragment {
     /**
      * Logic to view the event location on a map.
      */
+    /**
+     * Logic to view the event location on a map.
+     */
     private void viewMap() {
-        // Add your logic to view the event location on a map
-        Toast.makeText(getContext(), "View Map clicked", Toast.LENGTH_SHORT).show();
+        // Create an AlertDialog.Builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Event Location Map");
+
+        // Create an ImageView to display the map image
+        ImageView mapImageView = new ImageView(requireContext());
+        mapImageView.setImageResource(R.drawable.map_view); // Ensure map_view.png is in the drawable folder
+        mapImageView.setPadding(50, 50, 50, 50); // Optional: add padding for better display
+        mapImageView.setAdjustViewBounds(true); // Ensure the image fits nicely
+
+        // Set the ImageView as the dialog's view
+        builder.setView(mapImageView);
+
+        // Add a close button to dismiss the dialog
+        builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+
+        // Show the dialog
+        builder.create().show();
     }
+
 
     /**
      * Logic to show the event's check-in code (e.g., generating a QR code).
