@@ -219,8 +219,9 @@ public class QRActivity extends AppCompatActivity {
     private void navigateToEventDetailsFragment(Event event) {
         // Show the EventDetailsDialogFragment as a Dialog
         EventDetailsDialogFragment eventDetailsDialogFragment = EventDetailsDialogFragment.newInstance(event, (Entrant) App.currentUser); // Assuming you still need the Entrant object
-
-        // Show the dialog fragment
+        if (event.isRequiresGeolocation()){
+            Toast.makeText(App.activity, "Careful this Has a GeoLocation Requirement!!", Toast.LENGTH_SHORT).show();
+        }
         eventDetailsDialogFragment.show(getSupportFragmentManager(), "EventDetailsDialog");
     }
 
