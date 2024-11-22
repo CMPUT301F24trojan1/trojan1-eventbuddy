@@ -22,6 +22,7 @@ import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.User;
 
 import java.io.Serializable;
@@ -101,7 +102,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 sendAnnouncement(eventId, title, message);
                 break;
             case 1:
-                viewAttendees();
+                viewCancelled();
                 break;
             case 2:
                 viewMap();
@@ -121,9 +122,22 @@ public class EventOptionsDialogFragment extends DialogFragment {
             case 7: // Initiate Lottery
                 initiateLottery();
                 break;
+            case 8:
+                viewSelected();
+                break;
             default:
                 break;
         }
+    }
+
+    private void viewSelected() {
+        Bundle args = new Bundle();
+        event.setWaitingList(event.getEnrolledList());
+        args.putSerializable("event", event);
+
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
     }
 
     /**
@@ -164,12 +178,10 @@ public class EventOptionsDialogFragment extends DialogFragment {
         notificationManager.notify(eventId.hashCode(), notificationBuilder.build()); // Use eventId's hash as a unique ID
     }
 
-
-
     /**
      * Logic to view attendees of the event.
      */
-    private void viewAttendees() {
+    private void viewCancelled() {
         Bundle args = new Bundle();
         event.setWaitingList(event.getCancelledList());
         args.putSerializable("event", event);
