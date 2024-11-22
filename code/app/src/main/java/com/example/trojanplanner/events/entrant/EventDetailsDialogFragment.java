@@ -165,7 +165,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
                                                 @Override
                                                 public void onSuccess(Void unused) {
                                                     Log.d("EventDetails", "Event successfully updated in the database.");
-
+                                                    addtoNotifications();
                                                     // Save the updated entrant only after the event is successfully updated
                                                     database.insertUserDocument(
                                                             new OnSuccessListener<Void>() {
