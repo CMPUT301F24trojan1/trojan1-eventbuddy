@@ -1,6 +1,7 @@
 name: Android CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -24,10 +25,19 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Debug repository structure
+      run: ls -R /home/runner/work/trojan1-eventbuddy/trojan1-eventbuddy 
+    - name: Create necessary directories
+      run: mkdir -p /home/runner/work/trojan1-eventbuddy/trojan1-eventbuddy/code/app
+
+    - name: Debug Secret
+      run: echo $GOOGLE_SERVICES_JSON
+      env:
+        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
     - name: Create Google Services JSON File
       env:
         GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-      run: echo $GOOGLE_SERVICES_JSON | base64 -di > /home/runner/work/trojan1-eventbuddy/trojan1-eventbuddy/code/app/google-services.json
+      run: echo $GOOGLE_SERVICES_JSON | base64 -di > /home/runner/work/trojan1-eventbuddy/trojan1-eventbuddy/code/app/src/google-services.json
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
@@ -37,6 +47,9 @@ jobs:
 
   UI-Tests:
     runs-on: [ macos-12 ]
+    defaults:
+        run:
+          working-directory: ./code
     steps:
       - uses: actions/checkout@v3
       - name: set up JDK 17
@@ -45,10 +58,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+
+      - name: Debug repository structure
+        run: ls -R ${{ github.workspace }}
+      - name: Create necessary directories
+        run: mkdir -p ./code/app
+
+      - name: Debug Secret
+        run: echo $GOOGLE_SERVICES_JSON
+        env:
+            GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
       - name: Create Google Services JSON File
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo $GOOGLE_SERVICES_JSON | base64 -di > /home/runner/work/trojan1-eventbuddy/trojan1-eventbuddy/code/app/google-services.json
+        run: echo $GOOGLE_SERVICES_JSON | base64 -D > ${{ github.workspace }}/code/app/google-services.json
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle

@@ -30,14 +30,20 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="tiramisu">
 
-        <!-- Main Activity -->
+        <!-- Welcome Activity -->
         <activity
-            android:name=".view.MainActivity"
+            android:name=".view.WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".view.MainActivity"
+            android:exported="true">
         </activity>
 
         <!-- Profile Activity -->

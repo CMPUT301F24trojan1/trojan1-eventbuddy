@@ -1,27 +1,22 @@
 package com.example.trojanplanner.view;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.EventDetailsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
+import com.example.trojanplanner.model.Event;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -45,25 +40,30 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
 
         database = Database.getDB();
         facilityPhotoPicker = new PhotoPicker();
         facilityPhotoPicker.initPhotoPicker();
 
 
-        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
-        if (App.currentUser == null) {
-            // Get/check entrant from db based on device ID (note: this is async)
-            getEntrantFromDeviceId(App.deviceId); // Redirects if no entrant exists!
-        }
 
         setupNavigation();
+
     }
 
+    private void navigateToEventDetailsFragment(Event event) {
+        System.out.println("Navigating to EventDetailsFragment with event: " + event.getName());
+        // Create the EventDetailsFragment and pass the event data
+        EventDetailsFragment eventDetailsFragment = EventDetailsFragment.newInstance(event, (Entrant) App.currentUser);
+
+        // Replace the current fragment with EventDetailsFragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.nav_host_fragment_activity_main, eventDetailsFragment) // R.id.fragment_container is your fragment container
+                .commit();
+    }
 
     /**
      *
@@ -81,12 +81,9 @@ public class MainActivity extends AppCompatActivity {
                  System.out.println("getEntrantFromDeviceId success! current user: " + currentEntrant.getFirstName() + " " + currentEntrant.getLastName());
                  Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
                  myToast.show();
-                 System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
-                 if (currentEntrant.getPfpFilePath() != null) {
-                     getUserPfp();
-                 }
-                 // TODO: populate events array
-                 // Check if the user has any events
+
+
+                 // Check if the user has any events // TODO does this really work? they should return an empty arraylist if empty, not null
                  if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
                          (currentEntrant.getCurrentPendingEvents() == null || currentEntrant.getCurrentPendingEvents().isEmpty())) {
                      // Show the EmptyEventsFragment if no events are found
@@ -116,27 +113,27 @@ public class MainActivity extends AppCompatActivity {
         database.getEntrant(successAction, failureAction, deviceId);
     }
 
-
+    // Likely unnecessary function now because the pfp should be collected in the WelcomeActivity
     public void getUserPfp() {
         System.out.println("Getting user's PFP bitmap...");
-        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
-            public void onSuccess(byte[] bytes) {
+            public void OnSuccess(Object object) {
+                byte[] bytes = (byte[]) object;
                 Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 App.currentUser.setPfpBitmap(decodedImage);
                 System.out.println("success!! User pfp bitmap received!");
             }
         };
-        OnFailureListener failureListener = new OnFailureListener() {
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
             @Override
-            public void onFailure(@NonNull Exception e) {
+            public void OnFailure() {
                 System.out.println("NOOOOOOOOOOOOOOOOO user pfp bitmap query failed");
             }
         };
 
-        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
+        database.downloadImage(successAction, failureAction, App.currentUser.getPfpFilePath());
     }
-
 
 
     /**
@@ -162,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.emptyEventsFragment, R.id.eventsListFragment)
+                R.id.emptyEventsFragment)
                 .build();
 
         // Initialize NavController with the nav host fragment
@@ -196,5 +193,4 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
-
 }

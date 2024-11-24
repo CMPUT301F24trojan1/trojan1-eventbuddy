@@ -2,9 +2,19 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
+
+    <!-- Add this inside the layout -->
+    <Button
+        android:id="@+id/testButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal" />
 
     <!-- Event Image -->
     <ImageView
@@ -78,6 +88,18 @@
         android:layout_marginBottom="8dp"/>
 
     <!-- Event Price -->
+
+    <Switch
+        android:id="@+id/eventGeolocationSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="140dp"
+        android:layout_marginEnd="3dp"
+        android:text="Enable Geolocation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/testButton"
+        tools:layout_editor_absoluteY="16dp" />
+
     <EditText
         android:id="@+id/eventPriceEditText"
         android:layout_width="0dp"
@@ -88,6 +110,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventTimeEditText"
         android:layout_marginBottom="16dp"/>
+
+
 
     <!-- Create and Cancel Buttons -->
     <Button

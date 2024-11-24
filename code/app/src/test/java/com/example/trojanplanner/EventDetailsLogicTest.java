@@ -22,11 +22,11 @@ public class EventDetailsLogicTest {
     @Before
     public void setUp() {
         // Instantiate the Database directly
-        database = new Database();
+        database = Database.getDB();
 
         // Set up test event and entrant objects
         Facility testFacility = new Facility("Gym", "F001", "Main Street", null, "facility_image_path", null);
-        testEvent = new Event("Morning Yoga", "Relaxing yoga session", 15.0f, testFacility,
+        testEvent = new Event("Morning Yoga", "Relaxing yoga session", "Morning Yoga type thing", 15.0f, testFacility,
                 new Date(), new Date(System.currentTimeMillis() + 3600000),
                 2, 30L, 10L);
 
