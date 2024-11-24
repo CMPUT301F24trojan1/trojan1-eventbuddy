@@ -21,25 +21,14 @@ public class SerialBitmap implements Serializable {
 
     // Setter to set Bitmap
     public void setBitmap(Bitmap bitmap) {
-        if (bitmap != null) {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            this.byteArray = byteArrayOutputStream.toByteArray();
-        }
-        else {
-            this.byteArray = null;
-        }
-
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        this.byteArray = byteArrayOutputStream.toByteArray();
     }
 
     // Getter to retrieve Bitmap
     public Bitmap getBitmap() {
-        if (this.byteArray != null) {
-            return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-        }
-        else {
-            return null;
-        }
+        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
     }
 
     // Serialize the object
