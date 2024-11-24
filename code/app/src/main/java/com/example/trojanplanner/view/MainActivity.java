@@ -59,17 +59,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void navigateToEventDetailsFragment(Event event) {
-        System.out.println("Navigating to EventDetailsFragment with event: " + event.getName());
-        // Create the EventDetailsFragment and pass the event data
-        EventDetailsFragment eventDetailsFragment = EventDetailsFragment.newInstance(event, (Entrant) App.currentUser);
-
-        // Replace the current fragment with EventDetailsFragment
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, eventDetailsFragment) // R.id.fragment_container is your fragment container
-                .commit();
-    }
-
     /**
      *
      * @param deviceId
