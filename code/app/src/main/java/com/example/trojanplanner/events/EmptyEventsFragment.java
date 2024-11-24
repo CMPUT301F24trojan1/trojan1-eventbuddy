@@ -81,6 +81,7 @@ public class EmptyEventsFragment extends Fragment {
                 @Override
                 public void OnSuccess(Object object) {
                     List<Event> events = (List<Event>) object;
+                    System.out.println(events);
 
                     // Hide loading indicator and show message or navigate based on the result
                     loadingIndicator.setVisibility(View.GONE);

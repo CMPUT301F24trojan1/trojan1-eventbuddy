@@ -1,4 +1,4 @@
-package com.example.trojanplanner.events;
+package com.example.trojanplanner.events.organizer;
 
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,9 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -24,15 +24,10 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
-import com.example.trojanplanner.view.MainActivity;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -46,6 +41,7 @@ public class CreateEventFragment extends Fragment {
     private Button createEventButton;
     private Button cancelEventButton;
     private Database database;
+    private Switch eventGeolocationSwitch;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -85,7 +81,7 @@ public class CreateEventFragment extends Fragment {
 
         // Initialize database
         database = Database.getDB();
-
+        eventGeolocationSwitch = view.findViewById(R.id.eventGeolocationSwitch);
         eventNameEditText = view.findViewById(R.id.eventNameEditText);
         eventDescriptionEditText = view.findViewById(R.id.eventDescriptionEditText);
         eventDateEditText = view.findViewById(R.id.eventDateEditText); // Add other fields as needed
@@ -163,6 +159,7 @@ public class CreateEventFragment extends Fragment {
                     Event newEvent = new Event(newEventId, name, description, 0.0f, facility, startDateTime, endDateTime,
                             30, 100L, 100L); // Adjust parameters as needed
 
+                    newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation by default for testing
                     // Insert the new event into the database
                     database.insertEvent(newEvent);
 
@@ -208,7 +205,7 @@ public class CreateEventFragment extends Fragment {
         // Ensure the view is valid and the fragment is properly attached to its host activity
         if (getView() != null) {
             NavController navController = Navigation.findNavController(getView());
-            navController.navigate(R.id.eventsListFragment);
+            navController.navigate(R.id.emptyEventsFragment);
         }
     }
 

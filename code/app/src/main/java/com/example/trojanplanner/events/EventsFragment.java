@@ -58,8 +58,6 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
      */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        EventsViewModel eventsViewModel =
-                new ViewModelProvider(this).get(EventsViewModel.class);
 
         binding = FragmentEventsListBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -128,43 +126,8 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
             createEventOrBecomeOrganizerButton.setVisibility(View.GONE);
         }
     }
-
-    private void checkFirstTimeVisit() {
-        // Get SharedPreferences
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-
-        // Check if it's the first time visiting the fragment
-        boolean isFirstTime = sharedPreferences.getBoolean(PREF_FIRST_TIME_VISIT, true);
-
-        if (isFirstTime) {
-            // Show the dialog
-            showFirstTimeDialog();
-
-            // Update SharedPreferences to mark that the user has visited the fragment
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(PREF_FIRST_TIME_VISIT, false);  // Set flag to false after first visit
-            editor.apply();
-        }
-    }
-
-    private void showFirstTimeDialog() {
-        // Create an AlertDialog
-        new AlertDialog.Builder(getContext())
-                .setTitle("Your Events will always show up here")
-                .setMessage("Click on an Event to view details")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Dismiss dialog
-                    }
-                })
-                .setCancelable(false)  // Prevent dialog from being dismissed by tapping outside
-                .show();
-    }
-
     private void loadEventsFromDatabase() {
         eventList.clear();
-
-
 
         if (App.currentUser == null || App.currentUser.getDeviceId() == null) {
             System.out.println("No user is currently logged in.");
@@ -217,9 +180,39 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
         // Navigate to EventEditFragment
         navController.navigate(R.id.action_eventsListFragment_to_eventDetailsFragment, bundle);
     }
+
+    private void checkFirstTimeVisit() {
+        // Get SharedPreferences
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+        // Check if it's the first time visiting the fragment
+        boolean isFirstTime = sharedPreferences.getBoolean(PREF_FIRST_TIME_VISIT, true);
+
+        if (isFirstTime) {
+            // Show the dialog
+            showFirstTimeDialog();
+
+            // Update SharedPreferences to mark that the user has visited the fragment
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(PREF_FIRST_TIME_VISIT, false);  // Set flag to false after first visit
+            editor.apply();
+        }
+    }
+
+    private void showFirstTimeDialog() {
+        // Create an AlertDialog
+        new AlertDialog.Builder(getContext())
+                .setTitle("Your Events will always show up here")
+                .setMessage("Click on an Event to view details")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Dismiss dialog
+                    }
+                })
+                .setCancelable(false)  // Prevent dialog from being dismissed by tapping outside
+                .show();
+    }
 }
-
-
 
 /* can be used to test easily
 *     private void addDummyEvent() {
