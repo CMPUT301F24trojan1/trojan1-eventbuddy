@@ -49,14 +49,20 @@ public class MainActivity extends AppCompatActivity {
         facilityPhotoPicker.initPhotoPicker();
 
 
-        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
-        if (App.currentUser == null) {
-            // Get/check entrant from db based on device ID (note: this is async)
-            getEntrantFromDeviceId(App.deviceId); // Redirects if no entrant exists!
-        }
 
         setupNavigation();
 
+    }
+
+    private void navigateToEventDetailsFragment(Event event) {
+        System.out.println("Navigating to EventDetailsFragment with event: " + event.getName());
+        // Create the EventDetailsFragment and pass the event data
+        EventDetailsFragment eventDetailsFragment = EventDetailsFragment.newInstance(event, (Entrant) App.currentUser);
+
+        // Replace the current fragment with EventDetailsFragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.nav_host_fragment_activity_main, eventDetailsFragment) // R.id.fragment_container is your fragment container
+                .commit();
     }
 
     /**
@@ -75,12 +81,9 @@ public class MainActivity extends AppCompatActivity {
                  System.out.println("getEntrantFromDeviceId success! current user: " + currentEntrant.getFirstName() + " " + currentEntrant.getLastName());
                  Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
                  myToast.show();
-                 System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
-                 if (currentEntrant.getPfpFilePath() != null) {
-                     getUserPfp();
-                 }
-                 // TODO: populate events array
-                 // Check if the user has any events
+
+
+                 // Check if the user has any events // TODO does this really work? they should return an empty arraylist if empty, not null
                  if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
                          (currentEntrant.getCurrentPendingEvents() == null || currentEntrant.getCurrentPendingEvents().isEmpty())) {
                      // Show the EmptyEventsFragment if no events are found
@@ -110,25 +113,26 @@ public class MainActivity extends AppCompatActivity {
         database.getEntrant(successAction, failureAction, deviceId);
     }
 
-
+    // Likely unnecessary function now because the pfp should be collected in the WelcomeActivity
     public void getUserPfp() {
         System.out.println("Getting user's PFP bitmap...");
-        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
-            public void onSuccess(byte[] bytes) {
+            public void OnSuccess(Object object) {
+                byte[] bytes = (byte[]) object;
                 Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 App.currentUser.setPfpBitmap(decodedImage);
                 System.out.println("success!! User pfp bitmap received!");
             }
         };
-        OnFailureListener failureListener = new OnFailureListener() {
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
             @Override
-            public void onFailure(@NonNull Exception e) {
+            public void OnFailure() {
                 System.out.println("NOOOOOOOOOOOOOOOOO user pfp bitmap query failed");
             }
         };
 
-        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
+        database.downloadImage(successAction, failureAction, App.currentUser.getPfpFilePath());
     }
 
 
