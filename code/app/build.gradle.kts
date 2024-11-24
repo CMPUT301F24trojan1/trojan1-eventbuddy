@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.camera.camera2)
     implementation(libs.firebase.database)
     implementation("com.google.firebase:firebase-messaging:23.0.0")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")  // OkHttp version
 
     // Test dependencies
     testImplementation("junit:junit:4.13.2")

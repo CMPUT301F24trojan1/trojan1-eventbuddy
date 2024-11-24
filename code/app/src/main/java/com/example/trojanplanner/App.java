@@ -6,6 +6,7 @@ import android.provider.Settings;
 
 import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.model.User;
+import com.google.firebase.FirebaseApp;
 
 // https://stackoverflow.com/questions/11411395/how-to-get-current-foreground-activity-context-in-android
 

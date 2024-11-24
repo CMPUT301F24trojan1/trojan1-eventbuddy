@@ -8,12 +8,15 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.telecom.Call;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -24,9 +27,25 @@ import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.User;
+import com.example.trojanplanner.view.MainActivity;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * A DialogFragment that provides a set of options for an event. The options include actions like
@@ -149,33 +168,93 @@ public class EventOptionsDialogFragment extends DialogFragment {
             return;
         }
 
-        String channelId = "EventChannel_" + eventId; // Use the eventId to identify the channel
+        // Show a message that the announcement is being sent
+        Toast.makeText(getContext(), "Sending announcement...", Toast.LENGTH_SHORT).show();
 
-        // Create a Notification Manager
-        NotificationManager notificationManager =
-                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        // Create a new OkHttpClient instance
+        OkHttpClient client = new OkHttpClient();
 
-        // For Android 8.0+ (Oreo and above), create a notification channel dynamically
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(
-                    channelId,
-                    "Event Updates for " + eventId,
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            notificationChannel.setDescription("Notifications for updates on event " + eventId);
-            notificationManager.createNotificationChannel(notificationChannel);
+        // Create JSON payload
+        JSONObject jsonPayload = new JSONObject();
+        try {
+            jsonPayload.put("eventId", eventId);
+            jsonPayload.put("title", title);
+            jsonPayload.put("message", message);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Error creating JSON payload.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        // Create the notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getContext(), channelId)
-                .setSmallIcon(R.drawable.logo) // Replace with your app's notification icon
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
+        // Create the request body with JSON
+        RequestBody body = RequestBody.create(
+                jsonPayload.toString(),
+                MediaType.get("application/json")
+        );
 
-        // Show the notification
-        notificationManager.notify(eventId.hashCode(), notificationBuilder.build()); // Use eventId's hash as a unique ID
+        // Create the POST request to your backend
+        Request request = new Request.Builder()
+                .url("http://10.0.2.2:3000/sendNotification")  // Replace with your backend URL
+                .post(body)
+                .build();
+
+        // Execute the request asynchronously
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    Log.d("Notification", "Notification sent successfully!");
+
+                    MainActivity activity = (MainActivity) getActivity();
+                    if (activity != null) {
+                        activity.runOnUiThread(() -> {
+                            Context context = getContext();
+                            if (context != null) {
+                                Toast.makeText(context, "Notification sent successfully!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Notification", "Context is null, cannot show success Toast.");
+                            }
+                        });
+                    } else {
+                        Log.e("Notification", "Activity is null, cannot update UI.");
+                    }
+                } else {
+                    Log.e("Notification", "Failed to send notification: " + response.message());
+                    MainActivity activity = (MainActivity) getActivity();
+                    if (activity != null) {
+                        activity.runOnUiThread(() -> {
+                            Context context = getContext();
+                            if (context != null) {
+                                Toast.makeText(context, "Failed to send notification.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Notification", "Context is null, cannot show error Toast.");
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                // Handle failure
+                Log.e("Notification", "Error sending notification: " + e.getMessage());
+
+                // Safely update the UI on the main thread
+                MainActivity activity = (MainActivity) getActivity();
+                if (activity != null) {
+                    activity.runOnUiThread(() -> {
+                        Context context = getContext();
+                        if (context != null) {
+                            Toast.makeText(context, "Failed to send notification.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Notification", "Context is null, cannot show Toast.");
+                        }
+                    });
+                } else {
+                    Log.e("Notification", "Activity is null, cannot update UI.");
+                }
+            }
+        });
     }
 
     /**
