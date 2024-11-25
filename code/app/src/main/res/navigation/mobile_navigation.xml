@@ -123,6 +123,15 @@
             app:argType="com.example.trojanplanner.model.Event" />
     </fragment>
 
+    <!-- Define NotificationSenderFragment -->
+    <fragment
+        android:id="@+id/NotificationSenderFragment"
+        android:name="com.example.trojanplanner.HelperFragments.NotificationSenderFragment"
+        android:label="Notification Sender"
+        tools:layout="@layout/fragment_notification_sender">
+    </fragment>
+
+    <!-- Define profileFragment -->
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.trojanplanner.ProfileUtils.ProfileFragment"
