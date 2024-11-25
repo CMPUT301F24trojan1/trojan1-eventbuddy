@@ -4,12 +4,17 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.trojanplanner.model.User;
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Event;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -19,20 +24,18 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapCapabilities;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PinConfig;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+
+import java.util.List;
 
 public class MarkedMapFragment extends Fragment implements OnMapReadyCallback {
-
-    private static final LatLng SINGAPORE = new LatLng(1.3521, 103.8198);
-    private static final LatLng KUALA_LUMPUR = new LatLng(3.1390, 101.6869);
-    private static final LatLng JAKARTA = new LatLng(-6.2088, 106.8456);
-    private static final LatLng BANGKOK = new LatLng(13.7563, 100.5018);
-    private static final LatLng MANILA = new LatLng(14.5995, 120.9842);
-    private static final LatLng HO_CHI_MINH_CITY = new LatLng(10.7769, 106.7009);
-
     private static final float ZOOM_LEVEL = 3.5f;
-
     private static final String TAG = MarkedMapFragment.class.getName();
+    private Event event;
+    private GoogleMap map;
 
     public MarkedMapFragment() {
         // Required empty public constructor
@@ -48,6 +51,16 @@ public class MarkedMapFragment extends Fragment implements OnMapReadyCallback {
     public void onViewCreated(@NonNull android.view.View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Retrieve the Event object from the arguments
+        if (getArguments() != null) {
+            event = (Event) getArguments().getSerializable("event"); // Retrieve the Event object passed in the bundle
+            if (event != null) {
+                Log.d(TAG, "Event received: " + event.getName());
+            } else {
+                Log.d(TAG, "No event passed in arguments.");
+            }
+        }
+
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
@@ -55,34 +68,39 @@ public class MarkedMapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public void onMapReady(GoogleMap map) {
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(SINGAPORE, ZOOM_LEVEL));
+    public void onMapReady(GoogleMap googleMap) {
+        this.map = googleMap;
 
-        MapCapabilities capabilities = map.getMapCapabilities();
-        Log.d(TAG, "Are advanced markers enabled? " + capabilities.isAdvancedMarkersAvailable());
+        // Default zoom level on map
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0, 0), ZOOM_LEVEL));
 
-        // Add markers to the map
-        addAdvancedMarker(map, SINGAPORE, "Hello!", Color.MAGENTA);
-        addAdvancedMarker(map, KUALA_LUMPUR, "KL Marker", Color.BLUE);
-        addAdvancedMarker(map, JAKARTA, "Jakarta", Color.RED);
-        addAdvancedMarker(map, BANGKOK, "Bangkok", Color.YELLOW);
-        addAdvancedMarker(map, MANILA, "Manila", Color.GREEN);
-        addAdvancedMarker(map, HO_CHI_MINH_CITY, "HCMC", Color.CYAN);
+        // Add markers for all users in the waiting list
+        if (event != null && event.getWaitingList() != null && !event.getWaitingList().isEmpty()) {
+            for (User user : event.getWaitingList()) {
+                getUserLocation(user);
+            }
+        } else {
+            Log.d("MapFragment", "No user in waiting list");
+        }
     }
 
-    private void addAdvancedMarker(GoogleMap map, LatLng position, String text, int color) {
-        TextView textView = new TextView(getContext());
-        textView.setText(text);
-        textView.setTextColor(Color.WHITE);
-        textView.setBackgroundColor(color);
+    private void getUserLocation(User user) {
+        Database.getDB().getLocation(
+                event.getEventId(),
+                user.getDeviceId(),
+                latLng -> {
+                    // Success: Handle the returned location
+                    Log.d("Location", "Latitude: " + latLng.latitude + ", Longitude: " + latLng.longitude);
+                    map.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .title(user.getFirstName()));
+                },
+                e -> {
+                    // Failure: Handle the error
+                    Log.e("Location", "Failed to fetch location for user: " + user.getFirstName(), e);
+                    Toast.makeText(getContext(), "No location found for " + user.getFirstName(), Toast.LENGTH_SHORT).show();
+                }
+        );
 
-        Marker marker = map.addMarker(new AdvancedMarkerOptions()
-                .position(position)
-                .iconView(textView)
-                .zIndex(1f));
-
-        if (marker != null) {
-            Log.d(TAG, "Added marker at position: " + position);
-        }
     }
 }

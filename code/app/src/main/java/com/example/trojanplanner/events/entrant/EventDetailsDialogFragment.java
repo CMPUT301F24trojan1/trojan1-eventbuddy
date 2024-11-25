@@ -3,6 +3,8 @@ package com.example.trojanplanner.events.entrant;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,17 +16,23 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -141,85 +149,71 @@ public class EventDetailsDialogFragment extends DialogFragment {
                     syncedEvent.getWaitingList().add(currentEntrant);
 
                     database.getEntrant(
-                            new Database.QuerySuccessAction() {
-                                @Override
-                                public void OnSuccess(Object object) {
-                                    Entrant syncedEntrant = (Entrant) object;
+                            object1 -> {
+                                Entrant syncedEntrant = (Entrant) object1;
 
-                                    // Ensure the entrant's waitlisted events are initialized
-                                    if (syncedEntrant.getCurrentWaitlistedEvents() == null) {
-                                        syncedEntrant.setCurrentWaitlistedEvents(new ArrayList<>());
-                                    }
-
-                                    // Add the event to the entrant's waitlisted events
-                                    syncedEntrant.getCurrentWaitlistedEvents().add(syncedEvent);
-
-                                    // Debug logs before saving
-                                    Log.d("EventDetails", "Synced Event to Save: " + syncedEvent.toString());
-                                    Log.d("EventDetails", "Synced Entrant to Save: " + syncedEntrant.toString());
-
-                                    // Save the updated event
-                                    // Save the updated event
-                                    database.insertEvent(
-                                            new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void unused) {
-                                                    Log.d("EventDetails", "Event successfully updated in the database.");
-                                                    addtoNotifications();
-                                                    // Save the updated entrant only after the event is successfully updated
-                                                    database.insertUserDocument(
-                                                            new OnSuccessListener<Void>() {
-                                                                @Override
-                                                                public void onSuccess(Void unused) {
-                                                                    Toast.makeText(getContext(), "Successfully added to the waitlist!", Toast.LENGTH_SHORT).show();
-                                                                    Log.d("EventDetails", "Entrant successfully updated in the database.");
-
-                                                                    // Validate database state
-                                                                    validateDatabaseState(syncedEvent, syncedEntrant);
-                                                                }
-                                                            },
-                                                            new OnFailureListener() {
-                                                                @Override
-                                                                public void onFailure(@NonNull Exception e) {
-                                                                    Toast.makeText(getContext(), "Failed to update user data.", Toast.LENGTH_SHORT).show();
-                                                                    Log.e("EventDetails", "Error updating entrant: " + e.getMessage());
-                                                                }
-                                                            },
-                                                            syncedEntrant // Pass the correct User object
-                                                    );
-                                                }
-                                            },
-                                            new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Toast.makeText(getContext(), "Failed to update event data.", Toast.LENGTH_SHORT).show();
-                                                    Log.e("EventDetails", "Error updating event: " + e.getMessage());
-                                                }
-                                            },
-                                            syncedEvent // Pass the correct Event object
-                                    );
+                                // Ensure the entrant's waitlisted events are initialized
+                                if (syncedEntrant.getCurrentWaitlistedEvents() == null) {
+                                    syncedEntrant.setCurrentWaitlistedEvents(new ArrayList<>());
                                 }
+
+                                // Add the event to the entrant's waitlisted events
+                                syncedEntrant.getCurrentWaitlistedEvents().add(syncedEvent);
+
+                                // Debug logs before saving
+                                Log.d("EventDetails", "Synced Event to Save: " + syncedEvent.toString());
+                                Log.d("EventDetails", "Synced Entrant to Save: " + syncedEntrant.toString());
+
+                                // Save the updated event
+                                database.insertEvent(
+                                        (OnSuccessListener<Void>) unused -> {
+                                            Log.d("EventDetails", "Event successfully updated in the database.");
+                                            addtoNotifications();
+                                            // Save the updated entrant only after the event is successfully updated
+                                            database.insertUserDocument(
+                                                    new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void unused) {
+                                                            Toast.makeText(getContext(), "Successfully added to the waitlist!", Toast.LENGTH_SHORT).show();
+                                                            Log.d("EventDetails", "Entrant successfully updated in the database.");
+
+                                                            // Validate database state
+                                                            validateDatabaseState(syncedEvent, syncedEntrant);
+                                                            addLocationtoDatabase();
+                                                        }
+                                                    },
+                                                    new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+                                                            Toast.makeText(getContext(), "Failed to update user data.", Toast.LENGTH_SHORT).show();
+                                                            Log.e("EventDetails", "Error updating entrant: " + e.getMessage());
+                                                        }
+                                                    },
+                                                    syncedEntrant // Pass the correct User object
+                                            );
+                                        },
+                                        e -> {
+                                            Toast.makeText(getContext(), "Failed to update event data.", Toast.LENGTH_SHORT).show();
+                                            Log.e("EventDetails", "Error updating event: " + e.getMessage());
+                                        },
+                                        syncedEvent // Pass the correct Event object
+                                );
                             },
-                            new Database.QueryFailureAction() {
-                                @Override
-                                public void OnFailure() {
-                                    Toast.makeText(getContext(), "Failed to sync user data.", Toast.LENGTH_SHORT).show();
-                                    Log.e("EventDetails", "Error syncing entrant from database.");
-                                }
+                            () -> {
+                                Toast.makeText(getContext(), "Failed to sync user data.", Toast.LENGTH_SHORT).show();
+                                Log.e("EventDetails", "Error syncing entrant from database.");
                             },
                             currentEntrant.getDeviceId()
                     );
                 },
-                new Database.QueryFailureAction() {
-                    @Override
-                    public void OnFailure() {
-                        Toast.makeText(getContext(), "Failed to sync event data.", Toast.LENGTH_SHORT).show();
-                        Log.e("EventDetails", "Error syncing event from database.");
-                    }
+                () -> {
+                    Toast.makeText(getContext(), "Failed to sync event data.", Toast.LENGTH_SHORT).show();
+                    Log.e("EventDetails", "Error syncing event from database.");
                 },
                 event.getEventId()
         );
     }
+
     /**
      * Validates that the event and entrant were correctly saved to the database.
      */
@@ -252,7 +246,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
     }
 
 
-    private void addtoNotifications(){
+    private void addtoNotifications() {
         if (event != null) {
             String eventId = event.getEventId(); // Use eventId for channel and topic
             String channelId = "EventChannel_" + eventId; // Dynamic channel ID
@@ -356,15 +350,59 @@ public class EventDetailsDialogFragment extends DialogFragment {
     // Helper method to get the full name for the day of the week based on unique abbreviation
     private String getFullDayName(String abbreviation) {
         switch (abbreviation) {
-            case "U": return "Sunday";
-            case "M": return "Monday";
-            case "T": return "Tuesday";
-            case "W": return "Wednesday";
-            case "R": return "Thursday";
-            case "F": return "Friday";
-            case "S": return "Saturday";
-            default: return ""; // Handle invalid abbreviations
+            case "U":
+                return "Sunday";
+            case "M":
+                return "Monday";
+            case "T":
+                return "Tuesday";
+            case "W":
+                return "Wednesday";
+            case "R":
+                return "Thursday";
+            case "F":
+                return "Friday";
+            case "S":
+                return "Saturday";
+            default:
+                return ""; // Handle invalid abbreviations
         }
     }
 
+    public void addLocationtoDatabase() {
+        // Check if permissions are granted
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Request permissions if not granted
+            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            return;
+        }
+
+        // Initialize FusedLocationProviderClient to get current location
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+
+        // Get the last known location
+        fusedLocationClient.getLastLocation()
+                .addOnCompleteListener(new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            // Get the current location
+                            Location location = task.getResult();
+                            double latitude = location.getLatitude();
+                            double longitude = location.getLongitude();
+
+                            // Get user and event IDs
+                            String userId = App.currentUser.getDeviceId();
+                            String eventId = event.getEventId();
+
+                            // Insert the location into the database
+                            database.insertLocation(eventId, userId, latitude, longitude, null, null);
+                        } else {
+                            // Handle failure to get location
+                            Log.e("Location", "Failed to get location.");
+                        }
+                    }
+                });
+    }
 }
