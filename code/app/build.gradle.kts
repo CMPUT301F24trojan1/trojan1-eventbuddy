@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.firebase.database)
     implementation("com.google.firebase:firebase-messaging:23.0.0")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")  // OkHttp version
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 
     // Test dependencies
     testImplementation("junit:junit:4.13.2")

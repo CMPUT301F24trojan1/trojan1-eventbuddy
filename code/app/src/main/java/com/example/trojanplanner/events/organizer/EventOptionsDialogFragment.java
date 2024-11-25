@@ -10,9 +10,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.trojanplanner.HelperFragments.MarkedMapFragment;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
@@ -185,8 +187,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
      * Logic to view the event location on a map.
      */
     private void viewMap() {
-        // Add your logic to view the event location on a map
+        // Show a Toast message
         Toast.makeText(getContext(), "View Map clicked", Toast.LENGTH_SHORT).show();
+
+        // Use NavController to navigate to the MarkedMapFragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.action_eventDetailsFragment_to_markedMapFragment);  // Ensure the ID matches your nav graph
     }
 
     /**
