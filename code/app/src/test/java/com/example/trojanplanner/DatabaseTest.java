@@ -6,7 +6,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+//import org.mockito.Mockito;
 
 /**
  * A test class to test for database functionality.

@@ -156,11 +156,11 @@
 
     <fragment
         android:id="@+id/PendingListFragment"
-        android:name="com.example.trojanplanner.controller.PendingListFragment"
+        android:name="com.example.trojanplanner.HelperFragments.PendingListFragment"
         android:label="Pending List">
         <action
             android:id="@+id/action_PendingListFragment_to_EventOptionsDialogFragment"
-            app:destination="@id/EventOptionsDialogFragment" />
+            app:destination="@+id/EventOptionsDialogFragment" />
     </fragment>
 
 

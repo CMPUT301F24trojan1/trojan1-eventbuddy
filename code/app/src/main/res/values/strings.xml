@@ -25,6 +25,7 @@
         <item>Initiate Lottery</item>
         <item>Update Event Poster</item>
         <item>!! Delete Event !!</item>
+        <item>View Pending List</item>
     </string-array>
 
     <!-- Spinner options -->
