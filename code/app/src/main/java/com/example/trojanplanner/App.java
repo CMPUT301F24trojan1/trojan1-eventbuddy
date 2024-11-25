@@ -7,6 +7,8 @@ import android.provider.Settings;
 import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.model.User;
 
+import okhttp3.OkHttpClient;
+
 // https://stackoverflow.com/questions/11411395/how-to-get-current-foreground-activity-context-in-android
 
 /**
@@ -19,7 +21,7 @@ import com.example.trojanplanner.model.User;
  */
 public class App extends Application {
     private static ActivityManager activityManager; // Keeps the App activity attribute up to date
-
+    public static final String BACKEND_URL = "http://10.0.2.2:3000/sendNotification"; // Needs to be updated to current url
     public static Activity activity;
     public static String deviceId;
     public static User currentUser; // Could currently be an entrant, organizer, or admin

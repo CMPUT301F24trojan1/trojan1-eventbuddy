@@ -64,7 +64,6 @@
             app:destination="@id/createEventsFragment" />
     </fragment>
 
-
     <!-- Define eventEditFragment and its navigation to eventsListFragment -->
     <fragment
         android:id="@+id/eventEditFragment"
@@ -96,7 +95,6 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-
     <!-- WaitlistFragment navigation back to EventEditFragment -->
     <fragment
         android:id="@+id/waitlistFragment"
@@ -121,8 +119,26 @@
         <argument
             android:name="event"
             app:argType="com.example.trojanplanner.model.Event" />
+        <action
+            android:id="@+id/action_eventDetailsFragment_to_markedMapFragment"
+            app:destination="@id/markedMapFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/markedMapFragment"
+        android:name="com.example.trojanplanner.HelperFragments.MarkedMapFragment"
+        android:label="Marked Map"
+        tools:layout="@layout/fragment_marked_map" />
+
+    <!-- Define NotificationSenderFragment -->
+    <fragment
+        android:id="@+id/NotificationSenderFragment"
+        android:name="com.example.trojanplanner.HelperFragments.NotificationSenderFragment"
+        android:label="Notification Sender"
+        tools:layout="@layout/fragment_notification_sender">
+    </fragment>
+
+    <!-- Define profileFragment -->
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.trojanplanner.ProfileUtils.ProfileFragment"

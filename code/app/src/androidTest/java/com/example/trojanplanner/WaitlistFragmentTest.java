@@ -51,6 +51,7 @@ public class WaitlistFragmentTest {
         testEvent = new Event(
                 "Test Event",
                 "This is a test event description.",
+                "",
                 10.0f,
                 testFacility,
                 startDateTime,

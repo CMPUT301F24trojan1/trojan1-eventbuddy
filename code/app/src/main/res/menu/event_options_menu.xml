@@ -18,4 +18,10 @@
     <item
         android:id="@+id/option_delete_event"
         android:title="Delete Event" />
+    <item
+        android:id="@+id/option_view_waitlist"
+        android:title="View Waitlist" />
+    <item
+        android:id="@+id/option_initiate_lottery"
+        android:title="Initiate Lottery" />
 </menu>
