@@ -261,7 +261,7 @@ public class EventDetailsFragment extends Fragment {
                                                     @Override
                                                     public void onSuccess(Void unused) {
                                                         Log.d("EventDetails", "Event successfully updated in the database.");
-
+                                                        addtoNotifications();
                                                         // Save the updated entrant only after the event is successfully updated
                                                         database.insertUserDocument(
                                                                 new OnSuccessListener<Void>() {
@@ -369,8 +369,12 @@ public class EventDetailsFragment extends Fragment {
                 notificationManager.createNotificationChannel(notificationChannel);
             }
 
+            // Log the topic
+            String topic = "Event_" + eventId;  // Match the backend topic
+            Log.d("Notifications", "Subscribing to topic: " + topic);
+
             // Subscribe the user to the event's notification topic
-            FirebaseMessaging.getInstance().subscribeToTopic(eventId)
+            FirebaseMessaging.getInstance().subscribeToTopic(topic)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Log.d("Notifications", "Successfully subscribed to notifications for event: " + eventId);
@@ -566,14 +570,6 @@ public class EventDetailsFragment extends Fragment {
             Log.e("EventDetailsFragment", "Event is null in onCreateView");
         }
 
-//        // Check entrant status and update button visibility
-//        if (event != null) {
-//            checkEntrantStatus();
-//        } else {
-//            Log.e("EventDetailsFragment", "Event is null in onCreateView");
-//        }
-
-        // If the user is an organizer, show manage button
         if (App.currentUser != null && App.currentUser.isOrganizer()) {
             checkCreatedEventsFromDatabase(event.getEventId(), exists -> {
                 if (exists && manageButton != null) {

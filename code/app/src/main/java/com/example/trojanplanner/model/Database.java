@@ -96,7 +96,7 @@ public class Database {
         return database;
     }
 
- // ========================= (private) Constructors ==========================
+    // ========================= (private) Constructors ==========================
     /**
      * The default constructor which creates a working Database object
      */
@@ -1191,7 +1191,7 @@ public class Database {
                 subQueryCount += entrant.getCurrentEnrolledEvents().size();
                 subQueryCount += entrant.getCurrentDeclinedEvents().size();
                 subQueryCount += entrant.getCurrentWaitlistedEvents().size();
-                
+
                 if (subQueryCount > 0) {
                     QueryTracker queryTracker = new QueryTracker(subQueryCount);
 
@@ -1232,7 +1232,7 @@ public class Database {
                             return;
                         }
                     };
-                    
+
                     // Launch queries
                     for (Event event : entrant.getCurrentEnrolledEvents()) {
                         System.out.println("Launching query for event: " + event.getEventId());
@@ -1260,10 +1260,10 @@ public class Database {
                         successAction.OnSuccess(entrant);
                     }
                 }
-                
+
 
             }
-            
+
 
         });
 
@@ -1459,8 +1459,8 @@ public class Database {
                 }
                 // Only send subqueries for events if expandEvents is true, else leave them as only eventIds
                 if (expandEvents && organizer.getCreatedEvents().size() > 0) {
-                     createdEventsNeeded = true;
-                     subQueryCount += organizer.getCreatedEvents().size();
+                    createdEventsNeeded = true;
+                    subQueryCount += organizer.getCreatedEvents().size();
                 }
 
                 System.out.println("SubQueryCount: " + subQueryCount);
@@ -1802,7 +1802,7 @@ public class Database {
         else {
             owner = null;
         }
-        
+
         Facility facility = new Facility((String) facilityMap.get("name"), (String) facilityMap.get("facilityID"), (String) facilityMap.get("location"), owner, (String) facilityMap.get("facilityPhoto"));
 
         return facility;
@@ -1811,7 +1811,7 @@ public class Database {
 
     /**
      * (Private method so that other classes cannot escape sharing - wrapper method enforces this)
-     * Gets a facility document from the Firestore Database if the given facilityId exists. 
+     * Gets a facility document from the Firestore Database if the given facilityId exists.
      * This action is asynchronous and so the class calling this must initialize a
      * QuerySuccessAction and QueryFailureAction and pass it into the function to determine what
      * action should be taken when receiving the results. On a success, the facility object can be
@@ -2369,14 +2369,14 @@ public class Database {
 
             }
         };
-    
+
         Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
             @Override
             public void OnFailure() {
                 System.out.println("Query attempt failed!");
             }
         };
-    
+
         database.getOrganizer(successAction, failureAction, "testOrganizer");
     }
 
@@ -2414,10 +2414,10 @@ public class Database {
 
         database.getFacility(successAction, failureAction, "1a2b3c4567890-0001239389382");
     }
-    
-    
-    
-    
+
+
+
+
     public static void getQRTest() {
         Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){

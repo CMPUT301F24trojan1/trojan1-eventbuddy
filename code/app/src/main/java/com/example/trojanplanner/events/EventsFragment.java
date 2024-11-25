@@ -172,7 +172,6 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
 
         // Use NavController to navigate to EventEditFragment
         NavController navController = Navigation.findNavController(requireView());
-
         // Prepare the arguments
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);  // Pass the event data to the fragment

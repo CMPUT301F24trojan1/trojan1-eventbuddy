@@ -1,29 +1,25 @@
 package com.example.trojanplanner.events.organizer;
 
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.core.app.NotificationCompat;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.example.trojanplanner.HelperFragments.WaitlistFragment;
+import com.example.trojanplanner.HelperFragments.MarkedMapFragment;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.User;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -43,6 +39,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
      * @param event The event object for which options are to be displayed.
      * @return A new instance of EventOptionsDialogFragment.
      */
+    @NonNull
     public static EventOptionsDialogFragment newInstance(Event event) {
         EventOptionsDialogFragment fragment = new EventOptionsDialogFragment();
         Bundle args = new Bundle();
@@ -92,61 +89,28 @@ public class EventOptionsDialogFragment extends DialogFragment {
      *
      * @param optionIndex The index of the selected option.
      */
-//    private void handleOptionSelection(int optionIndex) {
-//        switch (optionIndex) {
-//            case 0:
-//                String eventId = event.getEventId();
-//                String message = "You're getting this because you expressed interest for this event!";
-//                String title = "Announcement Title";
-//                sendAnnouncement(eventId, title, message);
-//                break;
-//            case 1:
-//                viewAttendees();
-//                break;
-//            case 2:
-//                viewMap();
-//                break;
-//            case 3:
-//                showCheckinCode();
-//                break;
-//            case 4:
-//                generateEventCode();
-//                break;
-//            case 5:
-//                deleteEvent();
-//                break;
-//            case 6: // View Waitlist
-//                viewWaitlist();
-//                break;
-//            case 7: // Initiate Lottery
-//                initiateLottery();
-//                break;
-//            default:
-//                break;
-//        }
-//    }
     private void handleOptionSelection(int optionIndex) {
         switch (optionIndex) {
-            case 0: // Send Announcement
-                navigateToAnnouncement();
-                break;
-            case 1:
-                viewAttendees();
-                break;
-            case 2:
-                viewMap();
-                break;
-            case 3:
+            case 0:
                 showCheckinCode();
                 break;
-            case 4:
+            case 1:
                 generateEventCode();
                 break;
-            case 5:
-                deleteEvent();
+            case 2:
+                sendAnnouncement(event);
                 break;
-            case 6: // View Waitlist
+            case 3: // View Waitlist
                 viewWaitlist();
+                break;
+            case 4:
+                viewSelected();
+                break;
+            case 5:
+                viewCancelled();
+                break;
+            case 6:
+                viewMap();
                 break;
             case 7: // Initiate Lottery
                 initiateLottery();
@@ -154,16 +118,15 @@ public class EventOptionsDialogFragment extends DialogFragment {
             case 8:
                 navigateToPendingList();
                 break;
+            case 8: // edit the event information and the poster
+                editEvent();
+                break;
+            case 9:
+                deleteEvent();
+                break;
             default:
                 break;
         }
-    }
-    private void navigateToAnnouncement() {
-        Bundle args = new Bundle();
-        args.putSerializable("event", event);
-
-        NavController navController = Navigation.findNavController(getParentFragment().requireView());
-        navController.navigate(R.id.SendAnnouncementFragment, args); // Ensure the ID matches your nav graph
     }
 
     private void navigateToPendingList() {
@@ -174,94 +137,77 @@ public class EventOptionsDialogFragment extends DialogFragment {
         navController.navigate(R.id.PendingListFragment, args);
     }
 
-    /**
-     * Logic to send an announcement for the event.
-     */
-    //TO DO:
-    // have a toast, and also send a notification to the user channel, the users associated with the event
-    //right now it works perfectly, but we need to add that feature.
-    //out of the waitlist, we can choose any of the selected users to to send the notification to
-    //send to fcm at a certain channel
-    //send to all might be a button and then we probably want a feature that lets you send to certain deviceIds/Users/
-    // lets navigate to a sepeerate fragment
-    // right now when we have annoucement and we click it it just does the annoucement to event
-    // we want it to redirect us to a fragment that lets you basically input user Ids and a button for "send  notification" just very basic
-    //
-    private void sendAnnouncement(String eventId, String title, String message) {
-        if (eventId == null || title == null || message == null) {
-            Toast.makeText(getContext(), "Invalid event details. Cannot send announcement.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String channelId = "EventChannel_" + eventId; // Use the eventId to identify the channel
-
-        // Create a Notification Manager
-        NotificationManager notificationManager =
-                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // For Android 8.0+ (Oreo and above), create a notification channel dynamically
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(
-                    channelId,
-                    "Event Updates for " + eventId,
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            notificationChannel.setDescription("Notifications for updates on event " + eventId);
-            notificationManager.createNotificationChannel(notificationChannel);
-        }
-
-        // Create the notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getContext(), channelId)
-                .setSmallIcon(R.drawable.logo) // Replace with your app's notification icon
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-
-        // Show the notification
-        notificationManager.notify(eventId.hashCode(), notificationBuilder.build()); // Use eventId's hash as a unique ID
+    //TO DO
+    private void editEvent() {
+        Toast.makeText(getContext(), "Edit Event clicked", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Handles sending Announcements to different user lists
+     *
+     * @param event The event to send announcements for
+     */
+    private void sendAnnouncement(Event event) {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
 
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.NotificationSenderFragment, args);
+    }
+
+    /**
+     * Logic to view waitlists of the event.
+     */
+    private void viewWaitlist() {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
+    }
+
+    /**
+     * Logic to view enrolled attendees of the event.
+     */
+    private void viewSelected() {
+        Bundle args = new Bundle();
+        event.setWaitingList(event.getEnrolledList());
+        args.putSerializable("event", event);
+
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
+    }
 
     /**
      * Logic to view attendees of the event.
      */
-    private void viewAttendees() {
-        if (event != null && event.getWaitingList() != null) {
-            ArrayList<User> waitingList = event.getWaitingList();
+    private void viewCancelled() {
+        Bundle args = new Bundle();
+        event.setWaitingList(event.getCancelledList());
+        args.putSerializable("event", event);
 
-            if (!waitingList.isEmpty()) {
-                // Build a string with the list of waiting attendees
-                StringBuilder attendeesList = new StringBuilder("Waiting List:\n");
-                for (User user : waitingList) {
-                    attendeesList.append(user.getFirstName()).append("\n");
-                }
-
-                // Display the waiting list in a dialog
-                new AlertDialog.Builder(getContext())
-                        .setTitle("Event Waiting List")
-                        .setMessage(attendeesList.toString())
-                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                        .show();
-            } else {
-                Toast.makeText(getContext(), "No attendees in the waiting list.", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Toast.makeText(getContext(), "Event data is missing or invalid.", Toast.LENGTH_SHORT).show();
-        }
+        // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
     }
 
     /**
      * Logic to view the event location on a map.
      */
     private void viewMap() {
-        // Add your logic to view the event location on a map
+        // Show a Toast message
         Toast.makeText(getContext(), "View Map clicked", Toast.LENGTH_SHORT).show();
+
+        // Use NavController to navigate to the MarkedMapFragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.action_eventDetailsFragment_to_markedMapFragment);  // Ensure the ID matches your nav graph
     }
 
     /**
-     * Logic to show the event's check-in code (e.g., generating a QR code).
+     * Logic for showing the event's current QR code
      */
     private void showCheckinCode() {
         if (event == null || event.getEventId() == null) {
@@ -295,6 +241,9 @@ public class EventOptionsDialogFragment extends DialogFragment {
         showQRCodeInDialog(qrCodeBitmap);
     }
 
+    /**
+     * Logic for generating a QR code).
+     */
     private void generateEventCode() {
         if (event == null || event.getEventId() == null) {
             Log.e("EventOptionsDialog", "Event or Event ID is null");
@@ -357,22 +306,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
         Log.d("EventOptionsDialog", "QR Code displayed in dialog successfully.");
     }
 
-
     /**
      * Logic to delete the event, potentially by calling an API or updating the database.
      */
     private void deleteEvent() {
         // Add your logic to delete the event
         Toast.makeText(getContext(), "Delete Event clicked", Toast.LENGTH_SHORT).show();
-    }
-
-    private void viewWaitlist() {
-        Bundle args = new Bundle();
-        args.putSerializable("event", event);
-
-        // Use NavController from the parent fragment
-        NavController navController = Navigation.findNavController(getParentFragment().requireView());
-        navController.navigate(R.id.waitlistFragment, args);
     }
 
     private void initiateLottery() {
