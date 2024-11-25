@@ -92,13 +92,43 @@ public class EventOptionsDialogFragment extends DialogFragment {
      *
      * @param optionIndex The index of the selected option.
      */
+//    private void handleOptionSelection(int optionIndex) {
+//        switch (optionIndex) {
+//            case 0:
+//                String eventId = event.getEventId();
+//                String message = "You're getting this because you expressed interest for this event!";
+//                String title = "Announcement Title";
+//                sendAnnouncement(eventId, title, message);
+//                break;
+//            case 1:
+//                viewAttendees();
+//                break;
+//            case 2:
+//                viewMap();
+//                break;
+//            case 3:
+//                showCheckinCode();
+//                break;
+//            case 4:
+//                generateEventCode();
+//                break;
+//            case 5:
+//                deleteEvent();
+//                break;
+//            case 6: // View Waitlist
+//                viewWaitlist();
+//                break;
+//            case 7: // Initiate Lottery
+//                initiateLottery();
+//                break;
+//            default:
+//                break;
+//        }
+//    }
     private void handleOptionSelection(int optionIndex) {
         switch (optionIndex) {
-            case 0:
-                String eventId = event.getEventId();
-                String message = "You're getting this because you expressed interest for this event!";
-                String title = "Announcement Title";
-                sendAnnouncement(eventId, title, message);
+            case 0: // Send Announcement
+                navigateToAnnouncement();
                 break;
             case 1:
                 viewAttendees();
@@ -121,14 +151,42 @@ public class EventOptionsDialogFragment extends DialogFragment {
             case 7: // Initiate Lottery
                 initiateLottery();
                 break;
+            case 8:
+                navigateToPendingList();
+                break;
             default:
                 break;
         }
+    }
+    private void navigateToAnnouncement() {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.SendAnnouncementFragment, args); // Ensure the ID matches your nav graph
+    }
+
+    private void navigateToPendingList() {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.PendingListFragment, args);
     }
 
     /**
      * Logic to send an announcement for the event.
      */
+    //TO DO:
+    // have a toast, and also send a notification to the user channel, the users associated with the event
+    //right now it works perfectly, but we need to add that feature.
+    //out of the waitlist, we can choose any of the selected users to to send the notification to
+    //send to fcm at a certain channel
+    //send to all might be a button and then we probably want a feature that lets you send to certain deviceIds/Users/
+    // lets navigate to a sepeerate fragment
+    // right now when we have annoucement and we click it it just does the annoucement to event
+    // we want it to redirect us to a fragment that lets you basically input user Ids and a button for "send  notification" just very basic
+    //
     private void sendAnnouncement(String eventId, String title, String message) {
         if (eventId == null || title == null || message == null) {
             Toast.makeText(getContext(), "Invalid event details. Cannot send announcement.", Toast.LENGTH_SHORT).show();
@@ -316,7 +374,6 @@ public class EventOptionsDialogFragment extends DialogFragment {
         NavController navController = Navigation.findNavController(getParentFragment().requireView());
         navController.navigate(R.id.waitlistFragment, args);
     }
-
 
     private void initiateLottery() {
         if (event == null || event.getWaitingList() == null || event.getWaitingList().isEmpty()) {
