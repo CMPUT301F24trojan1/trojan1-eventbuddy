@@ -1,130 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp">
 
-    <!-- Event Image -->
-
-    <!-- Event Title -->
-
-    <ImageView
-        android:id="@+id/eventImageView"
-        android:layout_width="400dp"
+    <!-- Event Image in Rounded Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/eventImageCard"
+        android:layout_width="0dp"
         android:layout_height="265dp"
-        android:layout_marginTop="14dp"
-        android:contentDescription="Event image"
-        android:src="@drawable/event_placeholder"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:cardUseCompatPadding="false"
+        app:cardPreventCornerOverlap="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/eventNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Event Name"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/eventImageView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="16dp" />
+        <!-- Overlay Layout for Close Button -->
+        <android.widget.FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <!-- Event Location -->
-    <TextView
-        android:id="@+id/eventLocationTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Event Location"
-        app:layout_constraintTop_toBottomOf="@id/eventNameTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Event Image -->
+            <ImageView
+                android:id="@+id/eventImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Event image"
+                android:src="@drawable/event_placeholder"
+                android:scaleType="fitXY" />
 
-    <!-- Event Time -->
-    <TextView
-        android:id="@+id/eventDateTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start date to end date"
-        app:layout_constraintTop_toBottomOf="@id/eventLocationTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Close Button Above the Event Image -->
+            <ImageButton
+                android:id="@+id/button_close"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:layout_gravity="end|top" />
+        </android.widget.FrameLayout>
+    </androidx.cardview.widget.CardView>
 
-    <!-- Recurring Dates Dropdown -->
-    <TextView
-        android:id="@+id/recurringDatesTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Recurring Dates"
-        app:layout_constraintTop_toBottomOf="@id/eventDateTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
-
-    <!-- Divider -->
-    <View
-        android:id="@+id/view"
+    <!-- Details Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/detailsBox"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="@color/black"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="265dp"
+        android:layout_marginTop="4dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:cardUseCompatPadding="false"
+        app:cardPreventCornerOverlap="false"
+        app:layout_constraintTop_toBottomOf="@id/eventImageCard"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Event Description -->
-    <TextView
-        android:id="@+id/eventDescriptionTextView"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Event Description"
-        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Lottery Entries -->
-    <TextView
-        android:id="@+id/lotteryEntriesTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Lottery Entries: "
-        app:layout_constraintTop_toBottomOf="@id/eventDescriptionTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+        <!-- Event Title -->
+        <TextView
+            android:id="@+id/eventNameTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Event Name"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
 
-    <!-- Total Spots -->
-    <TextView
-        android:id="@+id/totalSpotsTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total Spots: "
-        app:layout_constraintTop_toBottomOf="@id/lotteryEntriesTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="4dp" />
+        <!-- Event Location -->
+        <TextView
+            android:id="@+id/eventLocationTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📍 Event Location"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginTop="8dp" />
 
-    <!-- Start Button -->
+        <!-- Event Time -->
+        <TextView
+            android:id="@+id/eventDateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏰ Start date to end date"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginTop="8dp" />
+
+        <!-- Recurring Dates Dropdown -->
+        <TextView
+            android:id="@+id/recurringDatesTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔄 Recurring Dates"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginTop="8dp" />
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/black" />
+
+        <!-- Event Description -->
+        <TextView
+            android:id="@+id/eventDescriptionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Event Description"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginTop="8dp" />
+
+        <!-- Lottery Entries -->
+        <TextView
+            android:id="@+id/lotteryEntriesTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎟️ Lottery Entries: "
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginTop="8dp" />
+
+        <!-- Total Spots -->
+        <TextView
+            android:id="@+id/totalSpotsTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🪑 Total Spots: "
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
+
     <Button
         android:id="@+id/button_enter_now"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enter Now!"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/red_primary"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/totalSpotsTextView"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        app:layout_constraintTop_toBottomOf="@id/detailsBox"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <ImageButton
-        android:id="@+id/button_close"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="320dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
