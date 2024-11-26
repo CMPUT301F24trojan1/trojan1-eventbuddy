@@ -641,6 +641,7 @@ public class Database {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
+        facilityMap.put("location", facility.getLocation());
         facilityMap.put("facilityPhoto", facility.getPfpFacilityFilePath());
 
         DocumentReference ownerRef;

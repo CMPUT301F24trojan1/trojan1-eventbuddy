@@ -76,7 +76,6 @@ public class FacilitySetupFragment extends Fragment {
             // Clear the input fields
             facilityNameEditText.setText("");
             facilityLocationEditText.setText("");
-            facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Reset to a default image
         });
 
         // Ensure the app bar is visible
@@ -86,6 +85,12 @@ public class FacilitySetupFragment extends Fragment {
 
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();
+            cancelButton.setOnClickListener(v -> {
+                // Clear the input fields
+                facilityNameEditText.setText("");
+                facilityLocationEditText.setText("");
+                facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Reset to a default image
+            });
 
             // Override default photo picker callback function
             mainActivity.facilityPhotoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
@@ -249,8 +254,8 @@ public class FacilitySetupFragment extends Fragment {
 
         // Load facility photo
         if (facility.getPfpFacilityBitmap() != null) {
-            facilityPhotoUri = Uri.parse(facility.getPfpFacilityFilePath());
-            facilityPhoto.setImageURI(facilityPhotoUri);
+            facilityPhoto.setImageBitmap(facility.getPfpFacilityBitmap());
+            Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility photo loaded");
         } else {
             facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Default image if no photo
         }
