@@ -811,4 +811,18 @@ public class Event implements Serializable {
         return occurrences;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true; // Check for reference equality
+        if (obj == null || getClass() != obj.getClass()) return false; // Check for class equality
+        Event event = (Event) obj;
+        return eventId != null && eventId.equals(event.eventId); // Compare based on eventId
+    }
+
+    @Override
+    public int hashCode() {
+        return eventId != null ? eventId.hashCode() : 0; // Generate hash based on eventId
+    }
+
+
 }

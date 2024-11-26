@@ -260,5 +260,19 @@ public abstract class User implements Serializable {
         return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.placeholder_avatar);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true; // Check for reference equality
+        if (obj == null || getClass() != obj.getClass()) return false; // Check for class equality
+        User user = (User) obj;
+        return deviceId != null && deviceId.equals(user.deviceId); // Compare based on deviceId
+    }
+
+    @Override
+    public int hashCode() {
+        return deviceId != null ? deviceId.hashCode() : 0; // Generate hash based on deviceId
+    }
+
+
 }
 

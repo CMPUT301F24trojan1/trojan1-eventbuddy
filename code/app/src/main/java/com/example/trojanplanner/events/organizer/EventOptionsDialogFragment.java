@@ -319,230 +319,261 @@ public class EventOptionsDialogFragment extends DialogFragment {
         // Add your logic to delete the event
         Toast.makeText(getContext(), "Delete Event clicked", Toast.LENGTH_SHORT).show();
     }
+
+
     private void initiateLottery() {
         if (event == null) {
             Toast.makeText(requireContext(), "Event data is missing.", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Fetch the event to select a winner
+        Database.getDB().getEvent(
+                object -> {
+                    Event syncedEvent = (Event) object;
+
+                    if (syncedEvent == null || syncedEvent.getWaitingList() == null || syncedEvent.getWaitingList().isEmpty()) {
+                        Toast.makeText(getContext(), "Cannot initiate a lottery. Waitlist is empty or missing.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    ArrayList<User> waitlist = syncedEvent.getWaitingList();
+
+                    // Simple random lottery logic
+                    int winnerIndex = (int) (Math.random() * waitlist.size());
+                    User winner = waitlist.get(winnerIndex);
+
+                    // Log the winner
+                    Log.d("EventOptionsDialog", "Winner selected: " + winner.getFirstName() + " " + winner.getLastName());
+
+                    // Call `joinPendingList` to add the winner to the pending list
+                    joinPendingList(winner);
+
+                    // Call `leaveWaitlist` to remove the winner from the waitlist
+                    leaveWaitlist(winner);
+                },
+                () -> Log.e("EventOptionsDialog", "Failed to fetch event data."),
+                event.getEventId()
+        );
+    }
+
+//    public void joinPendingList(User winner, Runnable onSuccess, Runnable onFailure) {
+//        if (event == null || winner == null) {
+//            Log.e("joinPendingList", "Event or winner data is missing.");
+//            onFailure.run();
+//            return;
+//        }
+//
+//        Database.getDB().getEvent(
+//                object -> {
+//                    Event syncedEvent = (Event) object;
+//
+//                    if (syncedEvent.getPendingList() == null) {
+//                        syncedEvent.setPendingList(new ArrayList<>());
+//                    }
+//
+//                    // Add the winner to the pending list
+//                    syncedEvent.getPendingList().add(winner);
+//
+//                    Database.getDB().getEntrant(
+//                            object1 -> {
+//                                Entrant syncedEntrant = (Entrant) object1;
+//
+//                                if (syncedEntrant.getCurrentPendingEvents() == null) {
+//                                    syncedEntrant.setCurrentPendingEvents(new ArrayList<>());
+//                                }
+//
+//                                syncedEntrant.getCurrentPendingEvents().add(syncedEvent);
+//
+//                                // Save the updated event
+//                                Database.getDB().insertEvent(
+//                                        unused -> {
+//                                            Log.d("joinPendingList", "Event successfully updated in the database.");
+//
+//                                            // Save the entrant after the event update
+//                                            Database.getDB().insertUserDocument(
+//                                                    unused2 -> {
+//                                                        Log.d("joinPendingList", "Entrant successfully updated in the database.");
+//                                                        onSuccess.run(); // Signal success
+//                                                    },
+//                                                    e -> {
+//                                                        Log.e("joinPendingList", "Error updating entrant: " + e.getMessage());
+//                                                        onFailure.run(); // Signal failure
+//                                                    },
+//                                                    syncedEntrant
+//                                            );
+//                                        },
+//                                        e -> {
+//                                            Log.e("joinPendingList", "Error updating event: " + e.getMessage());
+//                                            onFailure.run(); // Signal failure
+//                                        },
+//                                        syncedEvent
+//                                );
+//                            },
+//                            () -> {
+//                                Log.e("joinPendingList", "Error syncing entrant from database.");
+//                                onFailure.run(); // Signal failure
+//                            },
+//                            winner.getDeviceId()
+//                    );
+//                },
+//                () -> {
+//                    Log.e("joinPendingList", "Error syncing event from database.");
+//                    onFailure.run(); // Signal failure
+//                },
+//                event.getEventId()
+//        );
+//    }
+
+    /**
+     * Adds the winner to the event's pending list.
+     * Also updates the entrant's current pending events in the database.
+     */
+    public void joinPendingList(User winner) {
+        if (event == null || winner == null) {
+//            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Database.getDB().getEvent(
+                object -> {
+                    Event syncedEvent = (Event) object;
+
+                    // Ensure the event's pending list is initialized
+                    if (syncedEvent.getPendingList() == null) {
+                        syncedEvent.setPendingList(new ArrayList<>());
+                    }
+
+
+                    // Add the winner to the pending list
+                    syncedEvent.getPendingList().add(winner);
+
+                    // Log the current pending list
+                    Log.d("EventDetails", "Current Pending List:" + syncedEvent.getPendingList());
+
+                    Database.getDB().getEntrant(
+                            object1 -> {
+                                Entrant syncedEntrant = (Entrant) object1;
+                                if (syncedEntrant.getCurrentPendingEvents() == null) {
+                                    syncedEntrant.setCurrentPendingEvents(new ArrayList<>());
+                                }
+
+                                syncedEntrant.getCurrentPendingEvents().add(syncedEvent);
+
+                                // Debug logs before saving
+                                Log.d("EventDetails", "Synced Event to Save: " + syncedEvent.toString());
+                                Log.d("EventDetails", "Synced Entrant to Save: " + syncedEntrant.toString());
+
+                                // Save the updated event
+                                Database.getDB().insertEvent(
+                                        unused -> {
+                                            Log.d("EventDetails", "Event successfully updated in the database.");
+
+                                            // Save the updated entrant only after the event is successfully updated
+                                            Database.getDB().insertUserDocument(
+                                                    new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void unused) {
+//                                                            Toast.makeText(getContext(), "Successfully added to the pending list!", Toast.LENGTH_SHORT).show();
+                                                            Log.d("EventDetails", "Entrant successfully updated in the database.");
+                                                        }
+                                                    },
+                                                    new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+//                                                            Toast.makeText(getContext(), "Failed to update entrant data.", Toast.LENGTH_SHORT).show();
+                                                            Log.e("EventDetails", "Error updating entrant: " + e.getMessage());
+                                                        }
+                                                    },
+                                                    syncedEntrant // Pass the synchronized entrant
+                                            );
+                                        },
+                                        e -> {
+//                                            Toast.makeText(getContext(), "Failed to update event data.", Toast.LENGTH_SHORT).show();
+                                            Log.e("EventDetails", "Error updating event: " + e.getMessage());
+                                        },
+                                        syncedEvent // Pass the synchronized event
+                                );
+                            },
+                            () -> {
+//                                Toast.makeText(getContext(), "Failed to sync entrant data.", Toast.LENGTH_SHORT).show();
+                                Log.e("EventDetails", "Error syncing entrant from database.");
+                            },
+                            winner.getDeviceId() // Fetch the entrant using winner's deviceId
+                    );
+                },
+                () -> {
+//                    Toast.makeText(getContext(), "Failed to sync event data.", Toast.LENGTH_SHORT).show();
+                    Log.e("EventDetails", "Error syncing event from database.");
+                },
+                event.getEventId()
+        );
+    }
+
+
+    public void leaveWaitlist(User winner) {
         Database.getDB().getEvent(
                 new Database.QuerySuccessAction() {
                     @Override
                     public void OnSuccess(Object object) {
-//                        if (!isAdded()) {
-//                            Log.d("EventOptionsDialog", "Fragment not attached to context. Skipping callback.");
+                        Event syncedEvent = (Event) object;
+
+                        // Ensure the waitlist is initialized
+                        if (syncedEvent.getWaitingList() == null || syncedEvent.getWaitingList().isEmpty()) {
+                            Log.d("leaveWaitlist", "The waitlist is empty.");
+                            return;
+                        }
+
+                        //this doesn't work
+                        Log.d("leaveWaitlist", "Current Waiting List: " + syncedEvent.getWaitingList().toString());
+                        Log.d("leaveWaitlist", "Current Entrant: " + winner.toString());
+
+//                        if (!syncedEvent.isUserRegistered(winner)){
+//                            Log.d("leaveWaitlist", "Entrant is not on the waitlist.");
 //                            return;
 //                        }
 
-                        Event syncedEvent = (Event) object;
-
-                        if (syncedEvent == null || syncedEvent.getWaitingList() == null || syncedEvent.getWaitingList().isEmpty()) {
-                            Toast.makeText(requireContext(), "Cannot initiate a lottery. Waitlist is empty or missing.", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        ArrayList<User> waitlist = syncedEvent.getWaitingList();
-
-                        // Simple random lottery logic
-                        int winnerIndex = (int) (Math.random() * waitlist.size());
-                        User winner = waitlist.get(winnerIndex);
-
-                        // Set the winner in the current instance (if needed for methods)
-                        event = syncedEvent;
-
-                        Log.d("EventOptionsDialog", "Winner selected: " + winner.getFirstName() + " " + winner.getLastName());
-
-                        // Call `leaveWaitlist` to remove the winner
-                        leaveWaitlist();
-
-                        // Call `joinPendingList` to add the winner to the pending list
-                        joinPendingList();
-
-                        // Notify the winner and log
-                        String winnerMessage = "Congratulations! " + winner.getFirstName() + " " + winner.getLastName() + " has won the lottery.";
-                        Log.d("EventOptionsDialog", "Lottery Winner: " + winnerMessage);
-
-                        new AlertDialog.Builder(requireContext())
-                                .setTitle("Lottery Winner")
-                                .setMessage(winnerMessage)
-                                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                                .create()
-                                .show();
-                    }
-                },
-                new Database.QueryFailureAction() {
-                    @Override
-                    public void OnFailure() {
-                        Log.e("EventOptionsDialog", "Failed to fetch event.");
-                        Toast.makeText(requireContext(), "Failed to fetch event data. Please try again.", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                event.getEventId()
-        );
-    }
-
-    public void joinPendingList() {
-        if (event == null || App.currentUser == null) {
-            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Entrant currentEntrant = (Entrant) App.currentUser;
-
-        Database.getDB().getEvent(
-                new Database.QuerySuccessAction() {
-                    @Override
-                    public void OnSuccess(Object object) {
-                        Event syncedEvent = (Event) object;
-
-                        // Ensure the pending list is initialized
-                        if (syncedEvent.getPendingList() == null) {
-                            syncedEvent.setPendingList(new ArrayList<>());
-                        }
-
-                        // Prevent duplicates
-                        if (syncedEvent.getPendingList().contains(currentEntrant)) {
-                            Toast.makeText(getContext(), "You are already on the pending list.", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        // Add entrant to the event's pending list
-                        syncedEvent.getPendingList().add(currentEntrant);
-
+                        // Fetch the entrant to remove the event from their currentWaitlistedEvents
                         Database.getDB().getEntrant(
                                 new Database.QuerySuccessAction() {
                                     @Override
                                     public void OnSuccess(Object object) {
                                         Entrant syncedEntrant = (Entrant) object;
 
-                                        // Ensure the entrant's pending events are initialized
-                                        if (syncedEntrant.getCurrentPendingEvents() == null) {
-                                            syncedEntrant.setCurrentPendingEvents(new ArrayList<>());
+                                        // Ensure the waitlisted events are initialized
+                                        if (syncedEntrant.getCurrentWaitlistedEvents() == null || syncedEntrant.getCurrentWaitlistedEvents().isEmpty()) {
+                                            Log.d("leaveWaitlist", "No waitlisted events found for the entrant.");
+                                            return;
+                                        }
+                                        for (Event event : syncedEntrant.getCurrentWaitlistedEvents()) {
+                                            Log.d("leaveWaitlist", "Comparing with Event: " + event);
+                                            Log.d("leaveWaitlist", "Comparison Result: " + syncedEvent.equals(event));
+                                        }
+                                        // Attempt to remove the event from the entrant's waitlisted events
+                                        if (!syncedEntrant.getCurrentWaitlistedEvents().contains(syncedEvent)) {
+                                            Log.d("leaveWaitlist", "Event is not in the entrant's waitlisted events.");
+                                            return;
                                         }
 
-                                        // Add the event to the entrant's pending events
-                                        syncedEntrant.getCurrentPendingEvents().add(syncedEvent);
-
-                                        // Save the updated event and entrant
-                                        Database.getDB().insertEvent(
-                                                new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void unused) {
-                                                        Log.d("joinPendingList", "Event successfully updated in the database.");
-
-                                                        Database.getDB().insertUserDocument(
-                                                                new OnSuccessListener<Void>() {
-                                                                    @Override
-                                                                    public void onSuccess(Void unused) {
-                                                                        Toast.makeText(getContext(), "Successfully added to the pending list!", Toast.LENGTH_SHORT).show();
-                                                                        Log.d("joinPendingList", "Entrant successfully updated in the database.");
-                                                                    }
-                                                                },
-                                                                new OnFailureListener() {
-                                                                    @Override
-                                                                    public void onFailure(@NonNull Exception e) {
-                                                                        Toast.makeText(getContext(), "Failed to update entrant data.", Toast.LENGTH_SHORT).show();
-                                                                        Log.e("joinPendingList", "Error updating entrant: " + e.getMessage());
-                                                                    }
-                                                                },
-                                                                syncedEntrant
-                                                        );
-                                                    }
-                                                },
-                                                new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Toast.makeText(getContext(), "Failed to update event data.", Toast.LENGTH_SHORT).show();
-                                                        Log.e("joinPendingList", "Error updating event: " + e.getMessage());
-                                                    }
-                                                },
-                                                syncedEvent
-                                        );
-                                    }
-                                },
-                                new Database.QueryFailureAction() {
-                                    @Override
-                                    public void OnFailure() {
-                                        Toast.makeText(getContext(), "Failed to sync entrant data.", Toast.LENGTH_SHORT).show();
-                                        Log.e("joinPendingList", "Error syncing entrant from database.");
-                                    }
-                                },
-                                currentEntrant.getDeviceId()
-                        );
-                    }
-                },
-                new Database.QueryFailureAction() {
-                    @Override
-                    public void OnFailure() {
-                        Toast.makeText(getContext(), "Failed to sync event data.", Toast.LENGTH_SHORT).show();
-                        Log.e("joinPendingList", "Error syncing event from database.");
-                    }
-                },
-                event.getEventId()
-        );
-    }
-    public void leaveWaitlist() {
-        if (event == null || App.currentUser == null) {
-            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Entrant currentEntrant = (Entrant) App.currentUser;
-
-        Database.getDB().getEvent(
-                new Database.QuerySuccessAction() {
-                    @Override
-                    public void OnSuccess(Object object) {
-                        Event syncedEvent = (Event) object;
-
-                        // Ensure the waiting list is initialized
-                        if (syncedEvent.getWaitingList() == null) {
-                            syncedEvent.setWaitingList(new ArrayList<>());
-                        }
-
-                        // Check if the entrant is in the waiting list
-                        if (!syncedEvent.getWaitingList().contains(currentEntrant)) {
-                            Toast.makeText(getContext(), "You are not on the waitlist.", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        // Remove the entrant from the waiting list
-                        syncedEvent.getWaitingList().remove(currentEntrant);
-
-                        Database.getDB().getEntrant(
-                                new Database.QuerySuccessAction() {
-                                    @Override
-                                    public void OnSuccess(Object object) {
-                                        Entrant syncedEntrant = (Entrant) object;
-
-                                        // Ensure the entrant's waitlisted events are initialized
-                                        if (syncedEntrant.getCurrentWaitlistedEvents() == null) {
-                                            syncedEntrant.setCurrentWaitlistedEvents(new ArrayList<>());
-                                        }
-
-                                        // Remove the event from the entrant's waitlisted events
-                                        syncedEntrant.getCurrentWaitlistedEvents().remove(syncedEvent);
-
-                                        // Save the updated event and entrant
+                                        // Save the updated event
                                         Database.getDB().insertEvent(
                                                 new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void unused) {
                                                         Log.d("leaveWaitlist", "Event successfully updated in the database.");
 
+                                                        // Save the updated entrant
                                                         Database.getDB().insertUserDocument(
                                                                 new OnSuccessListener<Void>() {
                                                                     @Override
                                                                     public void onSuccess(Void unused) {
-                                                                        Toast.makeText(getContext(), "Successfully removed from the waitlist!", Toast.LENGTH_SHORT).show();
                                                                         Log.d("leaveWaitlist", "Entrant successfully updated in the database.");
                                                                     }
                                                                 },
                                                                 new OnFailureListener() {
                                                                     @Override
                                                                     public void onFailure(@NonNull Exception e) {
-                                                                        Toast.makeText(getContext(), "Failed to update entrant data.", Toast.LENGTH_SHORT).show();
-                                                                        Log.e("leaveWaitlist", "Error updating entrant: " + e.getMessage());
+                                                                        Log.e("leaveWaitlist", "Failed to update entrant data: " + e.getMessage());
                                                                     }
                                                                 },
                                                                 syncedEntrant
@@ -552,8 +583,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
                                                 new OnFailureListener() {
                                                     @Override
                                                     public void onFailure(@NonNull Exception e) {
-                                                        Toast.makeText(getContext(), "Failed to update event data.", Toast.LENGTH_SHORT).show();
-                                                        Log.e("leaveWaitlist", "Error updating event: " + e.getMessage());
+                                                        Log.e("leaveWaitlist", "Failed to update event data: " + e.getMessage());
                                                     }
                                                 },
                                                 syncedEvent
@@ -563,24 +593,24 @@ public class EventOptionsDialogFragment extends DialogFragment {
                                 new Database.QueryFailureAction() {
                                     @Override
                                     public void OnFailure() {
-                                        Toast.makeText(getContext(), "Failed to sync entrant data.", Toast.LENGTH_SHORT).show();
-                                        Log.e("leaveWaitlist", "Error syncing entrant from database.");
+                                        Log.e("leaveWaitlist", "Failed to sync entrant data from the database.");
                                     }
                                 },
-                                currentEntrant.getDeviceId()
+                                winner.getDeviceId()
                         );
                     }
                 },
                 new Database.QueryFailureAction() {
                     @Override
                     public void OnFailure() {
-                        Toast.makeText(getContext(), "Failed to sync event data.", Toast.LENGTH_SHORT).show();
-                        Log.e("leaveWaitlist", "Error syncing event from database.");
+                        Log.e("leaveWaitlist", "Failed to sync event data from the database.");
                     }
                 },
                 event.getEventId()
         );
     }
+
+
 
 
 }

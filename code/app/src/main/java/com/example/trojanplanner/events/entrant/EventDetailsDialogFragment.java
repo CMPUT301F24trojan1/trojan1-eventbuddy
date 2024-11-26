@@ -144,8 +144,12 @@ public class EventDetailsDialogFragment extends DialogFragment {
                         Toast.makeText(getContext(), "You are already on the waitlist.", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
+                    //FIX we got to make sure the waitlist isn't full already
                     // Add the entrant to the event's waitlist
+                    if (!syncedEvent.canAddToWaitlist()) {
+                        // TO FIC: toast being like event waitlist is full or smth hmm...
+                        return;
+                    }
                     syncedEvent.getWaitingList().add(currentEntrant);
 
                     database.getEntrant(
