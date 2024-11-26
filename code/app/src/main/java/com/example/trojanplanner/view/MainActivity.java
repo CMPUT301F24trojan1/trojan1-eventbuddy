@@ -121,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         database.getEntrant(successAction, failureAction, deviceId);
     }
 
-
     public void getUserPfp() {
         System.out.println("Getting user's PFP bitmap...");
         OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
@@ -141,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
 
         database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
     }
-
 
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
@@ -188,12 +186,14 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
                 Intent intent = new Intent(MainActivity.this, QRActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                // Clear any savedInstanceState SO to not cause a crash due to Bundle size being too big
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                // Clear any savedInstanceState SO to not cause a crash due to Bundle size being too big
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 return true;
             }

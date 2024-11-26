@@ -153,4 +153,15 @@
             android:id="@+id/action_profileFragment_to_emptyEventsFragment"
             app:destination="@id/emptyEventsFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/PendingListFragment"
+        android:name="com.example.trojanplanner.HelperFragments.PendingListFragment"
+        android:label="Pending List">
+        <action
+            android:id="@+id/action_PendingListFragment_to_EventOptionsDialogFragment"
+            app:destination="@+id/EventOptionsDialogFragment" />
+    </fragment>
+
+
 </navigation>
