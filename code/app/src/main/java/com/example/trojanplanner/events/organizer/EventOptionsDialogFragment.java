@@ -227,9 +227,6 @@ public class EventOptionsDialogFragment extends DialogFragment {
         builder.create().show();
     }
 
-    public void leaveWaitlist() {
-    }
-
     private void uploadQRHashToDatabase(String qrHash, Event event) {
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
@@ -387,5 +384,4 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 break;
         }
     }
-
 }
