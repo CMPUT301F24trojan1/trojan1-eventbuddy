@@ -11,31 +11,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="7dp"
+        android:layout_marginTop="29dp"
         android:text="Go Back"
-        app:layout_constraintBottom_toTopOf="@+id/waitlistListView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/waitlistListView"
+        tools:layout_editor_absoluteX="156dp" />
 
     <ListView
         android:id="@+id/waitlistListView"
         android:layout_width="match_parent"
         android:layout_height="595dp"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="55dp" />
-
-    <Button
-        android:id="@+id/sendNotificationButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
-        android:layout_marginEnd="16dp"
-        android:text="Notify"
-        app:layout_constraintBottom_toTopOf="@+id/waitlistListView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.036" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
