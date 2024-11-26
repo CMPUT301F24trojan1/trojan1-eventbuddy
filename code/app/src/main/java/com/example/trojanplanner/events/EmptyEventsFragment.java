@@ -13,6 +13,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import android.net.Uri;
+import android.widget.VideoView;;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
@@ -35,6 +37,7 @@ public class EmptyEventsFragment extends Fragment {
     // TextView to display a message about no events
     private TextView messageTextView;
     private View loadingIndicator; // Optional loading indicator to show while data is loading
+    private VideoView videoBackground;
 
     /**
      * Called to create the view for this fragment. Inflates the layout and initializes the message view.
@@ -50,6 +53,13 @@ public class EmptyEventsFragment extends Fragment {
         // Inflate the fragment's layout
         View view = inflater.inflate(R.layout.fragment_empty_myevents, container, false);
 
+        //VideoView videoBackground = view.findViewById(R.id.videoBackground);
+        //Uri videoUri = Uri.parse("android.resource://" + requireContext().getPackageName() + "/" + R.raw.red_back);
+        //videoBackground.setVideoURI(videoUri);
+        //videoBackground.setOnCompletionListener(mp -> videoBackground.start());
+        //videoBackground.start();
+
+
         // Initialize the TextView to show the no events message
         messageTextView = view.findViewById(R.id.messageTextView);
         loadingIndicator = view.findViewById(R.id.loadingIndicator); // Initialize loading indicator
@@ -60,6 +70,8 @@ public class EmptyEventsFragment extends Fragment {
 
         return view;
     }
+
+
 
     /**
      * Called after the fragment's view has been created. Sets up click listeners for the buttons that allow
@@ -149,5 +161,33 @@ public class EmptyEventsFragment extends Fragment {
     private void showNoEventsMessage() {
         // Set the message text to inform the user that there are no events
         messageTextView.setText("No events found. Come back here to see events you've created or joined!");
+    }
+
+    // Handle video pause when fragment is not visible
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (videoBackground != null && videoBackground.isPlaying()) {
+            videoBackground.pause();
+        }
+    }
+
+    // Handle video resume when fragment is visible again
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (videoBackground != null) {
+            videoBackground.start();
+        }
+    }
+
+    // Release video resources when the fragment is destroyed
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (videoBackground != null) {
+            videoBackground.stopPlayback();
+            videoBackground = null;
+        }
     }
 }

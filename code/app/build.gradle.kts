@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation("pl.droidsonroids.gif:android-gif-drawable:1.2.29")
 
     // Unit testing dependencies
     testImplementation(libs.junit)

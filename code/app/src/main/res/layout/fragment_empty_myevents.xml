@@ -25,81 +25,102 @@
         android:id="@+id/titleTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="96dp"
+        android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-medium"
         android:gravity="center"
-        android:text="Welcome to Trojan Planner!"
+        android:text="WELCOME TO TROJAN PLANNER"
         android:textColor="@color/black"
-        android:textSize="24sp"
+        android:textSize="35sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/eventIcon" />
 
     <TextView
         android:id="@+id/messageTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:gravity="center"
         android:text="No events found."
-        android:textColor="@color/black"
-        android:textSize="18sp"
+        android:textColor="@color/darkGray"
+        android:textSize="20dp"
+        android:fontFamily="sans-serif-medium"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
     <TextView
         android:id="@+id/instructionTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="372dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="88dp"
+        android:layout_marginEnd="12dp"
+        android:fontFamily="sans-serif-condensed-medium"
         android:gravity="center"
         android:text="Please scan the event QR codes to view or join them!"
         android:textColor="@color/darkGray"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@+id/titleTextView"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/becomeOrganizerButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_width="240dp"
+        android:layout_height="73dp"
+        android:layout_marginTop="44dp"
+        android:background="@drawable/rounded_button"
         android:backgroundTint="@color/red_primary"
+        android:elevation="8dp"
         android:padding="12dp"
-        android:text="Become an Organizer!"
+        android:text="+ Become an Organizer!"
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toStartOf="@+id/createEventButton"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/eventIcon" />
+        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
 
     <Button
         android:id="@+id/createEventButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="172dp"
+        android:layout_height="69dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="44dp"
+        android:background="@drawable/rounded_button"
         android:backgroundTint="@color/black"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-medium"
         android:padding="12dp"
-        android:text="Create an Event"
+        android:text=" + CREATE EVENT"
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/becomeOrganizerButton"
-        app:layout_constraintTop_toBottomOf="@+id/eventIcon" />
+        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
 
     <ImageView
-        android:id="@+id/eventIcon"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginTop="88dp"
-        android:contentDescription="An Icon for events"
-        android:src="@drawable/logo"
+        android:id="@+id/alertIcon"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="Alert icon"
+        android:src="@drawable/alert"
+        app:layout_constraintBottom_toTopOf="@+id/instructionTextView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <pl.droidsonroids.gif.GifImageView
+        android:id="@+id/eventIcon"
+        android:layout_width="406dp"
+        android:layout_height="319dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="An Icon for events"
+        android:src="@drawable/logo2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/instructionTextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
