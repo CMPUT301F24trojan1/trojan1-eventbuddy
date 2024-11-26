@@ -121,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         database.getEntrant(successAction, failureAction, deviceId);
     }
 
-
     public void getUserPfp() {
         System.out.println("Getting user's PFP bitmap...");
         OnSuccessListener successListener = new OnSuccessListener<byte[]>() {

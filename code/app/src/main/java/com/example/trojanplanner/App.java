@@ -3,6 +3,7 @@ package com.example.trojanplanner;
 import android.app.Activity;
 import android.app.Application;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.model.User;

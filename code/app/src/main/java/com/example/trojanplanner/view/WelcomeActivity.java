@@ -46,8 +46,8 @@ public class WelcomeActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_welcome);
 
-
-        //sendAnnouncement("testing", "Please work", "please bro");
+        addtoNotifications("testing"); // Subscribe to the "default" topic
+        sendAnnouncement("testing", "Please work", "please bro");
 
         progressBar = findViewById(R.id.progressBar);
         View funnyTextView = findViewById(R.id.funnyTextView);
@@ -201,4 +201,7 @@ public class WelcomeActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
 }

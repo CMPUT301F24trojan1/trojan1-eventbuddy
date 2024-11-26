@@ -22,6 +22,8 @@ import com.example.trojanplanner.events.entrant.EventDetailsDialogFragment;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -169,7 +171,7 @@ public class QRActivity extends AppCompatActivity {
                                 if (event != null) {
                                     // Log the retrieved event
                                     Log.d("QRActivity", "Event retrieved: " + event.getName());
-                                    sendAnnouncement(App.currentUser.getDeviceId(), event.getName(), "You've been put on the waiting list!");
+
                                     // Navigate to the EventDetailsFragment
                                     navigateToEventDetailsFragment(event);
                                 } else {
@@ -222,6 +224,46 @@ public class QRActivity extends AppCompatActivity {
         }
     }
 
+    private void fetchAndInsertLocation(String eventID) {
+        // Check for location permissions
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+            return;
+        }
+
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+
+                        String deviceId = App.currentUser.getDeviceId(); // Assuming this is available
+
+                        Log.d("QRActivity", "Device location retrieved: Lat=" + latitude + ", Long=" + longitude);
+
+                        // Call insertLocation with the event ID and current device location
+                        Database.QuerySuccessAction successAction = obj -> {
+                            Log.d("QRActivity", "Location successfully inserted for Event ID: " + eventID);
+                        };
+
+                        Database.QueryFailureAction failureAction = () -> {
+                            Log.d("QRActivity", "Failed to insert location for Event ID: " + eventID);
+                        };
+
+                        database.insertLocation(eventID, deviceId, latitude, longitude, successAction, failureAction);
+                    } else {
+                        Log.d("QRActivity", "Failed to retrieve location.");
+                        Toast.makeText(this, "Unable to fetch location. Please ensure GPS is enabled.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("QRActivity", "Error fetching location", e);
+                    Toast.makeText(this, "Error fetching location", Toast.LENGTH_SHORT).show();
+                });
+    }
+
     /**
      * Navigates to the EventDetailsFragment with the event and user data.
      *
@@ -230,9 +272,6 @@ public class QRActivity extends AppCompatActivity {
     private void navigateToEventDetailsFragment(Event event) {
         // Show the EventDetailsDialogFragment as a Dialog
         EventDetailsDialogFragment eventDetailsDialogFragment = EventDetailsDialogFragment.newInstance(event, (Entrant) App.currentUser); // Assuming you still need the Entrant object
-        if (event.isRequiresGeolocation()){
-            Toast.makeText(App.activity, "Careful this Has a GeoLocation Requirement!!", Toast.LENGTH_SHORT).show();
-        }
         eventDetailsDialogFragment.show(getSupportFragmentManager(), "EventDetailsDialog");
     }
 
@@ -358,7 +397,6 @@ public class QRActivity extends AppCompatActivity {
         });
     }
 }
-
 
 /*
 *
