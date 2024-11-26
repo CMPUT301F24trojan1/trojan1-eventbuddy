@@ -116,9 +116,6 @@ public class EventOptionsDialogFragment extends DialogFragment {
             case 8: // edit the event information and the poster
                 editEvent();
                 break;
-            case 9:
-                deleteEvent();
-                break;
             default:
                 break;
         }

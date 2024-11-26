@@ -23,8 +23,7 @@
         <item>View Cancelled Entrants</item>
         <item>View Map of Entrants</item>
         <item>Initiate Lottery</item>
-        <item>Update Event Poster</item>
-        <item>!! Delete Event !!</item>
+        <item>Edit Events</item>
     </string-array>
 
     <!-- Spinner options -->

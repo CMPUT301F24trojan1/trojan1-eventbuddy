@@ -2478,8 +2478,7 @@ public class Database {
     }
      */
 
-
-
+    //I added these for map - Dric
     public void insertLocation(String eventID, String userID, double latitude, double longitude, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         // Reference to the Firestore document for the event location
         DocumentReference eventRef = db.collection("maps").document(eventID);
@@ -2564,6 +2563,7 @@ public class Database {
                 });
     }
 
+    // Admin specific Queries
+
+
 }
-
-
