@@ -1,4 +1,4 @@
-package com.example.trojanplanner.view;
+package com.example.trojanplanner.view.admin;
 
 import android.os.Bundle;
 
