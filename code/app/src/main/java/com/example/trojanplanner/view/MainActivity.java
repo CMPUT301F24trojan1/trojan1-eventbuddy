@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
         database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
     }
 
-
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
      * <p>
