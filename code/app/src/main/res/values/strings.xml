@@ -24,6 +24,7 @@
         <item>View Map of Entrants</item>
         <item>Initiate Lottery</item>
         <item>Edit Events</item>
+        <item>View Pending List</item>
     </string-array>
 
     <!-- Spinner options -->
