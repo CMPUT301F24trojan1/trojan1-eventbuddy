@@ -169,6 +169,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
                                         (OnSuccessListener<Void>) unused -> {
                                             Log.d("EventDetails", "Event successfully updated in the database.");
                                             addtoNotifications();
+                                            App.sendAnnouncement(App.currentUser.getDeviceId(), event.getEventId() ,"Added to Waitlist, you'll be notified when your status updates.");
                                             // Save the updated entrant only after the event is successfully updated
                                             database.insertUserDocument(
                                                     new OnSuccessListener<Void>() {
@@ -179,7 +180,11 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
                                                             // Validate database state
                                                             validateDatabaseState(syncedEvent, syncedEntrant);
-                                                            addLocationtoDatabase();
+
+                                                            if (event.isRequiresGeolocation()){
+
+                                                                addLocationtoDatabase();
+                                                            }
                                                         }
                                                     },
                                                     new OnFailureListener() {

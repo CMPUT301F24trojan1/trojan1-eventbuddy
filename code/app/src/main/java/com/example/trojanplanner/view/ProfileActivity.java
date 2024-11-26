@@ -143,7 +143,7 @@ public class ProfileActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.navigation_home) {
                 if (App.currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                    // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
                 }
@@ -151,7 +151,7 @@ public class ProfileActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.qrActivity) {
                 if (App.currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, QRActivity.class);
-                    // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
                 }

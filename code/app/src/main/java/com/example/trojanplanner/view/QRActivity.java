@@ -65,10 +65,8 @@ import okhttp3.RequestBody;
 public class QRActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private BarcodeView barcodeView;
-    private @NonNull ActivityQrBinding binding;
+    private ActivityQrBinding binding;
     private Database database;
-    private static final String BACKEND_URL = App.BACKEND_URL;
-    private final OkHttpClient client = new OkHttpClient();
 
     /**
      * Called when the activity is created. It sets up the layout, camera permissions,
@@ -224,46 +222,6 @@ public class QRActivity extends AppCompatActivity {
         }
     }
 
-    private void fetchAndInsertLocation(String eventID) {
-        // Check for location permissions
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
-            return;
-        }
-
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(location -> {
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-
-                        String deviceId = App.currentUser.getDeviceId(); // Assuming this is available
-
-                        Log.d("QRActivity", "Device location retrieved: Lat=" + latitude + ", Long=" + longitude);
-
-                        // Call insertLocation with the event ID and current device location
-                        Database.QuerySuccessAction successAction = obj -> {
-                            Log.d("QRActivity", "Location successfully inserted for Event ID: " + eventID);
-                        };
-
-                        Database.QueryFailureAction failureAction = () -> {
-                            Log.d("QRActivity", "Failed to insert location for Event ID: " + eventID);
-                        };
-
-                        database.insertLocation(eventID, deviceId, latitude, longitude, successAction, failureAction);
-                    } else {
-                        Log.d("QRActivity", "Failed to retrieve location.");
-                        Toast.makeText(this, "Unable to fetch location. Please ensure GPS is enabled.", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("QRActivity", "Error fetching location", e);
-                    Toast.makeText(this, "Error fetching location", Toast.LENGTH_SHORT).show();
-                });
-    }
-
     /**
      * Navigates to the EventDetailsFragment with the event and user data.
      *
@@ -300,13 +258,13 @@ public class QRActivity extends AppCompatActivity {
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
                 Intent intent = new Intent(QRActivity.this, MainActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 Intent intent = new Intent(QRActivity.this, ProfileActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
                 return true;
@@ -343,59 +301,6 @@ public class QRActivity extends AppCompatActivity {
         QRHelpFragment QRHelpFragment = new QRHelpFragment();
         QRHelpFragment.show(getSupportFragmentManager(), "HelpFragment");
     }
-
-    /**
-     * Logic to send an announcement for the given topic.
-     *
-     * @param topic   The topic to which the notification will be sent.
-     * @param title   The title of the notification.
-     * @param message The message of the notification.
-     */
-    public void sendAnnouncement(String topic, String title, String message) {
-        if (topic == null || title == null || message == null) {
-            return;
-        }
-
-        // Create JSON payload
-        JSONObject jsonPayload = new JSONObject();
-        try {
-            jsonPayload.put("topic", topic);
-            jsonPayload.put("title", title);
-            jsonPayload.put("message", message);
-        } catch (JSONException e) {
-            Log.e("Notification", "JSON creation failed: " + e.getMessage());
-            return;
-        }
-
-        // Create the request body with JSON
-        RequestBody body = RequestBody.create(
-                jsonPayload.toString(),
-                MediaType.get("application/json")
-        );
-
-        // Create the POST request to your backend
-        Request request = new Request.Builder()
-                .url(BACKEND_URL)
-                .post(body)
-                .build();
-
-        // Execute the request asynchronously
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    Log.d("Notification", "Notification sent successfully!");
-                } else {
-                    Log.e("Notification", "Notification failed with response code: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
-                Log.e("Notification", "Error sending notification: " + e.getMessage());
-            }
-        });
-    }
 }
 
 /*
@@ -416,4 +321,58 @@ public class QRActivity extends AppCompatActivity {
                         //focusOverlayView.addFocusPoints(resultPoints);
                     }
                 }
+                *
+
+             * Logic to send an announcement for the given topic.
+             *
+             * @param topic   The topic to which the notification will be sent.
+             * @param title   The title of the notification.
+             * @param message The message of the notification.
+
+        public void sendAnnouncement(String topic, String title, String message) {
+            if (topic == null || title == null || message == null) {
+                return;
+            }
+
+            // Create JSON payload
+            JSONObject jsonPayload = new JSONObject();
+            try {
+                jsonPayload.put("topic", topic);
+                jsonPayload.put("title", title);
+                jsonPayload.put("message", message);
+            } catch (JSONException e) {
+                Log.e("Notification", "JSON creation failed: " + e.getMessage());
+                return;
+            }
+
+            // Create the request body with JSON
+            RequestBody body = RequestBody.create(
+                    jsonPayload.toString(),
+                    MediaType.get("application/json")
+            );
+
+            // Create the POST request to your backend
+            Request request = new Request.Builder()
+                    .url(BACKEND_URL)
+                    .post(body)
+                    .build();
+
+            // Execute the request asynchronously
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        Log.d("Notification", "Notification sent successfully!");
+                    } else {
+                        Log.e("Notification", "Notification failed with response code: " + response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                    Log.e("Notification", "Error sending notification: " + e.getMessage());
+                }
+            });
+        }
+
 * */
