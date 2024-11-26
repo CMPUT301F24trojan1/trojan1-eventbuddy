@@ -3,7 +3,27 @@
 
     <item
         android:id="@+id/navigation_home"
-        android:icon="@drawable/tickets"
-        android:title="@string/Home" />
+        android:icon="@drawable/home"
+        android:title="@string/admin_home" />
+
+    <item
+        android:id="@+id/navigation_facilities"
+        android:icon="@drawable/facilities"
+        android:title="@string/admin_facilities" />
+
+    <item
+        android:id="@+id/navigation_users"
+        android:icon="@drawable/group_users"
+        android:title="@string/admin_users" />
+
+    <item
+        android:id="@+id/navigation_images"
+        android:icon="@drawable/images"
+        android:title="@string/admin_images" />
+
+    <item
+        android:id="@+id/navigation_admin_profile"
+        android:icon="@drawable/user_profile"
+        android:title="@string/admin_profile" />
 
 </menu>
