@@ -108,7 +108,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 viewCancelled();
                 break;
             case 6:
-                viewMap();
+                viewMap(event);
                 break;
             case 7: // Initiate Lottery
                 initiateLottery();
@@ -184,9 +184,17 @@ public class EventOptionsDialogFragment extends DialogFragment {
     /**
      * Logic to view the event location on a map.
      */
-    private void viewMap() {
-        // Add your logic to view the event location on a map
+    private void viewMap(Event event) {
+        // Show a Toast message
         Toast.makeText(getContext(), "View Map clicked", Toast.LENGTH_SHORT).show();
+
+        // Create a Bundle and put the Event object inside it
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);  // Put the event object as a Parcelable
+
+        // Use NavController to navigate to the MarkedMapFragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.action_eventDetailsFragment_to_markedMapFragment, args);
     }
 
     /**

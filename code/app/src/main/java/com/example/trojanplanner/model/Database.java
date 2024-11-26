@@ -10,7 +10,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-
+import com.google.android.gms.maps.model.LatLng;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.R;
@@ -22,6 +22,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -2466,7 +2468,7 @@ public class Database {
 
     }
 
-
+    /*
     public void getEventDocumentById(String eventId, OnSuccessListener<DocumentSnapshot> successListener, OnFailureListener failureListener) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
@@ -2474,6 +2476,94 @@ public class Database {
                 .addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener);
     }
+     */
+
+
+
+    public void insertLocation(String eventID, String userID, double latitude, double longitude, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        // Reference to the Firestore document for the event location
+        DocumentReference eventRef = db.collection("maps").document(eventID);
+
+        // Create a GeoPoint object with the provided latitude and longitude
+        GeoPoint geoPoint = new GeoPoint(latitude, longitude);
+
+        // Use a transaction to ensure the update/insert is atomic
+        db.runTransaction(transaction -> {
+            // Get the current document snapshot
+            DocumentSnapshot snapshot = transaction.get(eventRef);
+
+            // Check if the document exists
+            if (snapshot.exists()) {
+                // Retrieve the existing 'locations' map, or create a new one if null
+                Map<String, Object> locationMap = (Map<String, Object>) snapshot.get("locations");
+                if (locationMap == null) {
+                    locationMap = new HashMap<>();
+                }
+
+                // Add or update the user's location
+                locationMap.put(userID, geoPoint);
+
+                // Update the document
+                transaction.update(eventRef, "locations", locationMap);
+            } else {
+                // If the document doesn't exist, create it with the initial location data
+                Map<String, Object> initialLocationMap = new HashMap<>();
+                initialLocationMap.put(userID, geoPoint);
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("locations", initialLocationMap);
+
+                transaction.set(eventRef, data);
+            }
+
+            return null;
+        }).addOnSuccessListener(unused -> {
+            // Transaction successful
+            Log.d("FirestoreInsert", "Location successfully updated/inserted for event: " + eventID);
+            successAction.OnSuccess(null); // Pass null or any relevant result as needed
+        }).addOnFailureListener(e -> {
+            // Transaction failed
+            Log.e("FirestoreInsert", "Error updating/inserting location: " + e.getMessage(), e);
+            failureAction.OnFailure();
+        });
+    }
+
+    public void getLocation(String eventId, String userId,
+                            OnSuccessListener<LatLng> onSuccessListener,
+                            OnFailureListener onFailureListener) {
+        Log.d("FirestoreDebug", "Fetching location for eventId: " + eventId + ", userId: " + userId);
+
+        db.collection("maps").document(eventId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        DocumentSnapshot document = task.getResult();
+                        Log.d("FirestoreDebug", "Document fetched successfully for eventId: " + eventId);
+                        Log.d("FirestoreDebug", "Document data: " + document.getData());
+
+                        // Get the 'locations' field
+                        Map<String, Object> locationMap = (Map<String, Object>) document.get("locations");
+                        if (locationMap != null && locationMap.containsKey(userId)) {
+                            Object locationObject = locationMap.get(userId);
+                            if (locationObject instanceof GeoPoint) {
+                                // Handle GeoPoint
+                                GeoPoint geoPoint = (GeoPoint) locationObject;
+                                LatLng latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
+                                onSuccessListener.onSuccess(latLng);
+                            } else {
+                                onFailureListener.onFailure(new Exception("Invalid location type for user: " + userId));
+                            }
+                        } else {
+                            onFailureListener.onFailure(new Exception("User not found in location map for event: " + eventId));
+                        }
+                    } else {
+                        onFailureListener.onFailure(task.getException() != null
+                                ? task.getException()
+                                : new Exception("Failed to fetch document for event: " + eventId));
+                    }
+                });
+    }
+
 }
 
 

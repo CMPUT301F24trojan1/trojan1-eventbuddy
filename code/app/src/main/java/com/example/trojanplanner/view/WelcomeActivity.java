@@ -46,8 +46,7 @@ public class WelcomeActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_welcome);
 
-        requestNotificationPermission(); // Request notification permission
-        addtoNotifications("default"); // Subscribe to the "default" topic
+
         //sendAnnouncement("testing", "Please work", "please bro");
 
         progressBar = findViewById(R.id.progressBar);
@@ -87,7 +86,8 @@ public class WelcomeActivity extends AppCompatActivity {
             @Override
             public void OnSuccess(Object object) {
                 App.currentUser = (Entrant) object;  // Set the current user
-
+                requestNotificationPermission(); // Request notification permission
+                addtoNotifications(App.currentUser.getDeviceId()); // Subscribe to the "default" topic
                 // If user exists, proceed to MainActivity
                 startMainActivity();
             }
@@ -115,6 +115,8 @@ public class WelcomeActivity extends AppCompatActivity {
     private void startProfileActivity() {
         progressBar.setVisibility(View.GONE); // Hide progress bar
         Intent intent = new Intent(WelcomeActivity.this, ProfileActivity.class);
+        requestNotificationPermission(); // Request notification permission
+        addtoNotifications("default"); // Subscribe to the "default" topic
         startActivity(intent); // Start the ProfileActivity for profile creation
         finish(); // Finish the WelcomeActivity to remove it from the back stack
     }

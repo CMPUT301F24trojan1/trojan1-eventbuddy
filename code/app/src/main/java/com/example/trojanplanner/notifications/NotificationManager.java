@@ -2,6 +2,9 @@ package com.example.trojanplanner.notifications;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
+
+import com.example.trojanplanner.App;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import okhttp3.Callback;
@@ -15,7 +18,7 @@ import java.util.List;
 
 public class NotificationManager {
 
-    private static final String BACKEND_URL = "http://10.0.2.2:3000/sendNotification"; // Replace with your backend URL
+    private static final String BACKEND_URL = App.BACKEND_URL;
     private final OkHttpClient client;
 
     public NotificationManager() {
