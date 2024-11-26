@@ -53,6 +53,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")  // OkHttp version
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.activity)
 
     // Test dependencies
     testImplementation("junit:junit:4.13.2")
