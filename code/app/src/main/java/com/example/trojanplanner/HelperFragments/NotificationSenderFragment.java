@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.notifications.NotificationManager;
 import com.example.trojanplanner.model.Event;
@@ -101,7 +102,7 @@ public class NotificationSenderFragment extends Fragment {
         for (User user : users) {
             String deviceID = user.getDeviceId();
             if (deviceID != null && !deviceID.isEmpty()) {
-                notificationManager.sendAnnouncement(deviceID, title, message);
+                App.sendAnnouncement(deviceID, title, message);
             } else {
                 Toast.makeText(getContext(), "User with missing device ID skipped.", Toast.LENGTH_SHORT).show();
             }

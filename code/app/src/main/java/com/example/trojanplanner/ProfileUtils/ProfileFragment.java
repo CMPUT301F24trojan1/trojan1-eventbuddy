@@ -120,7 +120,7 @@ public class ProfileFragment extends Fragment {
                 FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                 fragmentManager.beginTransaction()
                         .replace(R.id.profile_fragment_container, facilitySetupFragment)
-                        .addToBackStack(null) // Add to back stack for back navigation
+                        .addToBackStack("ProfileFragment") // Add to back stack for back navigation
                         .commit();
             });
         }
@@ -231,13 +231,13 @@ public class ProfileFragment extends Fragment {
                 return;
             }
 
-            FirebaseMessaging.getInstance().subscribeToTopic("default_notifications")
+            FirebaseMessaging.getInstance().subscribeToTopic(App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
                         String msg = task.isSuccessful() ? "Successfully subscribed to notifications." : "Subscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                     });
         } else {
-            FirebaseMessaging.getInstance().unsubscribeFromTopic("default_notifications")
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
                         String msg = task.isSuccessful() ? "Successfully unsubscribed from notifications." : "Unsubscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();

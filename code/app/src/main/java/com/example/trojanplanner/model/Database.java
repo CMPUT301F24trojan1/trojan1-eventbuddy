@@ -1,11 +1,7 @@
 package com.example.trojanplanner.model;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -29,13 +25,10 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A class that handles adding/querying/modifying/removing documents from the Firestore Database,
@@ -480,8 +473,10 @@ public class Database {
             userMap.put("currentPendingEvents", convertEventArrayToDocRefs(entrant.getCurrentPendingEvents()));
         } else if (user.getClass() == Organizer.class) {
             userMap.put("createdEvents", convertEventArrayToDocRefs( ((Organizer) user).getCreatedEvents() ));
+            if (((Organizer) user).getFacility() != null) {
+                userMap.put("facilityID", ((Organizer) user).getFacility().getFacilityId());
+            }
         } // (no special attributes for admins)
-
 
         db.collection("users")
                 .document(user.getDeviceId())
@@ -639,6 +634,7 @@ public class Database {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
+        facilityMap.put("location", facility.getLocation());
         facilityMap.put("facilityPhoto", facility.getPfpFacilityFilePath());
 
         DocumentReference ownerRef;
@@ -800,32 +796,41 @@ public class Database {
 
         // Create incomplete entrant objects from document id
         ArrayList<User> userArray = new ArrayList<User>();
-        if (m.get("enrolledList") != null) {
-            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("enrolledList")) {
+        if (m.get("enrolledlist") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("enrolledlist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+            Log.d("unpackEventMap", "Enrolled List: " + userArray);
         }
+        Log.d("unpackEventMap", "Enrolled List is empty");
         event.setEnrolledList(userArray);
         userArray = new ArrayList<User>(); // This instead of .clear in case it clears the entrant current enrolled array because same reference
-        if (m.get("pendingList") != null) {
-            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("pendingList")) {
+        if (m.get("pendinglist") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("pendinglist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+            Log.d("unpackEventMap", "Pending List: " + userArray);
         }
+        Log.d("unpackEventMap", "Pending List is empty");
         event.setPendingList(userArray);
         userArray = new ArrayList<User>();
         if (m.get("waitlist") != null) {
             for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("waitlist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+            Log.d("unpackEventMap", "Waitlist: " + userArray);
         }
+        Log.d("unpackEventMap", "WaitList is empty ");
         event.setWaitingList(userArray);
         userArray = new ArrayList<User>();
-        if (m.get("cancelledList") != null) {
-            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("cancelledList")) {
+        if (m.get("cancelledlist") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("cancelledlist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+
+            Log.d("unpackEventMap", "Cancelled List: " + userArray);
         }
+        Log.d("unpackEventMap", "Cancelled List is empty ");
         event.setCancelledList(userArray);
 
         return event;
@@ -919,9 +924,6 @@ public class Database {
                     facilityNeeded = true;
                     subQueryCount += 1;
                 }
-
-
-
 
                 if (subQueryCount > 0) {
                     QueryTracker queryTracker = new QueryTracker(subQueryCount);
@@ -1075,6 +1077,8 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentAcceptedEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+
+            Log.d("unpackEntrantMap", "Current Accepted Events: " + eventArray);
         }
         entrant.setCurrentEnrolledEvents(eventArray);
         eventArray = new ArrayList<Event>(); // This instead of .clear in case it clears the entrant current enrolled array because same reference
@@ -1082,6 +1086,7 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentPendingEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+            Log.d("unpackEntrantMap", "Current Pending Events: " + eventArray);
         }
         entrant.setCurrentPendingEvents(eventArray);
         eventArray = new ArrayList<Event>();
@@ -1089,6 +1094,7 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentWaitlistedEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+            Log.d("unpackEntrantMap", "Current Waitlisted Events: " + eventArray);
         }
         entrant.setCurrentWaitlistedEvents(eventArray);
         eventArray = new ArrayList<Event>();
@@ -1096,6 +1102,7 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentDeclinedEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+            Log.d("unpackEntrantMap", "Current Declined Events: " + eventArray);
         }
         entrant.setCurrentDeclinedEvents(eventArray);
 
@@ -2418,8 +2425,6 @@ public class Database {
     }
 
 
-
-
     public static void getQRTest() {
         Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
@@ -2440,43 +2445,6 @@ public class Database {
         database.getQRData(successAction, failureAction, "awoi42A(*@M#NFAOaskwlqo");
     }
 
-
-    public static void getAllEventsFromDeviceIdTest() {
-        Database database = Database.getDB();
-        System.out.println("getAllEventsFromDeviceIdTest started");
-
-        Database.QuerySuccessAction successAction = new QuerySuccessAction() {
-            @Override
-            public void OnSuccess(Object object) {
-                ArrayList<Event> myEvents = (ArrayList<Event>) object;
-                for (int j = 0; j < myEvents.size(); j++) {
-                    System.out.println("Event id: " + myEvents.get(j).getEventId());
-                    System.out.println("Event name: " + myEvents.get(j).getName());
-                    System.out.println("Event description: " + myEvents.get(j).getDescription());
-                    System.out.println("Event price: " + myEvents.get(j).getPrice());
-                }
-            }
-        };
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("Query attempt failed!");
-            }
-        };
-
-        database.getAllEventsFromDeviceId(successAction, failureAction, "4f73207b9240b980");
-
-    }
-
-    /*
-    public void getEventDocumentById(String eventId, OnSuccessListener<DocumentSnapshot> successListener, OnFailureListener failureListener) {
-        DocumentReference eventRef = db.collection("events").document(eventId);
-
-        eventRef.get()
-                .addOnSuccessListener(successListener)
-                .addOnFailureListener(failureListener);
-    }
-     */
 
     //I added these for map - Dric
     public void insertLocation(String eventID, String userID, double latitude, double longitude, QuerySuccessAction successAction, QueryFailureAction failureAction) {
@@ -2561,6 +2529,44 @@ public class Database {
                                 : new Exception("Failed to fetch document for event: " + eventId));
                     }
                 });
+    }
+
+    //This WILL ONLY BE CALLED WITH THE ASSUMPTION THE ID is a organizer
+    public void getFacilityIDbyUserID(String userID, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        // Query the "users" collection for the Organizer's document using the userID
+        DocumentReference docRef = db.collection("users").document(userID);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                // Check if the query was successful
+                if (!task.isSuccessful()) {
+                    // If the query fails, handle the failure
+                    Log.d("WARN", "getOrganizer failed with ", task.getException());
+                    failureAction.OnFailure();
+                    return;
+                }
+
+                // Retrieve the document snapshot from the task result
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    // Get the facilityId from the "facilityID" field
+                    String facilityId = document.getString("facilityID"); // Retrieve the facilityId directly from the document
+
+                    if (facilityId != null && !facilityId.isEmpty()) {
+                        // Facility ID found, pass it to success callback
+                        successAction.OnSuccess(facilityId);
+                    } else {
+                        // If there's no facilityId, handle accordingly
+                        Log.d("WARN", "Facility ID is missing for this organizer.");
+                        failureAction.OnFailure();
+                    }
+                } else {
+                    // If the user document doesn't exist
+                    Log.d("WARN", "No such document for user ID: " + userID);
+                    failureAction.OnFailure();
+                }
+            }
+        });
     }
 
     // Admin specific Queries
