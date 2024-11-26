@@ -47,8 +47,8 @@ public class FacilitySetupFragment extends Fragment {
     /**
      * Inflates the layout for this fragment and sets up the user interface components.
      *
-     * @param inflater The LayoutInflater object to inflate the view.
-     * @param container The container view to attach the fragment to.
+     * @param inflater           The LayoutInflater object to inflate the view.
+     * @param container          The container view to attach the fragment to.
      * @param savedInstanceState The saved instance state for the fragment, if any.
      * @return The root view of the fragment.
      */
@@ -68,9 +68,16 @@ public class FacilitySetupFragment extends Fragment {
         saveButton.setOnClickListener(v -> saveFacility());
 
         cancelButton.setOnClickListener(v -> {
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.emptyEventsFragment);
+            // Clear the input fields
+            facilityNameEditText.setText("");
+            facilityLocationEditText.setText("");
+            facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Reset to a default image
         });
+
+        // Ensure the app bar is visible
+        if (getActivity() instanceof AppCompatActivity) {
+            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).show();
+        }
 
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();
@@ -84,29 +91,6 @@ public class FacilitySetupFragment extends Fragment {
     }
 
     /**
-     * Hides the action bar when the fragment is resumed to provide a full-screen experience.
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (getActivity() instanceof AppCompatActivity) {
-            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).hide();
-        }
-    }
-
-    /**
-     * Restores the action bar visibility when the fragment is stopped.
-     */
-    @Override
-    public void onStop() {
-        super.onStop();
-        // Restore the action bar visibility when leaving this fragment
-        if (getActivity() instanceof AppCompatActivity) {
-            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).show();
-        }
-    }
-
-    /**
      * Opens the photo picker to allow the user to select a photo for the facility.
      */
     private void openImagePicker() {
@@ -117,8 +101,8 @@ public class FacilitySetupFragment extends Fragment {
      * Handles the result from the photo picker activity and sets the selected photo URI.
      *
      * @param requestCode The request code passed in startActivityForResult().
-     * @param resultCode The result code returned by the photo picker activity.
-     * @param data The intent containing the result data, including the selected photo URI.
+     * @param resultCode  The result code returned by the photo picker activity.
+     * @param data        The intent containing the result data, including the selected photo URI.
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -222,6 +206,24 @@ public class FacilitySetupFragment extends Fragment {
             // Navigate after saving
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.emptyEventsFragment);
+        }
+    }
+
+    /**
+     * Populates the UI fields with the existing facility's data.
+     *
+     * @param facility The existing facility to populate fields with.
+     */
+    private void populateFields(Facility facility) {
+        facilityNameEditText.setText(facility.getName());
+        facilityLocationEditText.setText(facility.getLocation());
+
+        // Load facility photo
+        if (facility.getPfpFacilityBitmap() != null) {
+            facilityPhotoUri = Uri.parse(facility.getPfpFacilityFilePath());
+            facilityPhoto.setImageURI(facilityPhotoUri);
+        } else {
+            facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Default image if no photo
         }
     }
 }
