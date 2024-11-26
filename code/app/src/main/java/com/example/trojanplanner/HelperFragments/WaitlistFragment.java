@@ -29,6 +29,7 @@ public class WaitlistFragment extends Fragment {
     private ListView waitlistListView;
     private WaitlistAdapter waitlistAdapter;
     private String listType;
+    private Button sendNotificationButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,6 +46,7 @@ public class WaitlistFragment extends Fragment {
 
         waitlistListView = view.findViewById(R.id.waitlistListView);
         Button goBackButton = view.findViewById(R.id.goBackButton);  // Initialize the goBackButton
+        sendNotificationButton = view.findViewById(R.id.sendNotificationButton);
 
         // Set up the goBackButton click listener
         goBackButton.setOnClickListener(v -> {
