@@ -1,10 +1,15 @@
 package com.example.trojanplanner.ProfileUtils;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,35 +17,75 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.facility.FacilitySetupFragment;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
+import com.example.trojanplanner.view.ProfileActivity;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class ProfileFragment extends Fragment {
     private Database database;
-
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
     private ImageView profileImage;
+    private Bitmap profileImageBitmap = null; // Null if placeholder
     private EditText firstNameInput, lastNameInput, emailInput, phoneInput;
     private boolean changedPfp = false;
 
-    private User user;
+    private ProfileActivity profileActivity;
+    public Entrant currentEntrant; // Should reference the same user as App.currentUser
+
+    public PhotoPicker.PhotoPickerCallback photoPickerCallback;
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private Switch notificationsSwitch;
+    private Switch switchProfileFacility;
+    private ActivityResultLauncher<String> requestNotificationPermissionLauncher;
 
     public ProfileFragment() {
         // Required empty public constructor
     }
 
-    public ProfileFragment(User user) {
-        this.user = user;
-        if (database == null) {
-            database = new Database();
-        }
+    public ProfileFragment(ProfileActivity profileActivity) {
+        this.profileActivity = profileActivity; // can get the user from this object
+//        if (database == null) {
+//            database = new Database();
+//        }
+        // Database.getDatabase();
+        // Add a listener to the running getUser query if it's not set yet
+//        if (App.currentUser == null) {
+//            Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
+//                @Override
+//                public void OnSuccess(Object object) {
+//
+//                }
+//            }
+
+
+        //database.getEntrant(App.deviceId);
+//        }
+
+        photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) {
+                onSelectedPhoto(bitmap);
+            }
+        };
     }
 
     @Nullable
@@ -59,25 +104,78 @@ public class ProfileFragment extends Fragment {
         Button saveButton = view.findViewById(R.id.save_button);
 
         // Set up button click listeners
+        profileImage.setOnClickListener(v -> createPfpPopup());
         cancelButton.setOnClickListener(v -> handleCancel());
         saveButton.setOnClickListener(v -> handleSave());
+
+        notificationsSwitch = view.findViewById(R.id.switch1);
+        // Set up switch toggle listener with proper toast notifications
+        if (notificationsSwitch != null) {
+            notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    Toast.makeText(getContext(), "Disabling notifications from Organizers and Admins...", Toast.LENGTH_SHORT).show();
+                    handleNotifications(true);
+                } else {
+                    Toast.makeText(getContext(), "Enabling notifications...", Toast.LENGTH_SHORT).show();
+                    handleNotifications(false);
+                }
+            });
+        } else {
+            // Log an error if notificationsSwitch is null
+            Log.e("ProfileFragment", "notificationsSwitch is null!");
+        }
+
+        switchProfileFacility = view.findViewById(R.id.switch_profile_facility);
+
+        switchProfileFacility.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Display the FacilitySetupFragment
+                FacilitySetupFragment facilitySetupFragment = new FacilitySetupFragment();
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.profile_fragment_container, facilitySetupFragment)
+                        .addToBackStack(null) // Add to back stack for back navigation
+                        .commit();
+            }
+        });
+
+        // Initialize the ActivityResultLauncher for requesting permissions
+        requestNotificationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        // Permission granted, subscribe to notifications
+                        handleNotifications(true);
+                    } else {
+                        // Permission denied, show a message
+                        Toast.makeText(getContext(), "Notification permission denied. Cannot subscribe.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
 
         return view;
     }
 
+
+    private void createPfpPopup() {
+        new PfpClickPopupFragment(profileActivity).show(profileActivity.getSupportFragmentManager(), "Change Profile Picture");
+    }
+
+
     private void handleCancel() {
         // Handle cancel action, e.g., clear fields or go back
         System.out.println("Cancel!");
-        System.out.println("user: " + user);
-        if (user != null) {
-            System.out.println("firstname: " + user.getFirstName() + ", lastname: " + user.getLastName());
+        System.out.println("user: " + App.currentUser);
+        if (App.currentUser != null) {
+            System.out.println("firstname: " + App.currentUser.getFirstName() + ", lastname: " + App.currentUser.getLastName());
         }
-        populateFields(user); // for now, reset fields to current saved values
+        resetState(App.currentUser); // for now, reset fields to current saved values
     }
 
     private void handleSave() {
         // Handle save action, e.g., validate input and save to a database or API
         System.out.println("Save!");
+        // TODO: This probably should not be allowed to run if the database is currently still retrieving the current user?
 
         // Input validation
         boolean errorCaught = false;
@@ -107,41 +205,101 @@ public class ProfileFragment extends Fragment {
         // If null, give basic entrant privileges
         boolean isOrganizer = false, isAdmin = false;
         String deviceId;
-        if (user != null) {
-            user.setFirstName(firstName);
-            user.setLastName(lastName);
-            user.setEmail(email);
-            user.setPhoneNumber(phone);
-            deviceId = user.getDeviceId();
+        if (App.currentUser != null) {
+            App.currentUser.setFirstName(firstName);
+            App.currentUser.setLastName(lastName);
+            App.currentUser.setEmail(email);
+            App.currentUser.setPhoneNumber(phone);
         }
         else {
-            deviceId = Settings.Secure.getString(App.activityManager.getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
-            user = new Entrant(lastName, firstName, email, phone, deviceId, "Entrant", false, false);
+            deviceId = App.deviceId;
+            App.currentUser = new Entrant(lastName, firstName, email, phone, deviceId, "Entrant", false, false);
         }
 
-        if (database == null) {
-            database = new Database();
-        }
+        Database database = Database.getDB();
 
         // If pfp image was changed, explicitly choose a new filepath here
         // and use it for both the Firebase Storage upload and the database document insert
-        if (changedPfp) {
-            Bitmap bitmap = null; // TODO do it
-            String newPfpFilepath = deviceId + "/" + System.currentTimeMillis() + ".png";
-            user.setPfpFilePath(newPfpFilepath);
-            database.uploadImage(bitmap, user, newPfpFilepath); // assume this doesn't fail??
+        if (changedPfp) { // && profileImageBitmap != null
+            Bitmap bitmap = profileImageBitmap;
+            String newPfpFilepath = App.deviceId + "/" + System.currentTimeMillis() + ".png";
+            App.currentUser.setPfpFilePath(newPfpFilepath);
+            System.out.println("bitmap: " + bitmap);
+            System.out.println("filepath: " + newPfpFilepath);
+            // Upload the image if the change is a non-null image
+            if (bitmap != null) {
+                database.uploadImage(bitmap, App.currentUser, newPfpFilepath); // assume this doesn't fail??
+            }
+            else {
+                App.currentUser.setPfpFilePath(null);
+            }
         }
 
         // Upload
-        database.insertUserDocument(user);
+        database.insertUserDocument(App.currentUser);
     }
+
+    private void handleNotifications(boolean isSubscribed) {
+        if (!isSubscribed) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                return;
+            }
+
+            FirebaseMessaging.getInstance().subscribeToTopic("default_notifications")
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully subscribed to notifications." : "Subscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("default_notifications")
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully unsubscribed from notifications." : "Unsubscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+    /**
+     * Resets profile picture to the current profile picture of the user.
+     * If user is null, reset to default
+     * @param user
+     */
+    public void resetPFP(User user) {
+        changedPfp = false;
+        if (user != null && user.getPfpBitmap() != null) {
+            profileImageBitmap = user.getPfpBitmap();
+            profileImage.setImageBitmap(profileImageBitmap);
+        }
+        else {
+            // If 'remove pfp' button was pressed, we are actually changing it if user pfp was not null before
+            if (profileImageBitmap != null) {changedPfp = true; };
+            profileImageBitmap = null;
+            profileImage.setImageResource(R.drawable.placeholder_avatar);
+        }
+
+    }
+
+
+
+
+    public void onSelectedPhoto(Bitmap bitmap) {
+        if (bitmap != null && bitmap != profileImageBitmap) {
+            changedPfp = true;
+            profileImageBitmap = bitmap;
+            profileImage.setImageBitmap(bitmap);
+        }
+    }
+
+
 
     /**
      *
      * @param user
      * @author Jared Gourley
      */
-    public void populateFields(User user) {
+    public void resetState(User user) {
         // TODO: there's a bug here? if the user opens the app and switches to this tab before the initial query comes back, these fields don't populate (since user is still null)
         String firstName = "", lastName = "", email = "", phone = "";
         if (user != null) {
@@ -162,5 +320,16 @@ public class ProfileFragment extends Fragment {
         lastNameInput.setText(lastName);
         emailInput.setText(email);
         phoneInput.setText(phone);
+
+        // Reset profile image to current profile image
+        changedPfp = false;
+        if (App.currentUser != null && App.currentUser.getPfpBitmap() != null) {
+            profileImageBitmap = App.currentUser.getPfpBitmap();
+            profileImage.setImageBitmap(profileImageBitmap);
+        }
+        else {
+            profileImageBitmap = null;
+            profileImage.setImageResource(R.drawable.placeholder_avatar);
+        }
     }
 }

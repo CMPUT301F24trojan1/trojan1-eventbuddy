@@ -6,69 +6,144 @@
     android:layout_height="wrap_content"
     android:padding="16dp">
 
+    <!-- Enlarged Back Button -->
+
+    <!-- Event Image -->
     <ImageView
         android:id="@+id/eventImageView"
         android:layout_width="0dp"
         android:layout_height="200dp"
-        android:layout_marginTop="8dp"
-        android:contentDescription="placeholder for events image"
+        android:layout_marginTop="88dp"
+        android:contentDescription="Event image"
         android:src="@drawable/event_placeholder"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Event Title -->
     <TextView
         android:id="@+id/eventNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Event Name"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/eventImageView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="16dp" />
 
-    <!-- Event Description -->
+    <!-- Event Location -->
     <TextView
-        android:id="@+id/eventDescriptionTextView"
+        android:id="@+id/eventLocationTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Event Description"
+        android:text="Event Location"
         app:layout_constraintTop_toBottomOf="@id/eventNameTextView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="8dp" />
 
-    <!-- Event Date -->
+    <!-- Event Time -->
     <TextView
         android:id="@+id/eventDateTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Event Date"
-        app:layout_constraintTop_toBottomOf="@id/eventDescriptionTextView"
+        android:text="Start date to end date"
+        app:layout_constraintTop_toBottomOf="@id/eventLocationTextView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="8dp" />
 
-    <!-- Available Spots -->
+    <!-- Recurring Dates Dropdown -->
     <TextView
-        android:id="@+id/availableSpotsTextView"
+        android:id="@+id/recurringDatesTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Available Spots"
+        android:text="Recurring Dates"
         app:layout_constraintTop_toBottomOf="@id/eventDateTextView"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="8dp" />
 
-    <Button
-        android:id="@+id/event_options_button"
+    <!-- Divider -->
+    <View
+        android:id="@+id/view"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView" />
+
+    <!-- Event Description -->
+    <TextView
+        android:id="@+id/eventDescriptionTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Event Description"
+        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Lottery Entries -->
+    <TextView
+        android:id="@+id/lotteryEntriesTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="20dp"
-        android:background="@drawable/rounded_button"
-        android:text="Options"
-        android:textColor="@color/white"
-        android:textSize="14sp"
+        android:text="Lottery Entries: "
+        app:layout_constraintTop_toBottomOf="@id/eventDescriptionTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Total Spots -->
+    <TextView
+        android:id="@+id/totalSpotsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Spots: "
+        app:layout_constraintTop_toBottomOf="@id/lotteryEntriesTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="4dp" />
+
+    <!-- Enter Now Button -->
+
+    <!-- Leave now button (both can't exist at the same time, logic handled in eventdetailfragment.java-->
+    <Button
+        android:id="@+id/button_leave_waitlist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Leave Waitlist"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/totalSpotsTextView" />
+
+    <Button
+        android:id="@+id/ManageEvents"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="12dp"
+        android:text="Manage"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="@+id/view"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/eventNameTextView"
         app:layout_constraintTop_toBottomOf="@+id/eventImageView" />
+
+    <Button
+        android:id="@+id/EntrantManageEvents"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="12dp"
+        android:text="Options"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="@+id/view"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/eventNameTextView"
+        app:layout_constraintTop_toBottomOf="@+id/eventImageView" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

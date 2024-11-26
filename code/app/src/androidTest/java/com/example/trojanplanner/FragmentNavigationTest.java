@@ -41,7 +41,7 @@ public class FragmentNavigationTest {
     @Test
     public void testNavigationToEventsFragment() {
         // Click on the events tab in the BottomNavigationView
-        Espresso.onView(withId(R.id.eventsFragment)).perform(click());
+        Espresso.onView(withId(R.id.eventsListFragment)).perform(click());
 
         // Check if the EventsFragment is displayed
         Espresso.onView(withText("Event 1")).check(matches(ViewMatchers.isDisplayed()));

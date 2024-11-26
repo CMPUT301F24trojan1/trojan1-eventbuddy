@@ -1,6 +1,11 @@
 package com.example.trojanplanner.model;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.provider.Settings;
+
+import com.example.trojanplanner.App;
+import com.example.trojanplanner.R;
 
 import java.io.Serializable;
 
@@ -15,7 +20,7 @@ public abstract class User implements Serializable {
     private String phoneNumber;
     private String deviceId;
     private String pfpFilePath;
-    private Bitmap pfpBitmap;
+    private SerialBitmap pfpBitmap;
     private String role; //Entrant, Organizer, Admin
     private boolean isOrganizer;
     private boolean isAdmin;
@@ -65,6 +70,25 @@ public abstract class User implements Serializable {
         this.pfpFilePath = pfp;
         this.phoneNumber = phone;
     }
+
+
+    /**
+     * Alternate constructor to create an INCOMPLETE User object to allow
+     * setting attributes after object creation.
+     *
+     * @param deviceId The deviceId of the user account
+     * @author Jared Gourley
+     */
+    public User(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+
+    @Override
+    public String toString() {
+        return firstName + " " + lastName + " (" + deviceId + ")";
+    }
+
 
     /**
      * Getter method for user's last name
@@ -192,6 +216,14 @@ public abstract class User implements Serializable {
         return isAdmin;
     }
 
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    public void setIsOrganizer(boolean isOrganizer) {
+        this.isOrganizer = isOrganizer;
+    }
+
     public String getPfpFilePath() {
         return pfpFilePath;
     }
@@ -200,12 +232,33 @@ public abstract class User implements Serializable {
         this.pfpFilePath = pfpFilePath;
     }
 
+    /**
+     * Returns the bitmap picture for the user. If null, assigns the default picture and
+     * returns it to avoid null errors
+     * @return The current bitmap for the user or the default bitmap
+     */
     public Bitmap getPfpBitmap() {
-        return pfpBitmap;
+        if (this.pfpBitmap == null) {
+            // Assign a default picture if the provided one is null
+            this.pfpBitmap = new SerialBitmap(getDefaultPicture());
+        }
+        return pfpBitmap.getBitmap();
     }
 
     public void setPfpBitmap(Bitmap pfpBitmap) {
-        this.pfpBitmap = pfpBitmap;
+        if (pfpBitmap == null) {
+            this.pfpBitmap = new SerialBitmap(getDefaultPicture());
+        }
+        else {
+            this.pfpBitmap = new SerialBitmap(pfpBitmap);
+        }
     }
+
+    // Helper method to load a default picture
+    private Bitmap getDefaultPicture() {
+        // load a default image resource as a Bitmap
+        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.placeholder_avatar);
+    }
+
 }
 

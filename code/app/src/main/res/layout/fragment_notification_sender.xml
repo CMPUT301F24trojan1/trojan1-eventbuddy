@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Spinner for notification type -->
+    <Spinner
+        android:id="@+id/spinnerNotificationType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="237dp"
+        android:layout_marginBottom="9dp"
+        android:entries="@array/notification_types"
+        android:spinnerMode="dropdown"
+        app:layout_constraintBottom_toTopOf="@+id/editTextTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <!-- Title Input -->
+    <EditText
+        android:id="@+id/editTextTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="17dp"
+        android:hint="Enter A Notification Title"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/editTextMessage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Message Input -->
+    <EditText
+        android:id="@+id/editTextMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity="top"
+        android:hint="Enter Your Notification Message"
+        android:inputType="textMultiLine"
+        android:lines="4"
+        app:layout_constraintBottom_toTopOf="@+id/buttonSendNotification"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/buttonSendNotification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="220dp"
+        android:text="Send Notification"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/notification_type_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="196dp"
+        android:layout_marginBottom="18dp"
+        android:textSize="18sp"
+        android:textStyle="normal"
+        android:fontFamily="sans-serif-medium"
+        android:text="Choose the type of notification you wish to send:"
+        app:layout_constraintBottom_toTopOf="@+id/spinnerNotificationType"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

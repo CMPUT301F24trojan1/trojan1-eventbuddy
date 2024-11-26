@@ -1,21 +1,47 @@
 package com.example.trojanplanner.model;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import com.example.trojanplanner.App;
+import com.example.trojanplanner.R;
+
+import java.io.Serializable;
 
 /**
  * Facility class that keeps the location of the Event
  * @author Madelaine Dalangin
  */
-public class Facility {
+public class Facility implements Serializable {
     private String facilityId;
     private String name;
     private String location;
     private Organizer owner;
     private String pfpFacilityFilePath;
-    private Bitmap pfpFacilityBitmap;
-    
+    private SerialBitmap pfpFacilityBitmap;
+
+
     /**
      * Constructor for Facility
+     * @param name The name of the facility
+     * @param facilityId The unique ID of the facility
+     * @param location
+     * @param owner
+     * @param pfpFacilityFilePath
+     * @author Jared Gourley
+     */
+    public Facility(String name, String facilityId, String location, Organizer owner, String pfpFacilityFilePath) {
+        this.name = name;
+        this.facilityId = facilityId;
+        this.location = location;
+        this.owner = owner;
+        this.pfpFacilityFilePath = pfpFacilityFilePath;
+    }
+
+
+    /**
+     * Alternate constructor for Facility explicitly setting pfp bitmap
      * @param name The name of the facility
      * @param facilityId The unique ID of the facility
      * @param location
@@ -29,14 +55,28 @@ public class Facility {
         this.facilityId = facilityId;
         this.location = location;
         this.owner = owner;
-//        this.event = event;
-//        this.dateOccupied = dateOccupied;
-//        this.capacityOfEvent = capacityOfEvent;
-//        this.maxCapacityOfFacility = maxCapacityOfFacility;
-//        this.hasOwner = hasOwner;
         this.pfpFacilityFilePath = pfpFacilityFilePath;
-        this.pfpFacilityBitmap = pfpFacilityBitmap;
+        this.setPfpFacilityBitmap(pfpFacilityBitmap);
     }
+
+
+    /**
+     * Alternate constructor to create an INCOMPLETE Facility object to allow
+     * setting attributes after object creation.
+     *
+     * @param facilityId The facilityId of the event
+     * @author Jared Gourley
+     */
+    public Facility(String facilityId) {
+        this.facilityId = facilityId;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Facility: " + name + " (" + facilityId + ")";
+    }
+
 
     public String getName() {
         return name;
@@ -95,20 +135,37 @@ public class Facility {
     }
 
     /**
-     * Method for getting pfp Facility
-     * @author Madelaine Dalangin
-     * @return pfpFacilityBitmap, Bitmap
+     * Returns the bitmap picture for the event. If null, assigns the default picture and
+     * returns it to avoid null errors
+     * @return The current bitmap for the event or the default bitmap
      */
     public Bitmap getPfpFacilityBitmap() {
-        return pfpFacilityBitmap;
+        // If the picture attribute is null, assign it the default value since it should have a value
+        if (pfpFacilityBitmap == null) {
+            pfpFacilityBitmap = new SerialBitmap(getDefaultPicture());
+        }
+        return pfpFacilityBitmap.getBitmap();
     }
 
     /**
      * Method for setting pfp Facility
-     * @author Madelaine Dalangin
-     * @param pfpFacilityBitmap, Bitmap
+     * @param pfpFacilityBitmap Bitmap to set
+     * @author Jared Gourley
      */
     public void setPfpFacilityBitmap(Bitmap pfpFacilityBitmap) {
-        this.pfpFacilityBitmap = pfpFacilityBitmap;
+        if (pfpFacilityBitmap == null) {
+            // Assign a default picture if the provided one is null
+            this.pfpFacilityBitmap = new SerialBitmap(getDefaultPicture());
+        } else {
+            this.pfpFacilityBitmap = new SerialBitmap(pfpFacilityBitmap);
+        }
     }
+
+
+    // Helper method to load a default picture
+    private Bitmap getDefaultPicture() {
+        // load a default image resource as a Bitmap
+        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_facility_pic);
+    }
+
 }
