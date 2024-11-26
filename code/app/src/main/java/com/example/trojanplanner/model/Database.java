@@ -480,8 +480,10 @@ public class Database {
             userMap.put("currentPendingEvents", convertEventArrayToDocRefs(entrant.getCurrentPendingEvents()));
         } else if (user.getClass() == Organizer.class) {
             userMap.put("createdEvents", convertEventArrayToDocRefs( ((Organizer) user).getCreatedEvents() ));
+            if (((Organizer) user).getFacility() != null) {
+                userMap.put("facilityID", ((Organizer) user).getFacility().getFacilityId());
+            }
         } // (no special attributes for admins)
-
 
         db.collection("users")
                 .document(user.getDeviceId())
@@ -2561,6 +2563,44 @@ public class Database {
                                 : new Exception("Failed to fetch document for event: " + eventId));
                     }
                 });
+    }
+
+    //This WILL ONLY BE CALLED WITH THE ASSUMPTION THE ID is a organizer
+    public void getFacilityIDbyUserID(String userID, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        // Query the "users" collection for the Organizer's document using the userID
+        DocumentReference docRef = db.collection("users").document(userID);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                // Check if the query was successful
+                if (!task.isSuccessful()) {
+                    // If the query fails, handle the failure
+                    Log.d("WARN", "getOrganizer failed with ", task.getException());
+                    failureAction.OnFailure();
+                    return;
+                }
+
+                // Retrieve the document snapshot from the task result
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    // Get the facilityId from the "facilityID" field
+                    String facilityId = document.getString("facilityID"); // Retrieve the facilityId directly from the document
+
+                    if (facilityId != null && !facilityId.isEmpty()) {
+                        // Facility ID found, pass it to success callback
+                        successAction.OnSuccess(facilityId);
+                    } else {
+                        // If there's no facilityId, handle accordingly
+                        Log.d("WARN", "Facility ID is missing for this organizer.");
+                        failureAction.OnFailure();
+                    }
+                } else {
+                    // If the user document doesn't exist
+                    Log.d("WARN", "No such document for user ID: " + userID);
+                    failureAction.OnFailure();
+                }
+            }
+        });
     }
 
     // Admin specific Queries

@@ -120,7 +120,7 @@ public class ProfileFragment extends Fragment {
                 FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                 fragmentManager.beginTransaction()
                         .replace(R.id.profile_fragment_container, facilitySetupFragment)
-                        .addToBackStack(null) // Add to back stack for back navigation
+                        .addToBackStack("ProfileFragment") // Add to back stack for back navigation
                         .commit();
             });
         }

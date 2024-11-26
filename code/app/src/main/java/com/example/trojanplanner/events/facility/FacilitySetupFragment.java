@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -92,12 +93,19 @@ public class FacilitySetupFragment extends Fragment {
         } else {
             profileActivity = (ProfileActivity) getActivity();
 
-            if (getArguments() != null) {
-                Facility facility = (Facility) getArguments().getSerializable("facility_key");
-                if (facility != null) {
+            Database.QuerySuccessAction successAction = object -> {
+                String facilityId = (String) object;
+                Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility ID retrieved: " + facilityId);
+                Database.getDB().getFacility(object1 -> {
+                    Facility facility = (Facility) object1;
                     populateFields(facility);
-                }
-            }
+                    Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility retrieved: " + facility.toString());
+                }, () -> {
+                    Log.d("FacilitySetupFrom Profile: FAILURE", "Failed to retrieve the Facility.");
+                }, facilityId);
+            };
+            Database.QueryFailureAction failureAction = () -> Log.d("FacilitySetupFrom Profile: FAILURE", "Failed to retrieve Facility ID");
+            Database.getDB().getFacilityIDbyUserID(App.currentUser.getDeviceId(), successAction, failureAction);
 
             if (profileActivity != null) {
                 profileActivity.photoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);

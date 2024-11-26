@@ -145,7 +145,44 @@ public class CreateEventFragment extends Fragment {
                     Organizer currentOrganizer = (Organizer) object;
                     Log.d("CreateEvent", "Organizer fetched: " + currentOrganizer.getDeviceId());
 
-                    // Get the facility from the organizer (if necessary, can be omitted)
+                    currentOrganizer.setFacility(null);
+                    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
+                        @Override
+                        public void OnSuccess(Object object) {
+                            // object will be the facilityId
+                            String facilityId = (String) object;
+                            Log.d("SUCCESS", "Facility ID retrieved: " + facilityId);
+
+                            // Using facilityId, retrieve the facility object
+                            database.getFacility(new Database.QuerySuccessAction() {
+                                @Override
+                                public void OnSuccess(Object object) {
+                                    // Now that we have the Facility object, handle it here
+                                    Facility facility = (Facility) object;
+                                    currentOrganizer.setFacility(facility);
+                                    Log.d("SUCCESS", "Facility retrieved: " + facility.toString());
+
+                                    // You can now use the `facility` object as needed
+                                }
+                            }, new Database.QueryFailureAction() {
+                                @Override
+                                public void OnFailure() {
+                                    Log.d("FAILURE", "Failed to retrieve the Facility.");
+                                    // Handle failure (e.g., show an error message)
+                                }
+                            }, facilityId);
+                        }
+                    };
+
+                    Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
+                        @Override
+                        public void OnFailure() {
+                            Log.d("FAILURE", "Failed to retrieve Facility ID");
+
+                        }
+                    };
+                    database.getFacilityIDbyUserID(currentOrganizer.getDeviceId(), successAction, failureAction);
+
                     Facility facility = currentOrganizer.getFacility();
 
                     // Create the event ID using the organizer's device ID and current timestamp
