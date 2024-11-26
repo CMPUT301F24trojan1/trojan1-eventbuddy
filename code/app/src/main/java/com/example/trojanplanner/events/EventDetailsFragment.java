@@ -24,6 +24,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.events.entrant.EntrantEventOptionsDialogFragment;
 import com.example.trojanplanner.events.organizer.EventOptionsDialogFragment;
 
 import com.example.trojanplanner.model.Database;
@@ -621,7 +622,7 @@ public class EventDetailsFragment extends Fragment {
         if (event != null) {
             populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
             // Print the current waitlist for debugging purposes
-            Log.d("updateButtonVisibility", "updateButton Event Waiting List: " + event.getWaitingList());
+            Log.d("EventDetailsFragment", "updateButton Event Waiting List: " + event.getWaitingList());
         } else {
             Log.e("EventDetailsFragment", "Event is null in onCreateView");
         }
@@ -649,6 +650,8 @@ public class EventDetailsFragment extends Fragment {
             });
         } else if (App.currentUser != null && optionsButton != null) {
             optionsButton.setVisibility(View.VISIBLE);
+            EntrantEventOptionsDialogFragment dialogFragment = EntrantEventOptionsDialogFragment.newInstance(event);
+            dialogFragment.show(getChildFragmentManager(), "EntrantEventOptionsDialog");
         }
 
         // Check if the user is waitlisted for this event

@@ -16,7 +16,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.io.Serializable;
 
 /**
- * A DialogFragment for entrants to manage event options, specifically notification preferences.
+ * A DialogFragment for entrants to manage event options.
  */
 public class EntrantEventOptionsDialogFragment extends DialogFragment {
 

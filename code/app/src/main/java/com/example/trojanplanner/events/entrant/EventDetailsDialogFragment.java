@@ -216,8 +216,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
                 },
                 event.getEventId()
         );
-
-
+        buttonEnterNow.setVisibility(View.GONE);
     }
 
     /**
