@@ -17,6 +17,7 @@ navigationUi = "2.8.3"
 cameraCore = "1.4.0"
 cameraLifecycle = "1.4.0"
 cameraView = "1.4.0"
+playServicesMaps = "19.0.0"
 zxingAndroidEmbedded = "4.3.0"
 firebaseDatabase = "21.0.0"
 playServicesLocation = "21.3.0"
@@ -43,6 +44,7 @@ navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version
 camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
 camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraLifecycle" }
 camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraView" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }

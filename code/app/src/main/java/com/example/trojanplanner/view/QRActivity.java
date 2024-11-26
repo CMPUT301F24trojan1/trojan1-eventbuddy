@@ -22,6 +22,8 @@ import com.example.trojanplanner.events.entrant.EventDetailsDialogFragment;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -63,10 +65,8 @@ import okhttp3.RequestBody;
 public class QRActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private BarcodeView barcodeView;
-    private @NonNull ActivityQrBinding binding;
+    private ActivityQrBinding binding;
     private Database database;
-    private static final String BACKEND_URL = App.BACKEND_URL;
-    private final OkHttpClient client = new OkHttpClient();
 
     /**
      * Called when the activity is created. It sets up the layout, camera permissions,
@@ -169,7 +169,7 @@ public class QRActivity extends AppCompatActivity {
                                 if (event != null) {
                                     // Log the retrieved event
                                     Log.d("QRActivity", "Event retrieved: " + event.getName());
-                                    sendAnnouncement(App.currentUser.getDeviceId(), event.getName(), "You've been put on the waiting list!");
+
                                     // Navigate to the EventDetailsFragment
                                     navigateToEventDetailsFragment(event);
                                 } else {
@@ -230,9 +230,6 @@ public class QRActivity extends AppCompatActivity {
     private void navigateToEventDetailsFragment(Event event) {
         // Show the EventDetailsDialogFragment as a Dialog
         EventDetailsDialogFragment eventDetailsDialogFragment = EventDetailsDialogFragment.newInstance(event, (Entrant) App.currentUser); // Assuming you still need the Entrant object
-        if (event.isRequiresGeolocation()){
-            Toast.makeText(App.activity, "Careful this Has a GeoLocation Requirement!!", Toast.LENGTH_SHORT).show();
-        }
         eventDetailsDialogFragment.show(getSupportFragmentManager(), "EventDetailsDialog");
     }
 
@@ -261,13 +258,13 @@ public class QRActivity extends AppCompatActivity {
         navView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_home) {
                 Intent intent = new Intent(QRActivity.this, MainActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 Intent intent = new Intent(QRActivity.this, ProfileActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
                 return true;
@@ -304,61 +301,7 @@ public class QRActivity extends AppCompatActivity {
         QRHelpFragment QRHelpFragment = new QRHelpFragment();
         QRHelpFragment.show(getSupportFragmentManager(), "HelpFragment");
     }
-
-    /**
-     * Logic to send an announcement for the given topic.
-     *
-     * @param topic   The topic to which the notification will be sent.
-     * @param title   The title of the notification.
-     * @param message The message of the notification.
-     */
-    public void sendAnnouncement(String topic, String title, String message) {
-        if (topic == null || title == null || message == null) {
-            return;
-        }
-
-        // Create JSON payload
-        JSONObject jsonPayload = new JSONObject();
-        try {
-            jsonPayload.put("topic", topic);
-            jsonPayload.put("title", title);
-            jsonPayload.put("message", message);
-        } catch (JSONException e) {
-            Log.e("Notification", "JSON creation failed: " + e.getMessage());
-            return;
-        }
-
-        // Create the request body with JSON
-        RequestBody body = RequestBody.create(
-                jsonPayload.toString(),
-                MediaType.get("application/json")
-        );
-
-        // Create the POST request to your backend
-        Request request = new Request.Builder()
-                .url(BACKEND_URL)
-                .post(body)
-                .build();
-
-        // Execute the request asynchronously
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    Log.d("Notification", "Notification sent successfully!");
-                } else {
-                    Log.e("Notification", "Notification failed with response code: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
-                Log.e("Notification", "Error sending notification: " + e.getMessage());
-            }
-        });
-    }
 }
-
 
 /*
 *
@@ -378,4 +321,58 @@ public class QRActivity extends AppCompatActivity {
                         //focusOverlayView.addFocusPoints(resultPoints);
                     }
                 }
+                *
+
+             * Logic to send an announcement for the given topic.
+             *
+             * @param topic   The topic to which the notification will be sent.
+             * @param title   The title of the notification.
+             * @param message The message of the notification.
+
+        public void sendAnnouncement(String topic, String title, String message) {
+            if (topic == null || title == null || message == null) {
+                return;
+            }
+
+            // Create JSON payload
+            JSONObject jsonPayload = new JSONObject();
+            try {
+                jsonPayload.put("topic", topic);
+                jsonPayload.put("title", title);
+                jsonPayload.put("message", message);
+            } catch (JSONException e) {
+                Log.e("Notification", "JSON creation failed: " + e.getMessage());
+                return;
+            }
+
+            // Create the request body with JSON
+            RequestBody body = RequestBody.create(
+                    jsonPayload.toString(),
+                    MediaType.get("application/json")
+            );
+
+            // Create the POST request to your backend
+            Request request = new Request.Builder()
+                    .url(BACKEND_URL)
+                    .post(body)
+                    .build();
+
+            // Execute the request asynchronously
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        Log.d("Notification", "Notification sent successfully!");
+                    } else {
+                        Log.e("Notification", "Notification failed with response code: " + response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                    Log.e("Notification", "Error sending notification: " + e.getMessage());
+                }
+            });
+        }
+
 * */
