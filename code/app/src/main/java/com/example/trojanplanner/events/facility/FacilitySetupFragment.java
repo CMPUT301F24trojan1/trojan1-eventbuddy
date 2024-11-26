@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,8 @@ import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.view.MainActivity;
+import com.example.trojanplanner.view.ProfileActivity;
+
 import java.io.IOException;
 import java.util.Objects;
 
@@ -43,6 +46,7 @@ public class FacilitySetupFragment extends Fragment {
     private EditText facilityLocationEditText;
     private Uri facilityPhotoUri;
     private MainActivity mainActivity;
+    private ProfileActivity profileActivity;
 
     /**
      * Inflates the layout for this fragment and sets up the user interface components.
@@ -85,6 +89,19 @@ public class FacilitySetupFragment extends Fragment {
             // Override default photo picker callback function
             mainActivity.facilityPhotoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
 
+        } else {
+            profileActivity = (ProfileActivity) getActivity();
+
+            if (getArguments() != null) {
+                Facility facility = (Facility) getArguments().getSerializable("facility_key");
+                if (facility != null) {
+                    populateFields(facility);
+                }
+            }
+
+            if (profileActivity != null) {
+                profileActivity.photoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
+            }
         }
 
         return view;
@@ -94,7 +111,11 @@ public class FacilitySetupFragment extends Fragment {
      * Opens the photo picker to allow the user to select a photo for the facility.
      */
     private void openImagePicker() {
-        mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
+        if (getActivity() instanceof ProfileActivity) {
+            profileActivity.photoPicker.openPhotoPicker(App.currentUser);
+        } else {
+            mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
+        }
     }
 
     /**
@@ -133,7 +154,7 @@ public class FacilitySetupFragment extends Fragment {
         // If no photo is selected, use a default image from resources
         if (facilityPhotoUri == null) {
             bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-            String defaultUriString = "default_image_uri"; // Default placeholder image URI
+            String defaultUriString = "1234567890/1729746211299.png"; // Default placeholder image URI
 
             String newFacilityId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
             Facility facility = new Facility(
