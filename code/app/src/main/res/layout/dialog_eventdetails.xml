@@ -51,7 +51,7 @@
         android:id="@+id/detailsBox"
         android:layout_width="0dp"
         android:layout_height="265dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="-25dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="6dp"
         app:cardUseCompatPadding="false"
