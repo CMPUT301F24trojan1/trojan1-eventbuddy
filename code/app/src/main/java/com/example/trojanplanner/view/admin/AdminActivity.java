@@ -21,10 +21,12 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.admin.AdminEventArrayAdapter;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.view.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.trojanplanner.model.Event;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class AdminActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "com.example.trojanplanner.PREFS";
@@ -33,7 +35,7 @@ public class AdminActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private AdminEventArrayAdapter adapter;
     private List<Event> events;
-    private Button previousButton, nextButton;
+    private Button previousButton, nextButton, switchAdmin;
     private int currentPage = 1;
     private final int pageSize = 4; // Number of events per page
     private long totalDocuments = 0; // Total number of documents in Firestore
@@ -99,6 +101,14 @@ public class AdminActivity extends AppCompatActivity {
                 loadPage(currentPage, lastFetchedEventDocument);
                 updateButtonStates();
             }
+        });
+
+        switchAdmin = findViewById(R.id.switchAdmin);
+        switchAdmin.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminActivity.this, ProfileActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
     }
 

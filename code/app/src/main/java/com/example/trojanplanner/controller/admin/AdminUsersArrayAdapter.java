@@ -36,21 +36,56 @@ public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArray
     public void onBindViewHolder(UserViewHolder holder, int position) {
         User user = userList.get(position);
 
-        holder.firstNameTextView.setText(user.getFirstName());
-        holder.lastNameTextView.setText(user.getLastName());
-        holder.emailTextView.setText(user.getEmail());
-        holder.phoneTextView.setText(user.getPhoneNumber());
+        // Handle null values for each field
+        if (user != null) {
+            // Handle first name with null check
+            if (user.getFirstName() != null && !user.getFirstName().isEmpty()) {
+                holder.firstNameTextView.setText(user.getFirstName());
+            } else {
+                holder.firstNameTextView.setText("Unknown First Name"); // Or a default placeholder
+            }
 
-        // Load profile picture if available
-        if (user.getPfpFilePath() != null && !user.getPfpFilePath().isEmpty()) {
-            // Assuming pfpFilePath is a valid file path or URI
-            File imgFile = new  File(user.getPfpFilePath());
-            if (imgFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                holder.profileImageView.setImageBitmap(bitmap);
+            // Handle last name with null check
+            if (user.getLastName() != null && !user.getLastName().isEmpty()) {
+                holder.lastNameTextView.setText(user.getLastName());
+            } else {
+                holder.lastNameTextView.setText("Unknown Last Name"); // Or a default placeholder
+            }
+
+            // Handle email with null check
+            if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                holder.emailTextView.setText(user.getEmail());
+            } else {
+                holder.emailTextView.setText("No email provided"); // Or a default placeholder
+            }
+
+            // Handle phone number with null check
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()) {
+                holder.phoneTextView.setText(user.getPhoneNumber());
+            } else {
+                holder.phoneTextView.setText("No phone number"); // Or a default placeholder
+            }
+
+            // Handle profile picture with null and validity checks
+            if (user.getPfpFilePath() != null && !user.getPfpFilePath().isEmpty()) {
+                // Assuming pfpFilePath is a valid file path or URI
+                File imgFile = new File(user.getPfpFilePath());
+                if (imgFile.exists()) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    holder.profileImageView.setImageBitmap(bitmap);
+                } else {
+                    holder.profileImageView.setImageResource(R.drawable.placeholder_avatar);  // Use default image if file does not exist
+                }
+            } else {
+                holder.profileImageView.setImageResource(R.drawable.placeholder_avatar);  // Use default image if pfpFilePath is null or empty
             }
         } else {
-            holder.profileImageView.setImageResource(R.drawable.placeholder_avatar);  // Use a default image if none is provided
+            // Handle the case where the user object is null (though this should be rare if data is consistent)
+            holder.firstNameTextView.setText("Unknown First Name");
+            holder.lastNameTextView.setText("Unknown Last Name");
+            holder.emailTextView.setText("No email provided");
+            holder.phoneTextView.setText("No phone number");
+            holder.profileImageView.setImageResource(R.drawable.placeholder_avatar);  // Default image if user is null
         }
     }
 
