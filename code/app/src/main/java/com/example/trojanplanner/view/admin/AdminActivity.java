@@ -38,7 +38,6 @@ public class AdminActivity extends AppCompatActivity {
     private final int pageSize = 4; // Number of events per page
     private long totalDocuments = 0; // Total number of documents in Firestore
     private String lastFetchedEventDocument = null; // Track the last document for pagination
-    private String firstDocumentOfCurrentPage = null; // Track the first document ID of the current page
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,8 +92,6 @@ public class AdminActivity extends AppCompatActivity {
                 updateButtonStates();
             }
         });
-
-
         nextButton.setOnClickListener(v -> {
             int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
             if (currentPage < totalPages) {

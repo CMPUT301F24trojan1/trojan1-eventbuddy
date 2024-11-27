@@ -37,15 +37,38 @@ public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacil
     public void onBindViewHolder(@NonNull FacilityViewHolder holder, int position) {
         Facility facility = facilityList.get(position);
 
-        // Bind the name, location, and owner
-        holder.facilityName.setText(facility.getName());
-        holder.facilityLocation.setText(facility.getLocation());
-        holder.facilityOwner.setText(facility.getOwner().getFirstName()); // Assuming `owner` is an `Organizer` object
+        // Bind the name, location, and owner with null checks
+        if (facility != null) {
+            if (facility.getName() != null) {
+                holder.facilityName.setText(facility.getName());
+            } else {
+                holder.facilityName.setText("");
+            }
 
-        // Load the image using Glide
-        if (facility.getPfpFacilityBitmap() != null) {
-            // If we have a bitmap, load it into the ImageView
-            holder.facilityImage.setImageBitmap(facility.getPfpFacilityBitmap());
+            if (facility.getLocation() != null) {
+                holder.facilityLocation.setText(facility.getLocation());
+            } else {
+                holder.facilityLocation.setText("");
+            }
+
+            if (facility.getOwner() != null && facility.getOwner().getFirstName() != null) {
+                holder.facilityOwner.setText(facility.getOwner().getFirstName());
+            } else {
+                holder.facilityOwner.setText("");
+            }
+
+            if (facility.getPfpFacilityBitmap() != null) {
+                // If we have a bitmap, load it into the ImageView
+                holder.facilityImage.setImageBitmap(facility.getPfpFacilityBitmap());
+            } else {
+                holder.facilityImage.setImageResource(R.drawable.default_facility_pic);
+            }
+        } else {
+            // Handle null facility object gracefully
+            holder.facilityName.setText(""); // or placeholder text
+            holder.facilityLocation.setText(""); // or placeholder text
+            holder.facilityOwner.setText(""); // or placeholder text
+            holder.facilityImage.setImageResource(R.drawable.default_facility_pic); // Set default image if facility is null
         }
     }
 

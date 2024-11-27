@@ -2,6 +2,9 @@ package com.example.trojanplanner.view.admin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.trojanplanner.controller.admin.AdminUsersArrayAdapter;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
@@ -21,10 +26,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdminUsersActivity extends AppCompatActivity {
-    private TextView emptyText;
-    private List<User> usersList; // List to hold users, you will likely get this from a database or API
+    private TextView empty_text;
     private RecyclerView recyclerView;
-    private AdminUsersArrayAdapter usersAdapter;
+    private AdminUsersArrayAdapter adapter;
+    private List<User> users;
+    private Button previousButton, nextButton;
+    private int currentPage = 1;
+    private final int pageSize = 4; // Number of users per page
+    private long totalDocuments = 0; // Total number of documents in Firestore
+    private String lastFetchedFacilityDocument = null; // Track the last document for pagination
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,21 +49,103 @@ public class AdminUsersActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.adminusersRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Fetch users or initialize the list (Here, we simulate an empty list)
-        usersList = getUsers();  // Replace this with your actual user-fetching logic
-        emptyText = findViewById(R.id.empty_text);
+        empty_text = findViewById(R.id.empty_text);
+        previousButton = findViewById(R.id.previous_button);
+        nextButton = findViewById(R.id.next_button);
 
-        if (usersList.isEmpty()) {
-            emptyText.setVisibility(TextView.VISIBLE);
-            recyclerView.setVisibility(RecyclerView.GONE);
-        } else {
-            emptyText.setVisibility(TextView.GONE);
-            recyclerView.setVisibility(RecyclerView.VISIBLE);
-            usersAdapter = new AdminUsersArrayAdapter(AdminUsersActivity.this, usersList);
-            recyclerView.setAdapter(usersAdapter);
-        }
+        // Fetch users or initialize the list (Here, we simulate an empty list)
+        users = new ArrayList<>();  // Replace this with your actual user-fetching logic
+        adapter = new AdminUsersArrayAdapter(AdminUsersActivity.this, users);
+        recyclerView.setAdapter(adapter);
+
+        // Fetch total documents and initialize the first page
+        Database.getDB().getTotalUserDocumentCount(
+                totalDocs -> {
+                    totalDocuments = totalDocs;
+                    loadPage(currentPage, null); // Start with the first page
+                    updateButtonStates();
+                },
+                e -> Log.e("Database", "Failed to count documents", e)
+        );
 
         setupNavigation();
+
+        previousButton.setOnClickListener(v -> {
+            int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
+            if (currentPage == totalPages){
+                currentPage = 1;
+                loadPage(currentPage, null);
+                updateButtonStates();
+                return;
+            }
+            if (currentPage > 1) {
+                // If not on the first page, decrement the current page
+                currentPage--;
+                loadPage(currentPage, lastFetchedFacilityDocument);
+                updateButtonStates();
+            }
+        });
+        nextButton.setOnClickListener(v -> {
+            int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadPage(currentPage, lastFetchedFacilityDocument);
+                updateButtonStates();
+            }
+        });
+    }
+
+    private void loadPage(int page, String lastDocumentId) {
+        users.clear();
+        adapter.notifyDataSetChanged();
+        if (page == 1) {
+            lastDocumentId = null; // No need for lastDocumentId when fetching the first page
+        }
+
+        Database.getDB().getUserDocumentIDs(page, pageSize, lastDocumentId,
+                documentIDs -> {
+                    if (!((List<String>)documentIDs).isEmpty()) {
+                        // Save the last document ID to use for the next fetch
+                        lastFetchedFacilityDocument = ((List<String>)documentIDs).get(((List<String>)documentIDs).size() - 1);
+                    }
+                    Log.d("AdminActivity", "Fetched document IDs: " + documentIDs); // Log document IDs
+                    Log.d("AdminActivity", "Last document ID: " + lastFetchedFacilityDocument); // Log last document ID
+                    for (String id : (List<String>)documentIDs) {
+                        Database.getDB().getEntrant(user -> {
+                            Log.d("AdminActivity", "Fetched user: " + ((User)user).getFirstName()); // Log the facility data
+                            users.add((User) user);
+                            adapter.notifyDataSetChanged();
+                            toggleEmptyView();
+                        }, () -> Log.e("AdminActivity", "Failed to fetch user details"), id);
+                    }
+                },
+                () -> Log.e("AdminActivity", "Failed to fetch document IDs")
+        );
+    }
+
+    private void updateButtonStates() {
+        int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
+        // Enable/Disable buttons based on the current page
+        previousButton.setEnabled(currentPage > 1);
+        nextButton.setEnabled(currentPage < totalPages);
+
+        // Change the text of the Previous button when on the last page
+        if (currentPage == totalPages) {
+            previousButton.setText("TO: Start");
+            lastFetchedFacilityDocument = null;
+        } else {
+            previousButton.setText("Previous");
+        }
+    }
+
+    private void toggleEmptyView() {
+        if (users.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            empty_text.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            empty_text.setVisibility(View.GONE);
+        }
     }
 
     private void setupNavigation() {
@@ -89,33 +181,4 @@ public class AdminUsersActivity extends AppCompatActivity {
             } else return item.getItemId() == R.id.navigation_users; // Stay in the same activity
         });
     }
-
-    private List<User> getUsers() {
-        // Create a list to hold User objects
-        List<User> users = new ArrayList<>();
-
-        // Add concrete subclasses of User (not User directly, since it's abstract)
-        users.add(new AdminUser("device123", "johndoe@example.com", "John", true, false, "Doe", "/path/to/pfp1.jpg", "123-456-7890"));
-        users.add(new AdminUser("device124", "janedoe@example.com", "Jane", false, true, "Doe", "/path/to/pfp2.jpg", "098-765-4321"));
-        users.add(new AdminUser("device125", "samsmith@example.com", "Sam", true, true, "Smith", "/path/to/pfp3.jpg", "555-123-4567"));
-
-        return users;
-    }
-
-
-    public class AdminUser extends User {
-
-        // Constructor
-        public AdminUser(String deviceId, String email, String firstName, boolean isAdmin,
-                         boolean isOrganizer, String lastName, String pfpFilePath, String phoneNumber) {
-            super(deviceId, email, firstName, isAdmin, isOrganizer, lastName, pfpFilePath, phoneNumber);
-        }
-
-        // Implementing the abstract method
-        @Override
-        public String getRole() {
-            return "Admin";
-        }
-    }
-
 }

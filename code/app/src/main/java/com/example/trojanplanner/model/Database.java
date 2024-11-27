@@ -2576,8 +2576,6 @@ public class Database {
         });
     }
 
-    // Admin specific Queries
-    private DocumentSnapshot lastFetchedEventDocument = null;  // Store the last document for pagination
 
     public void getEventDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         CollectionReference eventsCollection = db.collection("events");
@@ -2608,7 +2606,6 @@ public class Database {
                             if (!querySnapshot.isEmpty()) {
                                 DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
                                 // Save last document snapshot for pagination
-                                lastFetchedEventDocument = lastDoc;  // Now storing DocumentSnapshot instead of just an ID
                             }
 
                             // Trigger the success action with the retrieved document IDs
@@ -2633,7 +2630,6 @@ public class Database {
                         if (!querySnapshot.isEmpty()) {
                             DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
                             // Save last document snapshot for pagination
-                            lastFetchedEventDocument = lastDoc;  // Now storing DocumentSnapshot instead of just an ID
                         }
 
                         // Trigger the success action with the retrieved document IDs
@@ -2679,4 +2675,195 @@ public class Database {
                 })
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
+
+    // Admin specific Queries for Facilities
+    public void getFacilityDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference facilitiesCollection = db.collection("facilities");
+
+        // Create the base query, ordering by creation time and limiting by the page size
+        final Query[] query = {facilitiesCollection
+                .orderBy("facilityID")
+                .limit(pageSize)};
+
+        // If this is not the first page, start after the last visible document
+        if (page > 1 && lastDocumentId != null) {
+            // Make the call asynchronous to fetch the last visible document
+            getLastVisibleFacilityDocument(lastDocumentId, (lastVisible) -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);  // Paginate by starting after the last document
+                }
+
+                // After getting the last visible document, execute the query
+                query[0].get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            List<String> documentIDs = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                documentIDs.add(document.getId()); // Collect document IDs
+                            }
+
+                            // Update the last fetched facility document with the last document of the current page
+                            if (!querySnapshot.isEmpty()) {
+                                DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                                // Save last document snapshot for pagination
+                            }
+
+                            // Trigger the success action with the retrieved document IDs
+                            successAction.OnSuccess(documentIDs);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Database", "Error fetching facility IDs: ", e);
+                            failureAction.OnFailure();
+                        });
+            });
+        } else {
+            // If it's the first page, simply fetch the documents
+            query[0].get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        List<String> documentIDs = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            documentIDs.add(document.getId()); // Collect document IDs
+                        }
+
+                        // Update the last fetched facility document with the last document of the current page
+                        if (!querySnapshot.isEmpty()) {
+                            DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                            // Save last document snapshot for pagination
+                        }
+
+                        // Trigger the success action with the retrieved document IDs
+                        successAction.OnSuccess(documentIDs);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Database", "Error fetching facility IDs: ", e);
+                        failureAction.OnFailure();
+                    });
+        }
+    }
+
+    private void getLastVisibleFacilityDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        // Retrieve the last visible document asynchronously from "facilities" collection
+        db.collection("facilities")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);  // Notify listener of failure
+                    }
+                });
+    }
+
+    public void getTotalFacilityDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        // Create an aggregation query for the count of facilities
+        AggregateQuery countQuery = db.collection("facilities").count();
+
+        // Execute the query and handle results
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();  // Get the count
+                    successListener.onSuccess(totalDocuments);  // Trigger success listener
+                })
+                .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
+    }
+
+    // Admin specific Queries for Users
+    public void getUserDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference userCollection = db.collection("users");
+
+        // Create the base query, ordering by creation time and limiting by the page size
+        final Query[] query = {userCollection
+                .orderBy("deviceID")
+                .limit(pageSize)};
+
+        // If this is not the first page, start after the last visible document
+        if (page > 1 && lastDocumentId != null) {
+            // Make the call asynchronous to fetch the last visible document
+            getLastVisibleUserDocument(lastDocumentId, (lastVisible) -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);  // Paginate by starting after the last document
+                }
+
+                // After getting the last visible document, execute the query
+                query[0].get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            List<String> documentIDs = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                documentIDs.add(document.getId()); // Collect document IDs
+                            }
+
+                            // Update the last fetched facility document with the last document of the current page
+                            if (!querySnapshot.isEmpty()) {
+                                DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                                // Save last document snapshot for pagination
+                            }
+
+                            // Trigger the success action with the retrieved document IDs
+                            successAction.OnSuccess(documentIDs);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Database", "Error fetching facility IDs: ", e);
+                            failureAction.OnFailure();
+                        });
+            });
+        } else {
+            // If it's the first page, simply fetch the documents
+            query[0].get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        List<String> documentIDs = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            documentIDs.add(document.getId()); // Collect document IDs
+                        }
+
+                        // Update the last fetched facility document with the last document of the current page
+                        if (!querySnapshot.isEmpty()) {
+                            DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                            // Save last document snapshot for pagination
+                        }
+
+                        // Trigger the success action with the retrieved document IDs
+                        successAction.OnSuccess(documentIDs);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Database", "Error fetching facility IDs: ", e);
+                        failureAction.OnFailure();
+                    });
+        }
+    }
+
+    private void getLastVisibleUserDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        // Retrieve the last visible document asynchronously from "users" collection
+        db.collection("users")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);  // Notify listener of failure
+                    }
+                });
+    }
+
+    public void getTotalUserDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        // Create an aggregation query for the count of facilities
+        AggregateQuery countQuery = db.collection("users").count();
+
+        // Execute the query and handle results
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();  // Get the count
+                    successListener.onSuccess(totalDocuments);  // Trigger success listener
+                })
+                .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
+    }
+
 }
