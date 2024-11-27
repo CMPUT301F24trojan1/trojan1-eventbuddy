@@ -15,5 +15,7 @@
     <color name="dark_surface">#424242</color>
     <color name="statusBarColor">#F8F8F8</color> <!-- Status Bar colour -->
     <color name="darkGray">#7F7F7F</color>
+    <color name="trojanRed">#971924</color>
+    <color name="trojanWhite">#F5E9D3</color>
 
 </resources>

@@ -43,7 +43,7 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
         holder.eventDescription.setText(event.getDescription());
 
         // Use context to get the picture, providing default if necessary
-        Bitmap picture = event.getPicture(context);
+        Bitmap picture = event.getPicture();
         if (picture != null) {
             holder.eventImage.setImageBitmap(picture);
         } else {

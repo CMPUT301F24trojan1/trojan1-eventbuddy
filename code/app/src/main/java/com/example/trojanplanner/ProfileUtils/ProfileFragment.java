@@ -28,10 +28,12 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
+import com.example.trojanplanner.events.facility.FacilitySetupFragment;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
@@ -52,6 +54,7 @@ public class ProfileFragment extends Fragment {
     public PhotoPicker.PhotoPickerCallback photoPickerCallback;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch notificationsSwitch;
+    private Switch switchProfileFacility;
     private ActivityResultLauncher<String> requestNotificationPermissionLauncher;
 
     public ProfileFragment() {
@@ -74,7 +77,7 @@ public class ProfileFragment extends Fragment {
 //            }
 
 
-            //database.getEntrant(App.deviceId);
+        //database.getEntrant(App.deviceId);
 //        }
 
         photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
@@ -121,6 +124,20 @@ public class ProfileFragment extends Fragment {
             // Log an error if notificationsSwitch is null
             Log.e("ProfileFragment", "notificationsSwitch is null!");
         }
+
+        switchProfileFacility = view.findViewById(R.id.switch_profile_facility);
+
+        switchProfileFacility.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                // Display the FacilitySetupFragment
+                FacilitySetupFragment facilitySetupFragment = new FacilitySetupFragment();
+                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.profile_fragment_container, facilitySetupFragment)
+                        .addToBackStack(null) // Add to back stack for back navigation
+                        .commit();
+            }
+        });
 
         // Initialize the ActivityResultLauncher for requesting permissions
         requestNotificationPermissionLauncher = registerForActivityResult(

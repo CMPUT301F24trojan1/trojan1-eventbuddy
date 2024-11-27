@@ -59,7 +59,7 @@ public class EventInstrumentedTest {
 
         // Now create the Event with the Facility object
         event = new Event(
-                "Morning Yoga", "Relaxing session", 0.0f,
+                "Morning Yoga", "Relaxing session", "", 0.0f,
                 facility, startDateTime, endDateTime, 0, 20L, 20L
         );
     }
@@ -67,7 +67,7 @@ public class EventInstrumentedTest {
     @Test
     public void testDefaultImageForEvent() {
         // Test that the default image is returned if no custom picture is set
-        Bitmap picture = event.getPicture(context);
+        Bitmap picture = event.getPicture();
         assertNotNull("Event should have a default picture", picture);
     }
 }

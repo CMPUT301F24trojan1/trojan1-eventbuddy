@@ -1,138 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp">
 
-    <!-- Enlarged Back Button -->
-    <ImageButton
-        android:id="@+id/button_back"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:contentDescription="Back"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="8dp"
+    <!-- Event Image in Rounded Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/eventImageCard"
+        android:layout_width="0dp"
+        android:layout_height="265dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:cardUseCompatPadding="false"
+        app:cardPreventCornerOverlap="true"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="?android:attr/homeAsUpIndicator" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Event Image -->
-    <ImageView
-        android:id="@+id/eventImageView"
+        <!-- Event Image -->
+        <ImageView
+            android:id="@+id/eventImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Event image"
+            android:scaleType="fitXY"
+            android:src="@drawable/event_placeholder" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Details Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/detailsBox"
         android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="8dp"
-        android:contentDescription="Event image"
-        android:src="@drawable/event_placeholder"
-        app:layout_constraintTop_toBottomOf="@id/button_back"
+        android:layout_height="265dp"
+        android:layout_marginTop="-25dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:cardUseCompatPadding="false"
+        app:cardPreventCornerOverlap="false"
+        app:layout_constraintTop_toBottomOf="@id/eventImageCard"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Event Title -->
-    <TextView
-        android:id="@+id/eventNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Event Name"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/eventImageView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="16dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <!-- Event Location -->
-    <TextView
-        android:id="@+id/eventLocationTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Event Location"
-        app:layout_constraintTop_toBottomOf="@id/eventNameTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Event Title -->
+            <TextView
+                android:id="@+id/eventNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Name"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"/>
 
-    <!-- Event Time -->
-    <TextView
-        android:id="@+id/eventDateTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start date to end date"
-        app:layout_constraintTop_toBottomOf="@id/eventLocationTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Event Location -->
+            <TextView
+                android:id="@+id/eventLocationTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📍 Event Location"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp" />
 
-    <!-- Recurring Dates Dropdown -->
-    <TextView
-        android:id="@+id/recurringDatesTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Recurring Dates"
-        app:layout_constraintTop_toBottomOf="@id/eventDateTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Event Time -->
+            <TextView
+                android:id="@+id/eventDateTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏰ Start date to end date"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp" />
 
-    <!-- Divider -->
-    <View
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Recurring Dates Dropdown -->
+            <TextView
+                android:id="@+id/recurringDatesTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔄 Recurring Dates"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp" />
 
-    <!-- Event Description -->
-    <TextView
-        android:id="@+id/eventDescriptionTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Event Description"
-        app:layout_constraintTop_toBottomOf="@id/recurringDatesTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Divider -->
+            <View
+                android:id="@+id/view"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/black" />
 
-    <!-- Lottery Entries -->
-    <TextView
-        android:id="@+id/lotteryEntriesTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Lottery Entries: "
-        app:layout_constraintTop_toBottomOf="@id/eventDescriptionTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+            <!-- Event Description -->
+            <TextView
+                android:id="@+id/eventDescriptionTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Event Description"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginTop="8dp" />
 
-    <!-- Total Spots -->
-    <TextView
-        android:id="@+id/totalSpotsTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total Spots: "
-        app:layout_constraintTop_toBottomOf="@id/lotteryEntriesTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="4dp" />
+            <!-- Lottery Entries -->
+            <TextView
+                android:id="@+id/lotteryEntriesTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎟️ Lottery Entries: "
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="8dp" />
+
+            <!-- Total Spots -->
+            <TextView
+                android:id="@+id/totalSpotsTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🪑 Total Spots: "
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
     <!-- Enter Now Button -->
-    <Button
-        android:id="@+id/button_enter_now"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enter Now!"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/totalSpotsTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Leave now button (both can't exist at the same time, logic handled in eventdetailfragment.java-->
     <Button
         android:id="@+id/button_leave_waitlist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:text="Leave Waitlist"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/totalSpotsTextView"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@+id/detailsBox"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <Button
+        android:id="@+id/ManageEvents"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="12dp"
+        android:text="Manage"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@+id/button_leave_waitlist"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_chainStyle="spread" />
+
+    <Button
+        android:id="@+id/EntrantManageEvents"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="12dp"
+        android:text="Options"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/button_leave_waitlist"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_chainStyle="spread" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

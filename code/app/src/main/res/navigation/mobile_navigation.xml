@@ -20,6 +20,19 @@
         <action
             android:id="@+id/action_eventsFragment_to_eventEditFragment"
             app:destination="@id/createEventsFragment" />
+
+        <action
+            android:id="@+id/action_emptyEventsFragment_to_eventsListFragment"
+            app:destination="@id/eventsListFragment"
+            app:popUpTo="@id/eventsListFragment"
+            app:popUpToInclusive="true"/>
+
+        <action
+            android:id="@+id/action_emptyEventsFragment_to_eventDetailsFragment"
+            app:destination="@id/eventDetailsFragment"
+            app:popUpTo="@id/emptyEventsFragment"
+            app:popUpToInclusive="true"/>
+
     </fragment>
 
     <!-- Define facilitySetupFragment -->
@@ -27,14 +40,29 @@
         android:id="@+id/facilitySetupFragment"
         android:name="com.example.trojanplanner.events.facility.FacilitySetupFragment"
         android:label="Facility Registration"
-        tools:layout="@layout/fragment_facility_setup" />
+        tools:layout="@layout/fragment_facility_setup">
+    </fragment>
 
     <!-- Define eventsListFragment -->
     <fragment
         android:id="@+id/eventsListFragment"
         android:name="com.example.trojanplanner.events.EventsFragment"
         android:label="Events List"
-        tools:layout="@layout/fragment_events_list" />
+        tools:layout="@layout/fragment_events_list">
+        <action
+            android:id="@+id/action_eventsListFragment_to_eventDetailsFragment"
+            app:destination="@id/eventDetailsFragment" />
+
+        <action
+            android:id="@+id/action_eventsListFragment_to_facilitySetupFragment"
+            app:destination="@id/facilitySetupFragment"
+            app:popUpTo="@id/emptyEventsFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_eventsListFragment_to_eventEditFragment"
+            app:destination="@id/createEventsFragment" />
+    </fragment>
 
     <!-- Define eventEditFragment and its navigation to eventsListFragment -->
     <fragment
@@ -57,7 +85,7 @@
     <!-- Define createEventsFragment and its navigation to eventsListFragment -->
     <fragment
         android:id="@+id/createEventsFragment"
-        android:name="com.example.trojanplanner.events.CreateEventFragment"
+        android:name="com.example.trojanplanner.events.organizer.CreateEventFragment"
         android:label="Create Event"
         tools:layout="@layout/fragment_create_events" >
         <action
@@ -66,7 +94,6 @@
             app:popUpTo="@id/createEventsFragment"
             app:popUpToInclusive="true" />
     </fragment>
-
 
     <!-- WaitlistFragment navigation back to EventEditFragment -->
     <fragment
@@ -92,6 +119,49 @@
         <argument
             android:name="event"
             app:argType="com.example.trojanplanner.model.Event" />
+        <action
+            android:id="@+id/action_eventDetailsFragment_to_markedMapFragment"
+            app:destination="@id/markedMapFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/markedMapFragment"
+        android:name="com.example.trojanplanner.HelperFragments.MarkedMapFragment"
+        android:label="Marked Map"
+        tools:layout="@layout/fragment_marked_map" />
+
+    <!-- Define NotificationSenderFragment -->
+    <fragment
+        android:id="@+id/NotificationSenderFragment"
+        android:name="com.example.trojanplanner.HelperFragments.NotificationSenderFragment"
+        android:label="Notification Sender"
+        tools:layout="@layout/fragment_notification_sender">
+    </fragment>
+
+    <!-- Define profileFragment -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.trojanplanner.ProfileUtils.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile">
+
+        <action
+            android:id="@+id/action_profileFragment_to_facilitySetupFragment"
+            app:destination="@id/facilitySetupFragment" />
+
+        <action
+            android:id="@+id/action_profileFragment_to_emptyEventsFragment"
+            app:destination="@id/emptyEventsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/PendingListFragment"
+        android:name="com.example.trojanplanner.HelperFragments.PendingListFragment"
+        android:label="Pending List">
+        <action
+            android:id="@+id/action_PendingListFragment_to_EventOptionsDialogFragment"
+            app:destination="@+id/EventOptionsDialogFragment" />
+    </fragment>
+
 
 </navigation>
