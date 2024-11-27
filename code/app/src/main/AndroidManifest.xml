@@ -61,6 +61,18 @@
         <!-- Slide Show Activity -->
         <activity android:name=".view.SlideShowActivity" />
 
+        <!-- Admin Activity -->
+        <activity android:name=".view.admin.AdminActivity" />
+
+        <!-- Admin Images Activity -->
+        <activity android:name=".view.admin.AdminImagesActivity" />
+
+        <!-- Admin Facilities Activity -->
+        <activity android:name=".view.admin.AdminFacilitiesActivity" />
+
+        <!-- Admin Users Activity -->
+        <activity android:name=".view.admin.AdminUsersActivity" />
+
         <service
             android:name=".notifications.MyFirebaseMessagingService"
             android:exported="true"
