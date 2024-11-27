@@ -2,6 +2,7 @@ package com.example.trojanplanner.ProfileUtils;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -38,7 +40,12 @@ import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.ProfileActivity;
+import com.example.trojanplanner.view.QRActivity;
+import com.example.trojanplanner.view.admin.AdminActivity;
+import com.example.trojanplanner.view.admin.AdminUsersActivity;
 import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
     private Database database;
@@ -54,6 +61,7 @@ public class ProfileFragment extends Fragment {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch notificationsSwitch;
     private Button switchProfileFacility;
+    private Button switchAdminView;
     private ActivityResultLauncher<String> requestNotificationPermissionLauncher;
 
     public ProfileFragment() {
@@ -106,6 +114,19 @@ public class ProfileFragment extends Fragment {
         } else {
             // Log an error if notificationsSwitch is null
             Log.e("ProfileFragment", "notificationsSwitch is null!");
+        }
+
+        switchAdminView = view.findViewById(R.id.switch_admin_view);
+        if (App.currentUser.isAdmin()){
+            switchAdminView.setVisibility(View.VISIBLE);
+            switchAdminView.setOnClickListener(v-> {
+                Intent intent = new Intent(getActivity(), AdminActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                profileActivity.finish();
+            });
+        } else {
+            switchAdminView.setVisibility(View.GONE);
         }
 
         switchProfileFacility = view.findViewById(R.id.switch_profile_facility);
