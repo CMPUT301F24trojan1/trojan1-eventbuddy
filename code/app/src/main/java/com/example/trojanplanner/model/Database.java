@@ -479,10 +479,17 @@ public class Database {
             userMap.put("currentDeclinedEvents", convertEventArrayToDocRefs(entrant.getCurrentDeclinedEvents()));
             userMap.put("currentPendingEvents", convertEventArrayToDocRefs(entrant.getCurrentPendingEvents()));
         } else if (user.getClass() == Organizer.class) {
-            userMap.put("createdEvents", convertEventArrayToDocRefs( ((Organizer) user).getCreatedEvents() ));
-            if (((Organizer) user).getFacility() != null) {
-                userMap.put("facilityID", ((Organizer) user).getFacility().getFacilityId());
+            Organizer organizer = (Organizer) user;
+            userMap.put("createdEvents", convertEventArrayToDocRefs( organizer.getCreatedEvents() ));
+
+            DocumentReference facilityRef;
+            if (organizer.getFacility() != null) {
+                facilityRef = db.document("facilities/" + organizer.getFacility().getFacilityId());
             }
+            else {
+                facilityRef = null;
+            }
+            userMap.put("facility", facilityRef);
         } // (no special attributes for admins)
 
         db.collection("users")
@@ -753,8 +760,13 @@ public class Database {
 
 
     private String getIdFromDocRef(DocumentReference docRef) {
-        String[] idPath = docRef.getId().split("/");
-        return idPath[idPath.length - 1];
+        if (docRef != null) {
+            String[] idPath = docRef.getId().split("/");
+            return idPath[idPath.length - 1];
+        }
+        else {
+            return null;
+        }
     }
 
 
@@ -2556,8 +2568,8 @@ public class Database {
                 // Retrieve the document snapshot from the task result
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
-                    // Get the facilityId from the "facilityID" field
-                    String facilityId = document.getString("facilityID"); // Retrieve the facilityId directly from the document
+                    // Get the facilityId from the "facility" field
+                    String facilityId = getIdFromDocRef(document.getDocumentReference("facility"));
 
                     if (facilityId != null && !facilityId.isEmpty()) {
                         // Facility ID found, pass it to success callback

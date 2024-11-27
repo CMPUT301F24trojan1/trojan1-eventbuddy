@@ -15,7 +15,7 @@
         android:background="@drawable/circle_shape"
         android:contentDescription="Profile Picture"
         android:scaleType="centerCrop"
-        android:src="@drawable/profile_trump"
+        android:src="@drawable/placeholder_avatar"
         android:clipToOutline="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
