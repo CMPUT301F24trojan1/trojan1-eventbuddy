@@ -15,10 +15,15 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.AggregateQuery;
+import com.google.firebase.firestore.AggregateSource;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -26,8 +31,10 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -2570,6 +2577,106 @@ public class Database {
     }
 
     // Admin specific Queries
+    private DocumentSnapshot lastFetchedEventDocument = null;  // Store the last document for pagination
 
+    public void getEventDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference eventsCollection = db.collection("events");
 
+        // Create the base query, ordering by creation time and limiting by the page size
+        final Query[] query = {eventsCollection
+                .orderBy("creationTime")
+                .limit(pageSize)};
+
+        // If this is not the first page, start after the last visible document
+        if (page > 1 && lastDocumentId != null) {
+            // Make the call asynchronous to fetch the last visible document
+            getLastVisibleDocument(lastDocumentId, (lastVisible) -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);  // Paginate by starting after the last document
+                }
+
+                // After getting the last visible document, execute the query
+                query[0].get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            List<String> documentIDs = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                documentIDs.add(document.getId()); // Collect document IDs
+                            }
+
+                            // Update the last fetched event document with the last document of the current page
+                            if (!querySnapshot.isEmpty()) {
+                                DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                                // Save last document snapshot for pagination
+                                lastFetchedEventDocument = lastDoc;  // Now storing DocumentSnapshot instead of just an ID
+                            }
+
+                            // Trigger the success action with the retrieved document IDs
+                            successAction.OnSuccess(documentIDs);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Database", "Error fetching event IDs: ", e);
+                            failureAction.OnFailure();
+                        });
+            });
+        } else {
+            // If it's the first page, simply fetch the documents
+            query[0].get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        List<String> documentIDs = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            documentIDs.add(document.getId()); // Collect document IDs
+                        }
+
+                        // Update the last fetched event document with the last document of the current page
+                        if (!querySnapshot.isEmpty()) {
+                            DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                            // Save last document snapshot for pagination
+                            lastFetchedEventDocument = lastDoc;  // Now storing DocumentSnapshot instead of just an ID
+                        }
+
+                        // Trigger the success action with the retrieved document IDs
+                        successAction.OnSuccess(documentIDs);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Database", "Error fetching event IDs: ", e);
+                        failureAction.OnFailure();
+                    });
+        }
+    }
+
+    private void getLastVisibleDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        // Retrieve the last visible document asynchronously
+        db.collection("events")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);  // Notify listener of failure
+                    }
+                });
+    }
+
+    // Define an interface to handle the result of fetching the last document
+    public interface OnLastDocumentFetchedListener {
+        void onLastDocumentFetched(DocumentSnapshot documentSnapshot);
+    }
+
+    public void getTotalEventDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        // Create an aggregation query for the count
+        AggregateQuery countQuery = db.collection("events").count();
+
+        // Execute the query and handle results
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();  // Get the count
+                    successListener.onSuccess(totalDocuments);  // Trigger success listener
+                })
+                .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
+    }
 }

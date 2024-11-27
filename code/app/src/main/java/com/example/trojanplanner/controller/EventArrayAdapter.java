@@ -79,12 +79,6 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
             eventDescription = itemView.findViewById(R.id.event_description);
             eventImage = itemView.findViewById(R.id.event_image);
         }
-
-//        public void bind(Event event) {
-//            eventName.setText(event.getName());
-//            eventDescription.setText(event.getDescription());
-//            eventImage.setImageBitmap(event.getPicture(context));
-//        }
     }
 }
 
