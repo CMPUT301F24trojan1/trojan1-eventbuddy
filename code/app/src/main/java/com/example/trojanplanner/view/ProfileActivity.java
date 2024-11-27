@@ -25,8 +25,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
-
-
     public PhotoPicker photoPicker;
     public ProfileFragment profileFragment;
     private Database database;
