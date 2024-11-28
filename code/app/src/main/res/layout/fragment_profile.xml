@@ -203,7 +203,7 @@
         android:layout_marginTop="24dp"
         android:fontFamily="sans-serif-medium"
         android:padding="8dp"
-        android:text="Enable/Disalble Notifications"
+        android:text="Enable/Disable Notifications"
         android:textColor="@color/red_primary"
         android:textSize="16sp"
         android:thumbTint="@color/trojanRed"
