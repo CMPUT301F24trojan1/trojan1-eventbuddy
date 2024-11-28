@@ -40,6 +40,8 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A fragment to display event details to an entrant. It provides functionality to join or leave
@@ -630,41 +632,71 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void acceptEvent() {
+        ArrayList<Event> currentPending = ((Entrant) App.currentUser).getCurrentPendingEvents();
+        currentPending.removeIf(pendingEvent -> pendingEvent.getEventId().equals(event.getEventId()));
+        ((Entrant) App.currentUser).setCurrentPendingEvents(currentPending);
 
+        ArrayList<Event> currentEnrolled = ((Entrant) App.currentUser).getCurrentEnrolledEvents();
+        currentEnrolled.add(event);
+        ((Entrant) App.currentUser).setCurrentWaitlistedEvents(currentEnrolled);
+
+        ArrayList<User> currentPendingList = event.getPendingList();
+        currentPendingList.remove(App.currentUser);
+        event.setPendingList(currentPendingList);
+
+        ArrayList<User> currentEnrolledList = event.getEnrolledList();
+        currentEnrolledList.add(App.currentUser);
+        event.setEnrolledList(currentEnrolledList);
+
+        // Hide the buttons here
+        acceptButton.setVisibility(View.GONE);
+        declineButton.setVisibility(View.GONE);
+        invitationText.setText("You've been accepted!!");
+
+        // Now move only the database operations to the background thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            // Database operations in the background thread
+            Database.getDB().insertUserDocument(App.currentUser);
+            Database.getDB().insertEvent(event);
+        });
     }
 
     private void declineEvent() {
+        ArrayList<Event> currentPending = ((Entrant) App.currentUser).getCurrentPendingEvents();
+        currentPending.removeIf(pendingEvent -> pendingEvent.getEventId().equals(event.getEventId()));
+        ((Entrant) App.currentUser).setCurrentPendingEvents(currentPending);
 
+        ArrayList<Event> currentDeclined = ((Entrant) App.currentUser).getCurrentDeclinedEvents();
+        currentDeclined.add(event);
+        ((Entrant) App.currentUser).setCurrentWaitlistedEvents(currentDeclined);
+
+        Database.getDB().insertUserDocument(App.currentUser);
+
+        ArrayList<User> currentPendingList = event.getPendingList();
+        currentPendingList.remove(App.currentUser);
+        event.setPendingList(currentPendingList);
+
+        ArrayList<User> currentCancelledList = event.getCancelledList();
+        currentCancelledList.add(App.currentUser);
+        event.setEnrolledList(currentCancelledList);
+
+        Database.getDB().insertEvent(event);
+
+
+        // Hide the buttons here
+        acceptButton.setVisibility(View.GONE);
+        declineButton.setVisibility(View.GONE);
+        invitationText.setText("You've been declined! Feel free to leave this page");
+
+        // Now move only the database operations to the background thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            // Database operations in the background thread
+            Database.getDB().insertUserDocument(App.currentUser);
+            Database.getDB().insertEvent(event);
+        });
     }
-
-    private void updateButtonVisibility() {
-        if (event == null || event.getWaitingList() == null) {
-            // Default to showing "Enter Now" if there's no event or waitlist
-            buttonLeaveWaitlist.setVisibility(View.GONE);
-            return;
-        }
-
-        // Print the current waitlist for debugging purposes
-        Log.d("updateButtonVisibility", "updateButton Event Waiting List: " + event.getWaitingList());
-
-        // Check if the current user is in the waitlist
-        boolean userIsInWaitlist = false;
-        for (User user : event.getWaitingList()) { // Assuming the waitlist contains User objects
-            if (user.getDeviceId().equals(App.currentUser.getDeviceId())) {
-                userIsInWaitlist = true;
-                break;
-            }
-        }
-
-        if (userIsInWaitlist) {
-            Log.d("updateButtonVisibility", "User is on the waitlist. Showing 'Leave Waitlist' button.");
-            buttonLeaveWaitlist.setVisibility(View.VISIBLE);
-        } else {
-            Log.d("updateButtonVisibility", "User is not on the waitlist. Showing 'Enter Now' button.");
-            buttonLeaveWaitlist.setVisibility(View.GONE);
-        }
-    }
-
 
     /**
      * Converts a short abbreviation (e.g., "M" for Monday) to a full day name.

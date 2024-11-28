@@ -137,11 +137,10 @@
         android:id="@+id/button_leave_waitlist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
         android:text="Leave Waitlist"
         android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.072"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
 
@@ -149,29 +148,23 @@
         android:id="@+id/EntrantManageEvents"
         android:layout_width="104dp"
         android:layout_height="45dp"
-        android:layout_marginStart="81dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
         android:text="Options"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toEndOf="@+id/button_leave_waitlist"
         app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
 
     <Button
         android:id="@+id/ManageEvents"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="83dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
         android:text="Manage"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/button_leave_waitlist"
         app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
 
     <Button
@@ -181,7 +174,7 @@
         android:layout_marginStart="110dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="12dp"
-        android:visibility="gone"
+        android:visibility="invisible"
         android:text="Accept"
         app:layout_constraintEnd_toStartOf="@+id/Decline"
         app:layout_constraintStart_toStartOf="parent"
@@ -193,23 +186,20 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="88dp"
-        android:layout_marginBottom="40dp"
-        android:visibility="gone"
         android:text="Decline"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/invitationText"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/invitationText" />
 
     <TextView
         android:id="@+id/invitationText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="96dp"
         android:text="When selected, you can accept/decline here"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/EntrantManageEvents" />
+        app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
