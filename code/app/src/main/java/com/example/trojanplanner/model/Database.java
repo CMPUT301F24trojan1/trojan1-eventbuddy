@@ -20,10 +20,12 @@ import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -303,13 +305,13 @@ public class Database {
      * </pre>
      *
      *
-     * @param filePath The Firebase Storage path to download the image from
      * @param successListener The action to take on successful download
      * @param failureListener The action to take on failed download
+     * @param filePath The Firebase Storage path to download the image from
      * @param escapeSharing If true, ignore the activeImage query and listeners and run a private separate query
      * @author Jared Gourley
      */
-    private void downloadImage(String filePath, OnSuccessListener successListener, OnFailureListener failureListener, boolean escapeSharing) {
+    private void downloadImage(OnSuccessListener successListener, OnFailureListener failureListener, String filePath, boolean escapeSharing) {
         if (!escapeSharing) { // escapeSharing can only be set true by the Database class itself for backdoor functionality
             // If this query is already happening, simply add listeners instead of re-running
             if (activeImageQuery != null && activeImageQuery == filePath) {
@@ -376,29 +378,47 @@ public class Database {
      * Downloads a file from Firebase Storage with the given path. Executes the function defined in
      * successListener on success and the function defined in failureListener on failure.
      * <br>
-     * To receive a byte array of the downloaded image, you can initialize an {@code OnSuccessListener<Byte[]>()}
+     * To receive a bitmap of the downloaded image, you can initialize a {@code Database.QuerySuccessAction}
      * and use the value given. Ex.
      * <pre>
      * {@code
-     * OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+     * Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
      *      @Override
-     *      public void onSuccess(byte[] bytes) {
-     *           Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-     *           imageView.setImageBitmap(decodedImage);
-     *           System.out.println("success!!");
+     *      public void OnSuccess(Object object) {
+     *          Bitmap bitmap = (Bitmap) object;
+     *          imageView.setImageBitmap(bitmap);
+     *          System.out.println("success!!");
      *      }
      * };
      * }
      * </pre>
      *
-     *
+     * @param successAction The action to take on successful download
+     * @param failureAction The action to take on failed download
      * @param filePath The Firebase Storage path to download the image from
-     * @param successListener The action to take on successful download
-     * @param failureListener The action to take on failed download
      * @author Jared Gourley
      */
-    public void downloadImage(String filePath, OnSuccessListener successListener, OnFailureListener failureListener) {
-        downloadImage(filePath, successListener, failureListener, false);
+    public void downloadImage(QuerySuccessAction successAction, QueryFailureAction failureAction, String filePath) {
+        // We have to define an OnSuccessListener which calls our QuerySuccessAction
+        // Like an adapter since image querying wants OnSuccessAction but we would like to use
+        // QuerySuccessAction on our end
+        OnSuccessListener successListener = new OnSuccessListener() {
+            @Override
+            public void onSuccess(Object o) {
+                byte[] bytes = (byte[]) o;
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                successAction.OnSuccess(bitmap);
+            }
+        };
+        OnFailureListener failureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (failureAction != null) {
+                    failureAction.OnFailure();
+                }
+            }
+        };
+        downloadImage(successListener, failureListener, filePath, false);
     }
 
     // ===================== Add documents to Firestore Database =====================
@@ -932,6 +952,7 @@ public class Database {
                 // Figure out how many sub-queries we need
                 int subQueryCount = 0;
                 boolean facilityNeeded = false;
+                boolean pfpNeeded = false;
                 subQueryCount += event.getEnrolledList().size();
                 subQueryCount += event.getPendingList().size();
                 subQueryCount += event.getWaitingList().size();
@@ -943,7 +964,12 @@ public class Database {
                     facilityNeeded = true;
                     subQueryCount += 1;
                 }
+                if (event.getPictureFilePath() != null) {
+                    pfpNeeded = true;
+                    subQueryCount += 1;
+                }
 
+                // If we need to run subqueries, run them all and the last one to finish will trigger the listeners
                 if (subQueryCount > 0) {
                     QueryTracker queryTracker = new QueryTracker(subQueryCount);
 
@@ -956,17 +982,21 @@ public class Database {
                             }
 
                             // Actually assign the value
-                            // Object could be an entrant (from any of the lists) or the facility
+                            // Object could be an entrant (from any of the lists) or the facility or the event pfp
                             if (Facility.class.isAssignableFrom(object.getClass())) {
                                 System.out.println("getEvent QueryTracker success!" + ((Facility) object));
                                 event.setFacility((Facility) object);
                             }
-                            else {
+                            else if (Entrant.class.isAssignableFrom(object.getClass())) {
                                 Entrant entrant = (Entrant) object;
                                 System.out.println("getEvent QueryTracker success! " + event);
                                 if (event.replaceEntrantMatchingId(entrant) == false) {
                                     throw new RuntimeException("Could not find the entrant to replace!");
                                 }
+                            }
+                            else {
+                                event.setPicture((Bitmap) object);
+                                System.out.println("getEvent QueryTracker success! " + (Bitmap) object);
                             }
 
                             queryTracker.currentReceived += 1;
@@ -988,8 +1018,16 @@ public class Database {
                         @Override
                         public void OnFailure() {
                             // Mark that this query has failed so other queries should not trigger successes
-                            System.out.println("getEvent queryTracker FAILED");
-                            queryTracker.stillGoing = false;
+                            // If this is the first query to fail, call the failure listeners because we are done here
+                            if (queryTracker.stillGoing) {
+                                queryTracker.stillGoing = false;
+                                System.out.println("getEvent queryTracker FAILED");
+                                if (!finalEscapeSharing) {
+                                    sendToEventListeners(null, false);
+                                } else {
+                                    failureAction.OnFailure();
+                                }
+                            }
                             return;
                         }
                     };
@@ -997,24 +1035,28 @@ public class Database {
                     // Launch necessary queries
                     for (User user : event.getEnrolledList()) {
                         System.out.println("Launching query for entrant: " + user.getDeviceId());
-                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false, false);
                     }
                     for (User user : event.getPendingList()) {
                         System.out.println("Launching query for entrant: " + user.getDeviceId());
-                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false, false);
                     }
                     for (User user : event.getWaitingList()) {
                         System.out.println("Launching query for entrant: " + user.getDeviceId());
-                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false, true);
                     }
                     for (User user : event.getCancelledList()) {
                         System.out.println("Launching query for entrant: " + user.getDeviceId());
-                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false);
+                        getEntrant(queryTrackerSuccess, queryTrackerFailure, user.getDeviceId(), true, false, false);
                     }
 
                     if (facilityNeeded) {
                         System.out.println("Launching query for facility: " + event.getFacility().getFacilityId());
                         getFacility(queryTrackerSuccess, queryTrackerFailure, event.getFacility().getFacilityId(), true, null, false);
+                    }
+                    if (pfpNeeded) {
+                        System.out.println("Launching query for event photo: " + event.getFacility().getFacilityId());
+                        downloadImage(queryTrackerSuccess, queryTrackerFailure, event.getPictureFilePath());
                     }
 
                 }
@@ -1143,9 +1185,10 @@ public class Database {
      * @param androidId The android ID of the entrant desired to be received
      * @param escapeSharing If true, ignore the activeEntrant query and listeners and run a private separate query
      * @param expandEvents If true, send subqueries for all events, if false then leave them as only eventIds. (can be toggled to prevent events querying entrants querying events etc...)
+     * @param loadPfp If true, load and set the pfpBitmap attribute, if false then leave it as null
      * @author Jared Gourley
      */
-    private void getEntrant(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId, boolean escapeSharing, boolean expandEvents) {
+    private void getEntrant(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId, boolean escapeSharing, boolean expandEvents, boolean loadPfp) {
         if (!escapeSharing) { // escapeSharing can only be set true by the Database class itself for backdoor functionality
             // If this query is already happening, simply add listeners instead of re-running
             if (activeEntrantQuery != null && activeEntrantQuery == androidId) {
@@ -1203,22 +1246,17 @@ public class Database {
 
                 // Now that we have the entrant object, figure out how many sub-queries we need
                 // Only expand event references if expandEvents is true
-                if (!expandEvents) {
-                    // Send success signals
-                    if (!finalEscapeSharing) {
-                        sendToEntrantListeners(entrant, true);
-                    } else {
-                        successAction.OnSuccess(entrant);
-                    }
-                    return;
-                }
 
-                // Now expand event references
                 int subQueryCount = 0;
-                subQueryCount += entrant.getCurrentPendingEvents().size();
-                subQueryCount += entrant.getCurrentEnrolledEvents().size();
-                subQueryCount += entrant.getCurrentDeclinedEvents().size();
-                subQueryCount += entrant.getCurrentWaitlistedEvents().size();
+                if (expandEvents) {
+                    subQueryCount += entrant.getCurrentPendingEvents().size();
+                    subQueryCount += entrant.getCurrentEnrolledEvents().size();
+                    subQueryCount += entrant.getCurrentDeclinedEvents().size();
+                    subQueryCount += entrant.getCurrentWaitlistedEvents().size();
+                }
+                if (loadPfp && entrant.getPfpFilePath() != null) {
+                    subQueryCount += 1;
+                }
 
                 if (subQueryCount > 0) {
                     QueryTracker queryTracker = new QueryTracker(subQueryCount);
@@ -1232,8 +1270,16 @@ public class Database {
                             }
 
                             // Actually assign the value
-                            if (entrant.replaceEventMatchingId((Event) object) == false) {
-                                throw new RuntimeException("Could not find the event to replace!");
+                            // Could be an event or a profile picture
+                            if (Event.class.isAssignableFrom(object.getClass())) {
+                                if (entrant.replaceEventMatchingId((Event) object) == false) {
+                                    throw new RuntimeException("Could not find the event to replace!");
+                                }
+                                System.out.println("getEntrant querytracker: Event successfully received! " + (Event) object);
+                            }
+                            else {
+                                entrant.setPfpBitmap((Bitmap) object);
+                                System.out.println("getEntrant querytracker: Bitmap successfully received! " + (Bitmap) object);
                             }
 
                             queryTracker.currentReceived += 1;
@@ -1255,8 +1301,16 @@ public class Database {
                         @Override
                         public void OnFailure() {
                             // Mark that this query has failed so other queries should not trigger successes
-                            System.out.println("getEntrant queryTracker FAILED");
-                            queryTracker.stillGoing = false;
+                            // If this is the first query to fail, call the failure listeners because we are done here
+                            if (queryTracker.stillGoing) {
+                                queryTracker.stillGoing = false;
+                                System.out.println("getEntrant queryTracker FAILED");
+                                if (!finalEscapeSharing) {
+                                    sendToEntrantListeners(null, false);
+                                } else {
+                                    failureAction.OnFailure();
+                                }
+                            }
                             return;
                         }
                     };
@@ -1277,6 +1331,10 @@ public class Database {
                     for (Event event : entrant.getCurrentDeclinedEvents()) {
                         System.out.println("Launching query for event: " + event.getEventId());
                         getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
+                    }
+                    if (loadPfp && entrant.getPfpFilePath() != null) {
+                        System.out.println("Launching query for entrant pfp: " + entrant.getPfpFilePath());
+                        downloadImage(queryTrackerSuccess, queryTrackerFailure, entrant.getPfpFilePath());
                     }
 
                 }
@@ -1312,7 +1370,7 @@ public class Database {
      * @author Jared Gourley
      */
     public void getEntrant(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String androidId) {
-        getEntrant(successAction, failureAction, androidId, false, true);
+        getEntrant(successAction, failureAction, androidId, false, true, true);
     }
 
 
@@ -1477,6 +1535,7 @@ public class Database {
                 // Now that we have the organizer object, figure out how many sub-queries we need
                 boolean facilityNeeded = false;
                 boolean createdEventsNeeded = false;
+                boolean pfpNeeded = false;
                 int subQueryCount = 0;
                 if (facility == null && organizer.getFacility() != null) {
                     facilityNeeded = true;
@@ -1489,6 +1548,10 @@ public class Database {
                 if (expandEvents && organizer.getCreatedEvents().size() > 0) {
                     createdEventsNeeded = true;
                     subQueryCount += organizer.getCreatedEvents().size();
+                }
+                if (organizer.getPfpFilePath() != null) {
+                    pfpNeeded = true;
+                    subQueryCount += 1;
                 }
 
                 System.out.println("SubQueryCount: " + subQueryCount);
@@ -1505,18 +1568,20 @@ public class Database {
                             }
 
                             // Actually assign the value
-                            // If it's not a facility then it must be an event
+                            // Check the type to figure out if it's a facility, event, or pfp
                             if (Facility.class.isAssignableFrom(object.getClass())) {
                                 System.out.println("getOrganizer QueryTracker success!" + ((Facility) object));
                                 organizer.setFacility((Facility) object);
                             }
-                            else {
+                            else if (Event.class.isAssignableFrom(object.getClass())) {
                                 Event event = (Event) object;
                                 System.out.println("getOrganizer QueryTracker success! " + event);
                                 int index = organizer.findIndexWithEventId(event.getEventId());
-                                System.out.println("createdEvents: " + organizer.getCreatedEvents());
-                                System.out.println("index to insert: " + index);
                                 organizer.setEventAtIndex(event, index);
+                            }
+                            else {
+                                organizer.setPfpBitmap((Bitmap) object);
+                                System.out.println("getOrganizer QueryTracker success! " + (Bitmap) object);
                             }
 
                             queryTracker.currentReceived += 1;
@@ -1542,8 +1607,16 @@ public class Database {
                         @Override
                         public void OnFailure() {
                             // Mark that this query has failed so other queries should not trigger successes
-                            System.out.println("getOrganizer queryTracker FAILED");
-                            queryTracker.stillGoing = false;
+                            // If this is the first query to fail, call the failure listeners because we are done here
+                            if (queryTracker.stillGoing) {
+                                queryTracker.stillGoing = false;
+                                System.out.println("getOrganizer queryTracker FAILED");
+                                if (!finalEscapeSharing) {
+                                    sendToOrganizerListeners(null, false);
+                                } else {
+                                    failureAction.OnFailure();
+                                }
+                            }
                             return;
                         }
                     };
@@ -1557,6 +1630,10 @@ public class Database {
                             System.out.println("Launching query for event: " + event.getEventId());
                             getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
                         }
+                    }
+                    if (pfpNeeded) {
+                        System.out.println("Launching query for organizer pfp: " + organizer.getPfpFilePath());
+                        downloadImage(queryTrackerSuccess, queryTrackerFailure, organizer.getPfpFilePath());
                     }
 
                 }
@@ -1729,7 +1806,7 @@ public class Database {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Admin admin = unpackAdminMap(document.getData());
-                        if (admin != null) {
+                        if (admin != null) { // TODO get pfp if we ever need it?
                             // Send success signals
                             if (!finalEscapeSharing) {
                                 sendToAdminListeners(admin, true);
@@ -1823,9 +1900,7 @@ public class Database {
         // Get id of document and then split on the / character to remove the collection name
         Organizer owner;
         if ((DocumentReference) facilityMap.get("owner") != null) {
-            String[] ownerIdPath = ((DocumentReference) facilityMap.get("owner")).getId().split("/");
-            String ownerId = ownerIdPath[ownerIdPath.length - 1];
-            owner = new Organizer(ownerId);
+            owner = new Organizer(getIdFromDocRef((DocumentReference) facilityMap.get("owner")));
         }
         else {
             owner = null;
@@ -1912,19 +1987,87 @@ public class Database {
 
                 // Now that we have the facility object, either send success signals or expand the owner if needed
 
-                // If owner is provided by parameter or there is no owner, we are done
-                if (owner != null || facility.getOwner() == null) {
+                boolean ownerNeeded = false;
+                boolean pfpNeeded = false;
+                int subQueryCount = 0;
+                // If owner is provided by parameter or there is no owner, we don't need to query for it
+                if (owner == null && facility.getOwner() != null) {
+                    ownerNeeded = true;
+                    subQueryCount += 1;
+                }
+                else {
                     facility.setOwner(owner);
-                    // Send success signals
+                }
+                // If pfp file path is not null then that means we should get the bitmap
+                if (facility.getPfpFacilityFilePath() != null) {
+                    pfpNeeded = true;
+                    subQueryCount += 1;
+                }
+                // If we need to run subqueries, run them all and the last one to finish will trigger the listeners
+                if (subQueryCount > 0) {
+                    QueryTracker queryTracker = new QueryTracker(subQueryCount);
+                    QuerySuccessAction queryTrackerSuccess = new QuerySuccessAction() {
+                        @Override
+                        public void OnSuccess(Object object) {
+                            // Quit if a different query failed
+                            if (!queryTracker.stillGoing) {
+                                return;
+                            }
+                            // Actually assign the value
+                            // Check the type to figure out if it's an owner or pfp
+                            if (Organizer.class.isAssignableFrom(object.getClass())) {
+                                facility.setOwner((Organizer) object);
+                            }
+                            else {
+                                facility.setPfpFacilityBitmap((Bitmap) object);
+                            }
+                            queryTracker.currentReceived += 1;
+                            System.out.println("getFacility queryTracker.currentReceived: " + queryTracker.currentReceived);
+                            // Call the success listeners if all sub queries finished
+                            if (queryTracker.currentReceived == queryTracker.totalNeeded) {
+                                System.out.println("getFacility queryTracker finishing!");
+                                if (!finalEscapeSharing) {
+                                    sendToFacilityListeners(facility, true);
+                                } else {
+                                    successAction.OnSuccess(facility);
+                                }
+                            }
+
+                        }
+                    };
+                    QueryFailureAction queryTrackerFailure = new QueryFailureAction() {
+                        @Override
+                        public void OnFailure() {
+                            // Mark that this query has failed so other queries should not trigger successes
+                            // If this is the first query to fail, call the failure listeners because we are done here
+                            if (queryTracker.stillGoing) {
+                                queryTracker.stillGoing = false;
+                                System.out.println("getFacility queryTracker FAILED");
+                                if (!finalEscapeSharing) {
+                                    sendToFacilityListeners(null, false);
+                                } else {
+                                    failureAction.OnFailure();
+                                }
+                            }
+                            return;
+                        }
+                    };
+
+                    // Launch queries
+                    if (ownerNeeded) {
+                        getOrganizer(queryTrackerSuccess, queryTrackerFailure, facility.getOwner().getDeviceId(), true, facility, expandOwnerEvents);
+                    }
+                    if (pfpNeeded) {
+                        downloadImage(queryTrackerSuccess, queryTrackerFailure, facility.getPfpFacilityFilePath());
+                    }
+                }
+                // // Otherwise just consider this a success!
+                else {
                     if (!finalEscapeSharing) {
                         sendToFacilityListeners(facility, true);
                     } else {
                         successAction.OnSuccess(facility);
                     }
-                }
-                // Otherwise we have to get the owner which currently has not been expanded yet
-                else {
-                    expandOwnerAttribute(successAction, failureAction, facility, finalEscapeSharing, expandOwnerEvents);
                 }
 
             }
@@ -2215,22 +2358,21 @@ public class Database {
 
     public static void downloadImageTest() {
         Database database = Database.getDB();
-        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                System.out.println("success!!");
-                System.out.println(decodedImage); // not very useful but at least it proves it works
+            public void OnSuccess(Object object) {
+                Bitmap bitmap = (Bitmap) object;
+                System.out.println("test success!! " + bitmap); // not very useful but at least you can see it worked
             }
         };
-        OnFailureListener failureListener = new OnFailureListener() {
+        Database.QueryFailureAction failureAction = new QueryFailureAction() {
             @Override
-            public void onFailure(@NonNull Exception e) {
+            public void OnFailure() {
                 System.out.println("Failed :((((");
             }
         };
 
-        database.downloadImage("1234567890/1729746211299.png", successListener, failureListener);
+        database.downloadImage(successAction, failureAction, "1234567890/1729746211299.png");
     }
 
 
@@ -2340,6 +2482,8 @@ public class Database {
                 System.out.println("email: " + entrant.getEmail());
                 System.out.println("firstName: " + entrant.getFirstName());
                 System.out.println("lastName: " + entrant.getLastName());
+                System.out.println("pfp file path: " + entrant.getPfpFilePath());
+                System.out.println("pfp bitmap: " + entrant.getPfpBitmap());
                 System.out.println("hasAdminRights: " + entrant.isAdmin());
                 System.out.println("hasOrganizerRights: " + entrant.isOrganizer());
                 System.out.println("currentAcceptedEvents: " + entrant.getCurrentEnrolledEvents());
@@ -2380,6 +2524,8 @@ public class Database {
                 System.out.println("email: " + organizer.getEmail());
                 System.out.println("firstName: " + organizer.getFirstName());
                 System.out.println("lastName: " + organizer.getLastName());
+                System.out.println("pfp file path: " + organizer.getPfpFilePath());
+                System.out.println("pfp bitmap: " + organizer.getPfpBitmap());
                 System.out.println("hasAdminRights: " + organizer.isAdmin());
                 System.out.println("hasOrganizerRights: " + organizer.isOrganizer());
                 System.out.println("createdEvents: " + organizer.getCreatedEvents());
@@ -2877,5 +3023,95 @@ public class Database {
                 })
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
+
+
+    // ================================== DELETE FUNCTIONS =====================================
+
+    /**
+     * Deletes the event with the given eventId. This will also delete the QR code for the event,
+     * the event map, and any references that any entrant or organizer had to that event.
+     *
+     * @param successListener (Unused) Listener to be notified when a successful delete happens
+     * @param failureListener (Unused) Listener to be notified when a failed delete happens
+     * @param eventId
+     */
+    private void deleteEvent(OnSuccessListener successListener, OnFailureListener failureListener, String eventId) {
+
+        // First, get the event docRef we want to delete.
+        DocumentReference eventDocRef = db.collection("events").document(eventId);
+        System.out.println("DELETE_EVENT_" + eventId + ": Requesting to delete event and all associated references");
+
+        // Find all users that have a reference to this event
+
+        String[] arraysToSearch = {"currentEnrolledEvents", "currentPendingEvents", "currentWaitlistedEvents", "currentDeclinedEvents", "createdEvents"};
+        for (String arrayNameString : arraysToSearch) {
+            // For a given array to search, send a query to get all documents with this event docRef in it and send an update to each of them to remove it
+            Query query = db.collection("users").whereArrayContains(arrayNameString, eventDocRef);
+            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    // For every returned document, get the DocumentReference and remove the event element from the array
+                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                        String deviceId = docSnapshot.getString("deviceID");
+                        DocumentReference docRefToUpdate = db.collection("users").document(deviceId);
+                        docRefToUpdate.update(arrayNameString, FieldValue.arrayRemove(eventDocRef)); // Deletes any element from the array matching eventDocRef
+                        System.out.println("DELETE_EVENT_" + eventId + ": Deleted event reference from " + arrayNameString + "of user " + deviceId);
+                    }
+                }
+            });
+
+        }
+
+
+        // Second, delete the QR code for the event if one exists.
+        // Note: we have to find where the eventID field of any documents matches the eventId
+        Query query = db.collection("eventHashes").whereEqualTo("eventID", eventId);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    // For every returned document, get the DocumentReference and remove the event element from the array
+                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                        System.out.println("DELETE_EVENT_"+ eventId + ": Event hash " + docSnapshot.getId() + " being deleted");
+                        docSnapshot.getReference().delete();
+                    }
+                }
+            });
+
+
+        // Third, delete the map for the event if one exists.
+        // Note: simply request the deletion of the document with the primary key matching the eventId.
+        // If that document doesn't exist, no problem, still worked
+        db.collection("maps").document(eventId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_EVENT_"+ eventId + ": Event map deleted (if it existed)");
+            }
+        });
+
+        // Finally, delete the event itself (if it exists).
+        db.collection("events").document(eventId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_EVENT_"+ eventId + ": Event deleted (if it existed)");
+            }
+        });
+
+    }
+
+
+    /**
+     * Deletes the event with the given eventId. This will also delete the QR code for the event,
+     * the event map, and any references that any entrant or organizer had to that event.
+     * <br>
+     * (No success or failure listeners given for this function, assume deletes will work successfully
+     *
+     * @param eventId The event ID to fully delete from the database
+     */
+    public void deleteEvent(String eventId) {
+        deleteEvent(null, null, eventId);
+    }
+
+
+
 
 }
