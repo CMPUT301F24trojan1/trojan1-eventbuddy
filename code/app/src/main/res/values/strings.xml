@@ -26,10 +26,10 @@
         <item>View Event Waitlist</item>
         <item>View Selected Entrants</item>
         <item>View Cancelled Entrants</item>
-        <item>View Map of Entrants</item>
+        <item>View Pending List</item>
         <item>Initiate Lottery</item>
         <item>Edit Events</item>
-        <item>View Pending List</item>
+        <item>View Map of Entrants</item>
     </string-array>
 
     <!-- Spinner options -->

@@ -89,6 +89,8 @@ public class WaitlistFragment extends Fragment {
                     users = updatedEvent.getCancelledList(); // Assuming the event has a method to get cancelled users
                 } else if ("waiting".equals(listType)) {
                     users = updatedEvent.getWaitingList(); // Assuming the event has a method to get waitlisted users
+                } else if ("pending".equals(listType)) {
+                    users = updatedEvent.getPendingList(); // Assuming the event has a method to get waitlisted users
                 }
                 Log.d("WaitlistFragment", "Fetched waitlisted users: " + users);
 

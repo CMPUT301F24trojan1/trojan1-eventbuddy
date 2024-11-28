@@ -11,8 +11,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.User;
 
 import java.util.List;
 
@@ -41,6 +44,16 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
         Event event = eventList.get(position);
         holder.eventName.setText(event.getName());
         holder.eventDescription.setText(event.getDescription());
+        holder.pendingNotif.setVisibility(View.GONE);
+
+        if (event.getPendingList() != null){
+            for (User user : event.getPendingList()) {
+                if (user.getDeviceId().equals(App.currentUser.getDeviceId())) {
+                    holder.pendingNotif.setVisibility(View.VISIBLE);
+                    break;
+                }
+            }
+        }
 
         // Use context to get the picture, providing default if necessary
         Bitmap picture = event.getPicture();
@@ -72,12 +85,14 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
         private final TextView eventName;
         private final TextView eventDescription;
         private final ImageView eventImage;
+        private final ImageView pendingNotif;
 
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
             eventName = itemView.findViewById(R.id.event_name);
             eventDescription = itemView.findViewById(R.id.event_description);
             eventImage = itemView.findViewById(R.id.event_image);
+            pendingNotif = itemView.findViewById(R.id.pending_notif);
         }
     }
 }

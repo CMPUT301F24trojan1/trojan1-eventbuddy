@@ -11,12 +11,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
-import com.example.trojanplanner.notifications.NotificationManager;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
 
@@ -29,7 +26,6 @@ public class NotificationSenderFragment extends Fragment {
     private EditText editTextMessage;
     private Button buttonSendNotification;
 
-    private final NotificationManager notificationManager = new NotificationManager();
     private Event event; // Event object passed to this fragment
 
     @Nullable
