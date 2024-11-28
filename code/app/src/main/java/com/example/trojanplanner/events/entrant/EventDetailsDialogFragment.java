@@ -16,6 +16,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -31,8 +32,6 @@ import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -217,8 +216,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
                 },
                 event.getEventId()
         );
-
-
+        buttonEnterNow.setVisibility(View.GONE);
     }
 
     /**
@@ -253,7 +251,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
     }
 
 
-    private void addtoNotifications() {
+    private void addtoNotifications(){
         if (event != null) {
             String eventId = event.getEventId(); // Use eventId for channel and topic
             String channelId = "EventChannel_" + eventId; // Dynamic channel ID
@@ -357,22 +355,14 @@ public class EventDetailsDialogFragment extends DialogFragment {
     // Helper method to get the full name for the day of the week based on unique abbreviation
     private String getFullDayName(String abbreviation) {
         switch (abbreviation) {
-            case "U":
-                return "Sunday";
-            case "M":
-                return "Monday";
-            case "T":
-                return "Tuesday";
-            case "W":
-                return "Wednesday";
-            case "R":
-                return "Thursday";
-            case "F":
-                return "Friday";
-            case "S":
-                return "Saturday";
-            default:
-                return ""; // Handle invalid abbreviations
+            case "U": return "Sunday";
+            case "M": return "Monday";
+            case "T": return "Tuesday";
+            case "W": return "Wednesday";
+            case "R": return "Thursday";
+            case "F": return "Friday";
+            case "S": return "Saturday";
+            default: return ""; // Handle invalid abbreviations
         }
     }
 

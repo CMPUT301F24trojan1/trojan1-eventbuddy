@@ -20,10 +20,4 @@
         android:id="@+id/navigation_images"
         android:icon="@drawable/images"
         android:title="@string/admin_images" />
-
-    <item
-        android:id="@+id/navigation_admin_profile"
-        android:icon="@drawable/user_profile"
-        android:title="@string/admin_profile" />
-
 </menu>

@@ -1,119 +1,64 @@
 package com.example.trojanplanner.notifications;
-
-import android.util.Log;
-import androidx.annotation.NonNull;
-
 import com.example.trojanplanner.App;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-
-import java.io.IOException;
-import java.util.List;
+import com.example.trojanplanner.model.User;
+import java.util.ArrayList;
 
 public class NotificationManager {
-
-    private static final String BACKEND_URL = App.BACKEND_URL;
-    private final OkHttpClient client;
-
-    public NotificationManager() {
-        this.client = new OkHttpClient();
-    }
+    public NotificationManager() {}
 
     /**
      * Notify all users in the waiting list.
      *
-     * @param waitlist List of topics for users (e.g., "waitlist_event123").
+     * @param waitlist List of users in the waiting list.
      * @param title    Notification title.
      * @param message  Notification message.
      */
-    public void notifyWaitlist(List<String> waitlist, String title, String message) {
-        for (String topic : waitlist) {
-            sendAnnouncement(topic, title, message);
+    public void notifyWaitlist(ArrayList<User> waitlist, String title, String message) {
+        for (User user : waitlist) {
+            String topic = user.getDeviceId();
+            App.sendAnnouncement(topic, title, message);
         }
     }
 
     /**
      * Notify all selected users.
      *
-     * @param selectedList List of topics for selected users (e.g., "selected_event123").
+     * @param selectedList List of selected users.
      * @param title        Notification title.
      * @param message      Notification message.
      */
-    public void notifySelected(List<String> selectedList, String title, String message) {
-        for (String topic : selectedList) {
-            sendAnnouncement(topic, title, message);
+    public void notifySelected(ArrayList<User> selectedList, String title, String message) {
+        for (User user : selectedList) {
+            String topic = user.getDeviceId();
+            App.sendAnnouncement(topic, title, message);
         }
     }
 
     /**
      * Notify all cancelled users.
      *
-     * @param cancelledList List of topics for cancelled users (e.g., "cancelled_event123").
+     * @param cancelledList List of cancelled users.
      * @param title         Notification title.
      * @param message       Notification message.
      */
-    public void notifyCancelled(List<String> cancelledList, String title, String message) {
-        for (String topic : cancelledList) {
-            sendAnnouncement(topic, title, message);
+    public void notifyCancelled(ArrayList<User> cancelledList, String title, String message) {
+        for (User user : cancelledList) {
+            String topic = user.getDeviceId();
+            App.sendAnnouncement(topic, title, message);
         }
     }
 
     /**
-     * Logic to send an announcement for the given topic.
+     * Notify all pending users.
      *
-     * @param topic   The topic to which the notification will be sent.
-     * @param title   The title of the notification.
-     * @param message The message of the notification.
+     * @param pendingList List of pending users.
+     * @param title       Notification title.
+     * @param message     Notification message.
      */
-    public void sendAnnouncement(String topic, String title, String message) {
-        if (topic == null || title == null || message == null) {
-            return;
+    public void notifyPending(ArrayList<User> pendingList, String title, String message) {
+        for (User user : pendingList) {
+            String topic = user.getDeviceId();
+            App.sendAnnouncement(topic, title, message);
         }
-
-        // Create JSON payload
-        JSONObject jsonPayload = new JSONObject();
-        try {
-            jsonPayload.put("topic", topic);
-            jsonPayload.put("title", title);
-            jsonPayload.put("message", message);
-        } catch (JSONException e) {
-            Log.e("Notification", "JSON creation failed: " + e.getMessage());
-            return;
-        }
-
-        // Create the request body with JSON
-        RequestBody body = RequestBody.create(
-                jsonPayload.toString(),
-                MediaType.get("application/json")
-        );
-
-        // Create the POST request to your backend
-        Request request = new Request.Builder()
-                .url(BACKEND_URL)
-                .post(body)
-                .build();
-
-        // Execute the request asynchronously
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    Log.d("Notification", "Notification sent successfully!");
-                } else {
-                    Log.e("Notification", "Notification failed with response code: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
-                Log.e("Notification", "Error sending notification: " + e.getMessage());
-            }
-        });
     }
 }

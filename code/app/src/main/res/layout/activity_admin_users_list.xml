@@ -10,7 +10,7 @@
     tools:context=".view.admin.AdminUsersActivity">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/nav_view"
+        android:id="@+id/admin_bottom_nav_menu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
@@ -30,6 +30,38 @@
         app:layout_constraintHorizontal_bias="0.48"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
-
     </androidx.recyclerview.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/empty_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="324dp"
+        android:text="No Users present in the database"
+        app:layout_constraintEnd_toEndOf="@+id/adminusersRecyclerView"
+        app:layout_constraintStart_toStartOf="@+id/adminusersRecyclerView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/previous_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        android:enabled="false"
+        android:text="Previous"
+        app:layout_constraintBottom_toTopOf="@+id/admin_bottom_nav_menu"
+        app:layout_constraintEnd_toStartOf="@+id/next_button" />
+
+    <Button
+        android:id="@+id/next_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="108dp"
+        android:layout_marginBottom="4dp"
+        android:text="Next"
+        app:layout_constraintBottom_toTopOf="@+id/admin_bottom_nav_menu"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
