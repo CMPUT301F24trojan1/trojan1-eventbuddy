@@ -1055,7 +1055,7 @@ public class Database {
                         getFacility(queryTrackerSuccess, queryTrackerFailure, event.getFacility().getFacilityId(), true, null, false);
                     }
                     if (pfpNeeded) {
-                        System.out.println("Launching query for event photo: " + event.getFacility().getFacilityId());
+                        System.out.println("Launching query for event photo: " + event.getPictureFilePath());
                         downloadImage(queryTrackerSuccess, queryTrackerFailure, event.getPictureFilePath());
                     }
 

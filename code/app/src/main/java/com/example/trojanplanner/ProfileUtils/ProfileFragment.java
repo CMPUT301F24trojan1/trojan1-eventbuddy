@@ -116,34 +116,42 @@ public class ProfileFragment extends Fragment {
         }
 
         switchAdminView = view.findViewById(R.id.switch_admin_view);
-        if (App.currentUser.isAdmin()){
-            switchAdminView.setVisibility(View.VISIBLE);
-            switchAdminView.setOnClickListener(v-> {
-                Intent intent = new Intent(getActivity(), AdminActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                profileActivity.finish();
-            });
-        } else {
-            switchAdminView.setVisibility(View.GONE);
+        if (App.currentUser != null) {
+            if (App.currentUser.isAdmin()) {
+                switchAdminView.setVisibility(View.VISIBLE);
+                switchAdminView.setOnClickListener(v -> {
+                    Intent intent = new Intent(getActivity(), AdminActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    profileActivity.finish();
+                });
+            } else {
+                switchAdminView.setVisibility(View.GONE);
+            }
         }
 
         switchProfileFacility = view.findViewById(R.id.switch_profile_facility);
         // Hide the button if user is not an organizer
-        if (App.currentUser != null && !App.currentUser.isOrganizer()) {
-            switchProfileFacility.setVisibility(View.GONE);  // Hide the button
+        if (App.currentUser == null){
+            switchProfileFacility.setVisibility(View.GONE);
         } else {
-            // Handle button click to navigate to FacilitySetupFragment
-            switchProfileFacility.setOnClickListener(v -> {
-                // Display the FacilitySetupFragment
-                FacilitySetupFragment facilitySetupFragment = new FacilitySetupFragment();
-                FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.profile_fragment_container, facilitySetupFragment)
-                        .addToBackStack("ProfileFragment") // Add to back stack for back navigation
-                        .commit();
-            });
+            if (!App.currentUser.isOrganizer()) {
+                switchProfileFacility.setVisibility(View.GONE);  // Hide the button
+            } else {
+                switchProfileFacility.setVisibility(View.VISIBLE);  // Show the button
+                // Handle button click to navigate to FacilitySetupFragment
+                switchProfileFacility.setOnClickListener(v -> {
+                    // Display the FacilitySetupFragment
+                    FacilitySetupFragment facilitySetupFragment = new FacilitySetupFragment();
+                    FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.profile_fragment_container, facilitySetupFragment)
+                            .addToBackStack("ProfileFragment") // Add to back stack for back navigation
+                            .commit();
+                });
+            }
         }
+
 
         // Initialize the ActivityResultLauncher for requesting permissions
         requestNotificationPermissionLauncher = registerForActivityResult(
