@@ -102,7 +102,7 @@ public class NotificationSenderFragment extends Fragment {
         for (User user : users) {
             String deviceID = user.getDeviceId();
             if (deviceID != null && !deviceID.isEmpty()) {
-                App.sendAnnouncement("organizer" + deviceID, title, message);
+                App.sendAnnouncement(deviceID, title, message);
             } else {
                 Toast.makeText(getContext(), "User with missing device ID skipped.", Toast.LENGTH_SHORT).show();
             }
