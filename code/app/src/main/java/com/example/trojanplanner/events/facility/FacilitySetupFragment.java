@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +30,8 @@ import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.view.MainActivity;
+import com.example.trojanplanner.view.ProfileActivity;
+
 import java.io.IOException;
 import java.util.Objects;
 
@@ -43,12 +47,13 @@ public class FacilitySetupFragment extends Fragment {
     private EditText facilityLocationEditText;
     private Uri facilityPhotoUri;
     private MainActivity mainActivity;
+    private ProfileActivity profileActivity;
 
     /**
      * Inflates the layout for this fragment and sets up the user interface components.
      *
-     * @param inflater The LayoutInflater object to inflate the view.
-     * @param container The container view to attach the fragment to.
+     * @param inflater           The LayoutInflater object to inflate the view.
+     * @param container          The container view to attach the fragment to.
      * @param savedInstanceState The saved instance state for the fragment, if any.
      * @return The root view of the fragment.
      */
@@ -68,57 +73,70 @@ public class FacilitySetupFragment extends Fragment {
         saveButton.setOnClickListener(v -> saveFacility());
 
         cancelButton.setOnClickListener(v -> {
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.emptyEventsFragment);
+            // Clear the input fields
+            facilityNameEditText.setText("");
+            facilityLocationEditText.setText("");
         });
+
+        // Ensure the app bar is visible
+        if (getActivity() instanceof AppCompatActivity) {
+            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).show();
+        }
 
         if (getActivity() instanceof MainActivity) {
             mainActivity = (MainActivity) getActivity();
+            cancelButton.setOnClickListener(v -> {
+                // Clear the input fields
+                facilityNameEditText.setText("");
+                facilityLocationEditText.setText("");
+                facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Reset to a default image
+            });
 
             // Override default photo picker callback function
             mainActivity.facilityPhotoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
 
+        } else {
+            profileActivity = (ProfileActivity) getActivity();
+
+            Database.QuerySuccessAction successAction = object -> {
+                String facilityId = (String) object;
+                Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility ID retrieved: " + facilityId);
+                Database.getDB().getFacility(object1 -> {
+                    Facility facility = (Facility) object1;
+                    populateFields(facility);
+                    Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility retrieved: " + facility.toString());
+                }, () -> {
+                    Log.d("FacilitySetupFrom Profile: FAILURE", "Failed to retrieve the Facility.");
+                }, facilityId);
+            };
+            Database.QueryFailureAction failureAction = () -> Log.d("FacilitySetupFrom Profile: FAILURE", "Failed to retrieve Facility ID");
+            Database.getDB().getFacilityIDbyUserID(App.currentUser.getDeviceId(), successAction, failureAction);
+
+            if (profileActivity != null) {
+                profileActivity.photoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
+            }
         }
 
         return view;
     }
 
     /**
-     * Hides the action bar when the fragment is resumed to provide a full-screen experience.
-     */
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (getActivity() instanceof AppCompatActivity) {
-            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).hide();
-        }
-    }
-
-    /**
-     * Restores the action bar visibility when the fragment is stopped.
-     */
-    @Override
-    public void onStop() {
-        super.onStop();
-        // Restore the action bar visibility when leaving this fragment
-        if (getActivity() instanceof AppCompatActivity) {
-            Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).show();
-        }
-    }
-
-    /**
      * Opens the photo picker to allow the user to select a photo for the facility.
      */
     private void openImagePicker() {
-        mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
+        if (getActivity() instanceof ProfileActivity) {
+            profileActivity.photoPicker.openPhotoPicker(App.currentUser);
+        } else {
+            mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
+        }
     }
 
     /**
      * Handles the result from the photo picker activity and sets the selected photo URI.
      *
      * @param requestCode The request code passed in startActivityForResult().
-     * @param resultCode The result code returned by the photo picker activity.
-     * @param data The intent containing the result data, including the selected photo URI.
+     * @param resultCode  The result code returned by the photo picker activity.
+     * @param data        The intent containing the result data, including the selected photo URI.
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -149,7 +167,7 @@ public class FacilitySetupFragment extends Fragment {
         // If no photo is selected, use a default image from resources
         if (facilityPhotoUri == null) {
             bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-            String defaultUriString = "default_image_uri"; // Default placeholder image URI
+            String defaultUriString = "1234567890/1729746211299.png"; // Default placeholder image URI
 
             String newFacilityId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
             Facility facility = new Facility(
@@ -222,6 +240,24 @@ public class FacilitySetupFragment extends Fragment {
             // Navigate after saving
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.emptyEventsFragment);
+        }
+    }
+
+    /**
+     * Populates the UI fields with the existing facility's data.
+     *
+     * @param facility The existing facility to populate fields with.
+     */
+    private void populateFields(Facility facility) {
+        facilityNameEditText.setText(facility.getName());
+        facilityLocationEditText.setText(facility.getLocation());
+
+        // Load facility photo
+        if (facility.getPfpFacilityBitmap() != null) {
+            facilityPhoto.setImageBitmap(facility.getPfpFacilityBitmap());
+            Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility photo loaded");
+        } else {
+            facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Default image if no photo
         }
     }
 }

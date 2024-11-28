@@ -3,6 +3,8 @@ package com.example.trojanplanner.model;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.NonNull;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,14 +23,24 @@ public class SerialBitmap implements Serializable {
 
     // Setter to set Bitmap
     public void setBitmap(Bitmap bitmap) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        this.byteArray = byteArrayOutputStream.toByteArray();
+        if (bitmap != null) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            this.byteArray = byteArrayOutputStream.toByteArray();
+        }
+        else {
+            this.byteArray = null;
+        }
     }
 
     // Getter to retrieve Bitmap
     public Bitmap getBitmap() {
-        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+        if (this.byteArray != null) {
+            return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+        }
+        else {
+            return null;
+        }
     }
 
     // Serialize the object

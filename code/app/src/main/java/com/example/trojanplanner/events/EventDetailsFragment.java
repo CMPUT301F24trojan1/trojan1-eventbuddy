@@ -24,6 +24,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.events.entrant.EntrantEventOptionsDialogFragment;
 import com.example.trojanplanner.events.organizer.EventOptionsDialogFragment;
 
 import com.example.trojanplanner.model.Database;
@@ -70,140 +71,54 @@ public class EventDetailsFragment extends Fragment {
     public EventDetailsFragment() {}
 
     /**
-     * Checks the current status of the entrant (whether they are in the waitlist).
-     * Based on the status, appropriate buttons (Join Waitlist or Leave Waitlist) will be displayed.
+     * Populates the event details in the respective text views.
+     * If event details are missing, default values will be shown.
+     *
+     * @param eventNameTextView        The TextView to display the event's name.
+     * @param eventLocationTextView    The TextView to display the event's location.
+     * @param eventDateTextView        The TextView to display the event's start and end date.
+     * @param recurringDatesTextView   The TextView to display the event's recurrence days.
+     * @param eventDescriptionTextView The TextView to display the event's description.
      */
-//    private void checkEntrantStatus() {
-//        if (event != null && event.getWaitingList() != null) {
-//            if (event.getWaitingList().contains(entrant)) {
-//                buttonEnterNow.setVisibility(View.GONE);
-//                buttonLeaveWaitlist.setVisibility(View.VISIBLE);
-//            } else {
-//                buttonEnterNow.setVisibility(View.VISIBLE);
-//                buttonLeaveWaitlist.setVisibility(View.GONE);
-//            }
-//        } else {
-//            Log.e("EventDetailsFragment", "Event or waiting list is null in checkEntrantStatus");
-//        }
-//    }
+    public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView,
+                                     TextView eventDateTextView, TextView recurringDatesTextView,
+                                     TextView eventDescriptionTextView) {
 
-        /**
-         * Populates the event details in the respective text views.
-         * If event details are missing, default values will be shown.
-         *
-         * @param eventNameTextView        The TextView to display the event's name.
-         * @param eventLocationTextView    The TextView to display the event's location.
-         * @param eventDateTextView        The TextView to display the event's start and end date.
-         * @param recurringDatesTextView   The TextView to display the event's recurrence days.
-         * @param eventDescriptionTextView The TextView to display the event's description.
-         */
-        public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView,
-                                         TextView eventDateTextView, TextView recurringDatesTextView,
-                                         TextView eventDescriptionTextView) {
-
-            eventNameTextView.setText(event.getName());
-            if (event.getFacility() != null) {
-                eventLocationTextView.setText(event.getFacility().getFacilityId());
-            }
-
-            // Default values for dates in case they are null
-            String defaultDate = "Not Available";  // Default date if event date is null
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-
-            // Assign default value if startDateTime or endDateTime is null
-            String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
-            String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
-
-            eventDateTextView.setText(startDate + " - " + endDate);
-
-            // Convert abbreviations in recurrenceDays to full day names
-            ArrayList<String> recurrenceDays = event.getRecurrenceDays();
-
-            if (recurrenceDays != null) {
-                String recurrenceDaysText = recurrenceDays.stream()
-                        .map(this::getFullDayName) // Convert each unique abbreviation to full day name
-                        .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
-                        .reduce((a, b) -> a + ", " + b) // Join with commas
-                        .orElse("No recurrence");
-
-                recurringDatesTextView.setText(recurrenceDaysText);
-            }
-            eventDescriptionTextView.setText(event.getDescription());
-
+        eventNameTextView.setText(event.getName());
+        if (event.getFacility() != null) {
+            eventLocationTextView.setText(event.getFacility().getFacilityId());
         }
+
+        // Default values for dates in case they are null
+        String defaultDate = "Not Available";  // Default date if event date is null
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+        // Assign default value if startDateTime or endDateTime is null
+        String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
+        String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
+
+        eventDateTextView.setText(startDate + " - " + endDate);
+
+        // Convert abbreviations in recurrenceDays to full day names
+        ArrayList<String> recurrenceDays = event.getRecurrenceDays();
+
+        if (recurrenceDays != null) {
+            String recurrenceDaysText = recurrenceDays.stream()
+                    .map(this::getFullDayName) // Convert each unique abbreviation to full day name
+                    .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
+                    .reduce((a, b) -> a + ", " + b) // Join with commas
+                    .orElse("No recurrence");
+
+            recurringDatesTextView.setText(recurrenceDaysText);
+        }
+        eventDescriptionTextView.setText(event.getDescription());
+
+    }
 
     /**
      * Shows a confirmation dialog for the entrant to join the event's waitlist.
      * If confirmed, the entrant will be added to the event's waitlist.
      */
-
-//    public void joinWaitlist() {
-//        if (event != null && App.currentUser != null) {
-//            // Cast the current user to Entrant
-//            Entrant currentEntrant = (Entrant) App.currentUser;
-//
-//            // Ensure the event's waiting list is initialized
-//            if (event.getWaitingList() == null) {
-//                event.setWaitingList(new ArrayList<>());
-//            }
-//            Log.d("EventDetails", "Current Event Waitlist before changes " + event.getWaitingList());
-//
-//            ArrayList<User> waitingList = event.getWaitingList();
-//
-//            // Add the entrant to the waiting list if not already present
-//            if (!waitingList.contains(currentEntrant)) {
-//                waitingList.add(currentEntrant);
-//                event.setWaitingList(waitingList);
-//
-//
-//                // TO FIX
-//                /*
-//                that "event" argument, needs to have a synced waitlist with the db and then .add("melonapopus")
-//                then db.insertEvent("event")
-//                it's not updating the CURRENTWaitlist
-//                its rewriting it with your local waitlist
-//                but the local waitlist isn't synced up
-//
-//                the enter now upload working from eventdetailsdialog fragment AND eventdetailsfragment->
-//                 meaning on db both user will have a ref to waitlisted events of theirs and events have one to
-//                 the users and that should fix the button displaying
-//                 right now is that the waitlist is being added to user on the database correctly
-//                 but user isn't being added to the database correctly
-//                 this causes the button toggle to fail
-//                 */
-//                ArrayList<Event> eventList = currentEntrant.getCurrentWaitlistedEvents();
-//                eventList.add(event);
-//                currentEntrant.setCurrentWaitlistedEvents(eventList);
-//
-//                // Log the addition
-//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
-//                        " successfully added to the waitlist for event " + event.getEventId());
-//                Log.d("EventDetails", "Current Event Waitlist: " + waitingList);
-//                Log.d("EventDetails", "Current Entrant Waitlisted Events: " + currentEntrant.getCurrentWaitlistedEvents());
-//
-//
-//                //TO FIX: currently it displays,
-////                Current Event Waitlist before changes [com.google.firebase.firestore.DocumentReference@310f0fb4]
-////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Entrant d0c6ba9291492596 successfully added to the waitlist for event 19cd6a862b96402f-1732064463678
-////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Current Event Waitlist: [com.google.firebase.firestore.DocumentReference@310f0fb4, Jennifer Wang (d0c6ba9291492596)]
-//// we want to do the code that extracts just the useres, ths is the case when the waitlist already has someone and it displays weirdly
-//                // Update the database
-//                database.insertEvent(event); // Save the updated event
-//                database.insertUserDocument(currentEntrant); // Save the updated entrant
-//
-//                // Notify the user and update UI
-//                Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
-//                addtoNotifications();
-//                checkEntrantStatus(); // Refresh the UI
-//            } else {
-//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
-//                        " is already on the waitlist for event " + event.getEventId());
-//                Toast.makeText(getContext(), "You are already on the waitlist.", Toast.LENGTH_SHORT).show();
-//            }
-//        } else {
-//            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
-//        }
-//    }
     public void joinWaitlist() {
         if (event == null || App.currentUser == null) {
             Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
@@ -621,7 +536,7 @@ public class EventDetailsFragment extends Fragment {
         if (event != null) {
             populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
             // Print the current waitlist for debugging purposes
-            Log.d("updateButtonVisibility", "updateButton Event Waiting List: " + event.getWaitingList());
+            Log.d("EventDetailsFragment", "updateButton Event Waiting List: " + event.getWaitingList());
         } else {
             Log.e("EventDetailsFragment", "Event is null in onCreateView");
         }
@@ -645,10 +560,22 @@ public class EventDetailsFragment extends Fragment {
                     assert manageButton != null;
                     manageButton.setVisibility(View.GONE);
                     optionsButton.setVisibility(View.VISIBLE);
+                    optionsButton.setOnClickListener(v -> {
+                        if (event != null) {
+                            EntrantEventOptionsDialogFragment dialogFragment = EntrantEventOptionsDialogFragment.newInstance(event);
+                            dialogFragment.show(getChildFragmentManager(), "EntrantEventOptionsDialog");
+                        }
+                    });
                 }
             });
         } else if (App.currentUser != null && optionsButton != null) {
             optionsButton.setVisibility(View.VISIBLE);
+            optionsButton.setOnClickListener(v -> {
+                if (event != null) {
+                    EntrantEventOptionsDialogFragment dialogFragment = EntrantEventOptionsDialogFragment.newInstance(event);
+                    dialogFragment.show(getChildFragmentManager(), "EntrantEventOptionsDialog");
+                }
+            });
         }
 
         // Check if the user is waitlisted for this event
@@ -692,33 +619,6 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
-
-//    private void checkEntrantStatus() {
-//        if (App.currentUser instanceof Entrant && event != null) {
-//            Entrant currentEntrant = (Entrant) App.currentUser;
-//            ArrayList<User> waitingList = event.getWaitingList();
-//
-//            // Compare using unique identifiers
-//            boolean isOnWaitlist = false;
-//            for (DocumentReference doc: waitingList) {
-//                if (user.getDeviceId().equals(currentEntrant.getDeviceId())) {
-//                    isOnWaitlist = true;
-//                    break;
-//                }
-//            }
-//
-//            // Update button visibility
-//            if (isOnWaitlist) {
-//                buttonEnterNow.setVisibility(View.GONE);
-//                buttonLeaveWaitlist.setVisibility(View.VISIBLE);
-//                Log.d("EventDetailsFragment", "User is on the waitlist. Showing 'Leave Waitlist' button.");
-//            } else {
-//                buttonEnterNow.setVisibility(View.VISIBLE);
-//                buttonLeaveWaitlist.setVisibility(View.GONE);
-//                Log.d("EventDetailsFragment", "User is not on the waitlist. Showing 'Enter Now' button.");
-//            }
-//        }
-//    }
 
     /**
      * Converts a short abbreviation (e.g., "M" for Monday) to a full day name.
@@ -764,15 +664,8 @@ public class EventDetailsFragment extends Fragment {
     }
 
     private void navigateBackToEventList() {
-        // Assuming you have a `EventsListFragment` to return to
         FragmentManager fragmentManager = getParentFragmentManager();
         fragmentManager.popBackStack(); // Navigate back in the fragment stack
-
-        // Alternatively, if no back stack is used:
-        // Fragment eventsListFragment = new EventsListFragment();
-        // fragmentManager.beginTransaction()
-        //         .replace(R.id.fragment_container, eventsListFragment)
-        //         .commit();
     }
 
 
@@ -802,3 +695,98 @@ public class EventDetailsFragment extends Fragment {
     }
 
 }
+//    private void checkEntrantStatus() {
+//        if (App.currentUser instanceof Entrant && event != null) {
+//            Entrant currentEntrant = (Entrant) App.currentUser;
+//            ArrayList<User> waitingList = event.getWaitingList();
+//
+//            // Compare using unique identifiers
+//            boolean isOnWaitlist = false;
+//            for (DocumentReference doc: waitingList) {
+//                if (user.getDeviceId().equals(currentEntrant.getDeviceId())) {
+//                    isOnWaitlist = true;
+//                    break;
+//                }
+//            }
+//
+//            // Update button visibility
+//            if (isOnWaitlist) {
+//                buttonEnterNow.setVisibility(View.GONE);
+//                buttonLeaveWaitlist.setVisibility(View.VISIBLE);
+//                Log.d("EventDetailsFragment", "User is on the waitlist. Showing 'Leave Waitlist' button.");
+//            } else {
+//                buttonEnterNow.setVisibility(View.VISIBLE);
+//                buttonLeaveWaitlist.setVisibility(View.GONE);
+//                Log.d("EventDetailsFragment", "User is not on the waitlist. Showing 'Enter Now' button.");
+//            }
+//        }
+//    }
+
+
+//    public void joinWaitlist() {
+//        if (event != null && App.currentUser != null) {
+//            // Cast the current user to Entrant
+//            Entrant currentEntrant = (Entrant) App.currentUser;
+//
+//            // Ensure the event's waiting list is initialized
+//            if (event.getWaitingList() == null) {
+//                event.setWaitingList(new ArrayList<>());
+//            }
+//            Log.d("EventDetails", "Current Event Waitlist before changes " + event.getWaitingList());
+//
+//            ArrayList<User> waitingList = event.getWaitingList();
+//
+//            // Add the entrant to the waiting list if not already present
+//            if (!waitingList.contains(currentEntrant)) {
+//                waitingList.add(currentEntrant);
+//                event.setWaitingList(waitingList);
+//
+//
+//                // TO FIX
+//                /*
+//                that "event" argument, needs to have a synced waitlist with the db and then .add("melonapopus")
+//                then db.insertEvent("event")
+//                it's not updating the CURRENTWaitlist
+//                its rewriting it with your local waitlist
+//                but the local waitlist isn't synced up
+//
+//                the enter now upload working from eventdetailsdialog fragment AND eventdetailsfragment->
+//                 meaning on db both user will have a ref to waitlisted events of theirs and events have one to
+//                 the users and that should fix the button displaying
+//                 right now is that the waitlist is being added to user on the database correctly
+//                 but user isn't being added to the database correctly
+//                 this causes the button toggle to fail
+//                 */
+//                ArrayList<Event> eventList = currentEntrant.getCurrentWaitlistedEvents();
+//                eventList.add(event);
+//                currentEntrant.setCurrentWaitlistedEvents(eventList);
+//
+//                // Log the addition
+//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
+//                        " successfully added to the waitlist for event " + event.getEventId());
+//                Log.d("EventDetails", "Current Event Waitlist: " + waitingList);
+//                Log.d("EventDetails", "Current Entrant Waitlisted Events: " + currentEntrant.getCurrentWaitlistedEvents());
+//
+//
+//                //TO FIX: currently it displays,
+////                Current Event Waitlist before changes [com.google.firebase.firestore.DocumentReference@310f0fb4]
+////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Entrant d0c6ba9291492596 successfully added to the waitlist for event 19cd6a862b96402f-1732064463678
+////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Current Event Waitlist: [com.google.firebase.firestore.DocumentReference@310f0fb4, Jennifer Wang (d0c6ba9291492596)]
+//// we want to do the code that extracts just the useres, ths is the case when the waitlist already has someone and it displays weirdly
+//                // Update the database
+//                database.insertEvent(event); // Save the updated event
+//                database.insertUserDocument(currentEntrant); // Save the updated entrant
+//
+//                // Notify the user and update UI
+//                Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
+//                addtoNotifications();
+//                checkEntrantStatus(); // Refresh the UI
+//            } else {
+//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
+//                        " is already on the waitlist for event " + event.getEventId());
+//                Toast.makeText(getContext(), "You are already on the waitlist.", Toast.LENGTH_SHORT).show();
+//            }
+//        } else {
+//            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
+//        }
+//    }

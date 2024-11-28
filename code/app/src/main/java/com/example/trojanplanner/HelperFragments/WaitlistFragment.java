@@ -28,6 +28,8 @@ public class WaitlistFragment extends Fragment {
 
     private ListView waitlistListView;
     private WaitlistAdapter waitlistAdapter;
+    private String listType;
+    private Button sendNotificationButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,20 +56,21 @@ public class WaitlistFragment extends Fragment {
         Event event = null;
         Bundle arguments = getArguments();
         if (arguments != null) {
-            event = (Event) arguments.getSerializable("event"); // Ensure Event implements Serializable or Parcelable
+            event = (Event) arguments.getSerializable("event");
+            listType = arguments.getString("listType");
+
+            Log.d("WaitlistFragment", "Received Event object: " + event.getName() + "List Type: " + listType);
         }
 
         // If the Event object is null, navigate back to the previous fragment
         if (event == null) {
             Log.e("WaitlistFragment", "Event object is null");
-            // Navigate back up the backstack
             getActivity().onBackPressed();
-            return view; // Early return to avoid further execution
+            return view;
         }
 
         // Fetch event from the database asynchronously
         fetchEventFromDatabase(event);
-
 
         return view;
     }
@@ -78,13 +81,27 @@ public class WaitlistFragment extends Fragment {
             @Override
             public void OnSuccess(Object object) {
                 Event updatedEvent = (Event) object;
-                ArrayList<User> waitlistedUsers = updatedEvent.getWaitingList();
+                ArrayList<User> users = new ArrayList<>();
 
-                Log.d("WaitlistFragment", "Fetched waitlisted users: " + waitlistedUsers);
+                if ("enrolled".equals(listType)) {
+                    users = updatedEvent.getEnrolledList(); // Assuming the event has a method to get enrolled users
+                } else if ("cancelled".equals(listType)) {
+                    users = updatedEvent.getCancelledList(); // Assuming the event has a method to get cancelled users
+                } else if ("waiting".equals(listType)) {
+                    users = updatedEvent.getWaitingList(); // Assuming the event has a method to get waitlisted users
+                }
+                Log.d("WaitlistFragment", "Fetched waitlisted users: " + users);
+
+                // If no list type matches or the list is empty, return
+                if (users.isEmpty()) {
+                    Log.d("WaitlistFragment", listType + "is empty.");
+                    requireActivity().onBackPressed();
+                    return;
+                }
 
                 // Convert User objects to Entrant objects
                 ArrayList<Entrant> entrants = new ArrayList<>();
-                for (User user : waitlistedUsers) {
+                for (User user : users) {
                     Entrant entrant = (Entrant) user;
                     Log.d("WaitlistFragment", "Creating Entrant: " + entrant.getFirstName());
                     entrants.add(entrant);
@@ -111,6 +128,6 @@ public class WaitlistFragment extends Fragment {
         };
 
         // Fetch event data from the database
-        Database.getDB().getEvent(successAction, failureAction, event.getEventId(), false, null);
+        Database.getDB().getEvent(successAction, failureAction, event.getEventId());
     }
 }
