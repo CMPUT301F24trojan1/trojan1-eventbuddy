@@ -891,7 +891,7 @@ public class Database {
      * @param facility If non-null, use this facility instead of querying for it (prevents infinite loop)
      * @author Jared Gourley
      */
-    public void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId, boolean escapeSharing, Facility facility) {
+    private void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId, boolean escapeSharing, Facility facility) {
         if (!escapeSharing) { // escapeSharing can only be set true by the Database class itself for backdoor functionality
             // If this query is already happening, simply add listeners instead of re-running
             if (activeEventQuery != null && activeEventQuery == eventId) {
@@ -911,6 +911,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get event " + eventId);
 
         DocumentReference docRef = db.collection("events").document(eventId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1209,6 +1210,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get entrant " + androidId);
 
         DocumentReference docRef = db.collection("users").document(androidId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1316,21 +1318,23 @@ public class Database {
                     };
 
                     // Launch queries
-                    for (Event event : entrant.getCurrentEnrolledEvents()) {
-                        System.out.println("Launching query for event: " + event.getEventId());
-                        getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
-                    }
-                    for (Event event : entrant.getCurrentPendingEvents()) {
-                        System.out.println("Launching query for event: " + event.getEventId());
-                        getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
-                    }
-                    for (Event event : entrant.getCurrentWaitlistedEvents()) {
-                        System.out.println("Launching query for event: " + event.getEventId());
-                        getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
-                    }
-                    for (Event event : entrant.getCurrentDeclinedEvents()) {
-                        System.out.println("Launching query for event: " + event.getEventId());
-                        getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
+                    if (expandEvents) {
+                        for (Event event : entrant.getCurrentEnrolledEvents()) {
+                            System.out.println("Launching query for event: " + event.getEventId());
+                            getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
+                        }
+                        for (Event event : entrant.getCurrentPendingEvents()) {
+                            System.out.println("Launching query for event: " + event.getEventId());
+                            getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
+                        }
+                        for (Event event : entrant.getCurrentWaitlistedEvents()) {
+                            System.out.println("Launching query for event: " + event.getEventId());
+                            getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
+                        }
+                        for (Event event : entrant.getCurrentDeclinedEvents()) {
+                            System.out.println("Launching query for event: " + event.getEventId());
+                            getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
+                        }
                     }
                     if (loadPfp && entrant.getPfpFilePath() != null) {
                         System.out.println("Launching query for entrant pfp: " + entrant.getPfpFilePath());
@@ -1433,9 +1437,7 @@ public class Database {
         // Get id of facility document and then split on the / character to remove the collection name
         Facility facility;
         if ((DocumentReference) m.get("facility") != null) {
-            String[] facilityIdPath = ((DocumentReference) m.get("facility")).getId().split("/");
-            String facilityId = facilityIdPath[facilityIdPath.length - 1];
-            facility = new Facility(facilityId);
+            facility = new Facility(getIdFromDocRef((DocumentReference) m.get("facility")));
         }
         else {
             facility = null;
@@ -1493,7 +1495,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
-        System.out.println("finalEscapeSharing: " + finalEscapeSharing);
+        System.out.println("Requesting to get organizer " + androidId);
 
         DocumentReference docRef = db.collection("users").document(androidId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1797,6 +1799,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get admin " + androidId);
 
         DocumentReference docRef = db.collection("users").document(androidId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1948,6 +1951,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get facility " + facilityId);
 
         DocumentReference docRef = db.collection("facilities").document(facilityId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -2265,11 +2269,12 @@ public class Database {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
                     }
                 }
-                //if (m.get("currentDeclinedEvents") != null) {
-                //    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentDeclinedEvents")) {
-                //        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
-                //    }
-                //}
+                // For this use case we don't want declined events
+//                if (m.get("currentDeclinedEvents") != null) {
+//                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentDeclinedEvents")) {
+//                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
+//                    }
+//                }
 
                 if ((boolean) m.get("hasOrganizerRights") && m.get("createdEvents") != null) {
                     System.out.println();

@@ -128,6 +128,6 @@ public class WaitlistFragment extends Fragment {
         };
 
         // Fetch event data from the database
-        Database.getDB().getEvent(successAction, failureAction, event.getEventId(), false, null);
+        Database.getDB().getEvent(successAction, failureAction, event.getEventId());
     }
 }
