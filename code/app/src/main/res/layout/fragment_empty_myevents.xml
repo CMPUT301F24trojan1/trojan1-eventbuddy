@@ -25,15 +25,15 @@
         android:id="@+id/titleTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:fontFamily="sans-serif-medium"
         android:gravity="center"
         android:text="WELCOME TO TROJAN PLANNER"
         android:textColor="@color/black"
-        android:textSize="35sp"
+        android:textSize="43dp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/eventIcon" />
 
@@ -56,15 +56,15 @@
         android:id="@+id/instructionTextView"
         android:layout_width="372dp"
         android:layout_height="49dp"
-        android:layout_marginTop="88dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:gravity="center"
-        android:text="Please scan the event QR codes to view or join them!"
-        android:textColor="@color/darkGray"
+        android:text="PLEASE SCAN THE EVENT QR CODES TO VIEW OR JOIN THEM!"
+        android:textColor="@color/red_primary"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/alertIcon" />
 
     <Button
         android:id="@+id/becomeOrganizerButton"
@@ -73,14 +73,19 @@
         android:layout_marginTop="44dp"
         android:background="@drawable/rounded_button"
         android:backgroundTint="@color/red_primary"
-        android:elevation="8dp"
+        android:elevation="8in"
+        android:fontFamily="sans-serif-medium"
         android:padding="12dp"
-        android:text="+ Become an Organizer!"
+        android:text="Become an Organizer"
         android:textColor="@android:color/white"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/createEventButton"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/messageTextView"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/createEventButton"
@@ -93,11 +98,15 @@
         android:elevation="4dp"
         android:fontFamily="sans-serif-medium"
         android:padding="12dp"
-        android:text=" + CREATE EVENT"
+        android:text="CREATE EVENT"
         android:textColor="@android:color/white"
+        android:textSize="16dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/becomeOrganizerButton"
-        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/messageTextView"
+        app:layout_constraintVertical_bias="0.0" />
 
     <ImageView
         android:id="@+id/alertIcon"
@@ -106,7 +115,6 @@
         android:layout_marginTop="16dp"
         android:contentDescription="Alert icon"
         android:src="@drawable/alert"
-        app:layout_constraintBottom_toTopOf="@+id/instructionTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
@@ -118,7 +126,7 @@
         android:layout_height="319dp"
         android:layout_marginTop="8dp"
         android:contentDescription="An Icon for events"
-        android:src="@drawable/logo2"
+        android:src="@drawable/logo3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/instructionTextView" />
