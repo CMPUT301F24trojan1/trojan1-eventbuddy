@@ -1,6 +1,5 @@
 package com.example.trojanplanner.events;
 
-import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -311,121 +310,6 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
-    /**
-     * Shows a confirmation dialog for the entrant to leave the event's waitlist.
-     * If confirmed, the entrant will be removed from the event's waitlist.
-     */
-    public void leaveWaitlist() {
-        if (event == null || App.currentUser == null) {
-            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Entrant currentEntrant = (Entrant) App.currentUser;
-
-        database.getEvent(
-                new Database.QuerySuccessAction() {
-                    @Override
-                    public void OnSuccess(Object object) {
-                        Event syncedEvent = (Event) object;
-
-                        // Ensure the event's waiting list is initialized
-                        if (syncedEvent.getWaitingList() == null) {
-                            syncedEvent.setWaitingList(new ArrayList<>());
-                        }
-
-                        // Check if the entrant is actually in the waiting list
-                        if (!syncedEvent.getWaitingList().contains(currentEntrant)) {
-                            Toast.makeText(getContext(), "You are not on the waitlist.", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        // Remove the entrant from the event's waiting list
-                        syncedEvent.getWaitingList().remove(currentEntrant);
-
-                        // Debug log to confirm local removal
-                        Log.d("remove entrant", "Updated Local Event Waitlist: " + syncedEvent.getWaitingList());
-
-                        database.getEntrant(
-                                new Database.QuerySuccessAction() {
-                                    @Override
-                                    public void OnSuccess(Object object) {
-                                        Entrant syncedEntrant = (Entrant) object;
-
-                                        // Ensure the entrant's waitlisted events are initialized
-                                        if (syncedEntrant.getCurrentWaitlistedEvents() == null) {
-                                            syncedEntrant.setCurrentWaitlistedEvents(new ArrayList<>());
-                                        }
-
-                                        // Remove the event from the entrant's waitlisted events
-                                        syncedEntrant.getCurrentWaitlistedEvents().remove(syncedEvent);
-
-                                        // Debug logs before saving
-                                        Log.d("EventDetails", "Synced Event to Save: " + syncedEvent.toString());
-                                        Log.d("EventDetails", "Synced Entrant to Save: " + syncedEntrant.toString());
-
-                                        // Save the updated event
-                                        database.insertEvent(
-                                                new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void unused) {
-                                                        Log.d("EventDetails", "Event successfully updated in the database.");
-                                                        // Save the updated entrant only after the event is successfully updated
-                                                        database.insertUserDocument(
-                                                                new OnSuccessListener<Void>() {
-                                                                    @Override
-                                                                    public void onSuccess(Void unused) {
-                                                                        Toast.makeText(getContext(), "Successfully removed from the waitlist!", Toast.LENGTH_SHORT).show();
-                                                                        Log.d("EventDetails", "Entrant successfully updated in the database.");
-
-                                                                        // Validate database state
-                                                                        validateDatabaseState(syncedEvent, syncedEntrant);
-                                                                    }
-                                                                },
-                                                                new OnFailureListener() {
-                                                                    @Override
-                                                                    public void onFailure(@NonNull Exception e) {
-                                                                        Toast.makeText(getContext(), "Failed to update user data.", Toast.LENGTH_SHORT).show();
-                                                                        Log.e("EventDetails", "Error updating entrant: " + e.getMessage());
-                                                                    }
-                                                                },
-                                                                syncedEntrant // Pass the correct User object
-                                                        );
-                                                    }
-                                                },
-                                                new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Toast.makeText(getContext(), "Failed to update event data.", Toast.LENGTH_SHORT).show();
-                                                        Log.e("EventDetails", "Error updating event: " + e.getMessage());
-                                                    }
-                                                },
-                                                syncedEvent // Pass the correct Event object
-                                        );
-                                    }
-                                },
-                                new Database.QueryFailureAction() {
-                                    @Override
-                                    public void OnFailure() {
-                                        Toast.makeText(getContext(), "Failed to sync user data.", Toast.LENGTH_SHORT).show();
-                                        Log.e("EventDetails", "Error syncing entrant from database.");
-                                    }
-                                },
-                                currentEntrant.getDeviceId()
-                        );
-                    }
-                },
-                new Database.QueryFailureAction() {
-                    @Override
-                    public void OnFailure() {
-                        Toast.makeText(getContext(), "Failed to sync event data.", Toast.LENGTH_SHORT).show();
-                        Log.e("EventDetails", "Error syncing event from database.");
-                    }
-                },
-                event.getEventId()
-        );
-    }
-
     private void checkCreatedEventsFromDatabase(String eventIdToCheck, final EventCheckCallback callback) {
         // Get current user ID (assuming App.currentUser holds this information)
         String userId = App.currentUser.getDeviceId();
@@ -630,6 +514,35 @@ public class EventDetailsFragment extends Fragment {
 
         return view;
     }
+
+    /**
+     * Shows a confirmation dialog for the entrant to leave the event's waitlist.
+     * If confirmed, the entrant will be removed from the event's waitlist.
+     */
+    public void leaveWaitlist() {
+        if (event == null || App.currentUser == null) {
+            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Remove the event from the waitlist
+        ArrayList<Event> currentWaitlist = ((Entrant) App.currentUser).getCurrentWaitlistedEvents();
+        currentWaitlist.removeIf(pendingEvent -> pendingEvent.getEventId().equals(event.getEventId()));
+        ((Entrant) App.currentUser).setCurrentPendingEvents(currentWaitlist);
+
+        ArrayList<User> currentEventWaitingList = event.getPendingList();
+        currentEventWaitingList.remove(App.currentUser);
+        event.setPendingList(currentEventWaitingList);
+
+        // Now move only the database operations to the background thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            // Database operations in the background thread
+            Database.getDB().insertUserDocument(App.currentUser);
+            Database.getDB().insertEvent(event);
+        });
+        buttonLeaveWaitlist.setVisibility(View.GONE);
+    }
+
 
     private void acceptEvent() {
         ArrayList<Event> currentPending = ((Entrant) App.currentUser).getCurrentPendingEvents();
