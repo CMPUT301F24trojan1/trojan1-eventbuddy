@@ -10,7 +10,7 @@
     <string name="admin_facilities">Facilities</string>
     <string name="admin_users">Users</string>
     <string name="admin_images">Images</string>
-    <string name="admin_profile">Profile</string>
+    <string name="admin_qr">QR</string>
 
     <string name="firebase_storage_upload_success">Storage upload successful!</string>
     <string name="firebase_storage_upload_fail">Storage upload failed, try again later</string>
