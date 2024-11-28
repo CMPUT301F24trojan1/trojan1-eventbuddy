@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -17,6 +19,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
@@ -175,7 +178,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
         if (context == null) {
             return; // Exit if fragment is not attached
         }
-
+        
         // Copy the waiting list and remove null entries
         ArrayList<User> Lottery_waitlist = new ArrayList<>(event.getWaitingList());
         Lottery_waitlist.removeIf(Objects::isNull); // Remove null values
@@ -272,8 +275,27 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 if (winner != null) {
                     Database.getDB().getEntrant(object -> {
                         Entrant user = (Entrant) object;
-                        winnersList.append(user.getFirstName()).append(" ").append(user.getLastName()).append("\n");
-                        latch.countDown(); // Decrease count when query completes
+
+                        ArrayList<Event> currentPending = user.getCurrentPendingEvents();
+                        if (currentPending == null) {
+                            currentPending = new ArrayList<>();
+                        }
+                        currentPending.add(event);
+                        user.setCurrentPendingEvents(currentPending);
+
+                        ArrayList<Event> currentWaitlist = user.getCurrentWaitlistedEvents();
+                        if (currentWaitlist == null) {
+                            currentWaitlist = new ArrayList<>();
+                        }
+
+                        ArrayList<Event> finalCurrentPending = currentPending;
+                        currentWaitlist.removeIf(pendingEvent -> finalCurrentPending.contains(pendingEvent));
+                        user.setCurrentWaitlistedEvents(currentWaitlist);
+                        // Custom async insert with callback
+                        asyncInsertUserDocument(user, () -> {
+                            winnersList.append(user.getFirstName()).append(" ").append(user.getLastName()).append("\n");
+                            latch.countDown(); // Decrement latch after async operation completes
+                        });
                     }, () -> {
                         latch.countDown(); // Ensure latch decrements even on failure
                     }, winner.getDeviceId());
@@ -292,7 +314,6 @@ public class EventOptionsDialogFragment extends DialogFragment {
                                 .setPositiveButton("OK", (winnerDialog, whichWinner) -> winnerDialog.dismiss())
                                 .create()
                                 .show();
-                        Database.getDB().insertEvent(event);
                     });
                 } catch (InterruptedException e) {
                     e.printStackTrace(); // Handle interruption
@@ -303,11 +324,24 @@ public class EventOptionsDialogFragment extends DialogFragment {
                     .filter(user -> !event.getPendingList().contains(user))
                     .collect(Collectors.toCollection(ArrayList::new)); // Ensures resultList is an ArrayList
             event.setWaitingList(resultList);
-
             Database.getDB().insertEvent(event);
+
+            new Thread(() -> {
+                // Loop through the pending list and send the announcement to each user
+                for (User user : event.getPendingList()) {
+                    App.sendAnnouncement(user.getDeviceId(), event.getName(),
+                            "CONGRATS!! You've won, accept/decline your invitation in the app");
+                }
+
+            }).start();
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.create().show();
+    }
+
+    private void asyncInsertUserDocument(Entrant user, Runnable onComplete) {
+        Database.getDB().insertUserDocument(user);
+        new Handler(Looper.getMainLooper()).post(onComplete);
     }
 
     private void uploadQRHashToDatabase(String qrHash, Event event) {
