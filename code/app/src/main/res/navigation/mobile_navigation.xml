@@ -163,5 +163,4 @@
             app:destination="@+id/EventOptionsDialogFragment" />
     </fragment>
 
-
 </navigation>

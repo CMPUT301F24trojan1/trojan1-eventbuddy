@@ -15,7 +15,7 @@
         android:background="@drawable/circle_shape"
         android:contentDescription="Profile Picture"
         android:scaleType="centerCrop"
-        android:src="@drawable/profile_trump"
+        android:src="@drawable/placeholder_avatar"
         android:clipToOutline="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -24,25 +24,24 @@
         tools:srcCompat="@tools:sample/avatars" />
 
     <EditText
-        android:id="@+id/email_input"
+        android:id="@+id/lastname_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
+        android:layout_marginTop="4dp"
+        android:hint="Last Name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lastname_input" />
+        app:layout_constraintTop_toBottomOf="@+id/firstname_input" />
 
     <EditText
         android:id="@+id/firstname_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="46dp"
+        android:layout_marginTop="24dp"
         android:hint="First Name"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profile_image" />
 
@@ -50,7 +49,7 @@
         android:id="@+id/phone_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:hint="Phone Number (Optional)"
         android:inputType="phone"
         app:layout_constraintEnd_toEndOf="parent"
@@ -59,15 +58,16 @@
         app:layout_constraintTop_toBottomOf="@id/email_input" />
 
     <EditText
-        android:id="@+id/lastname_input"
+        android:id="@+id/email_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="Last Name"
+        android:layout_marginTop="12dp"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/firstname_input" />
+        app:layout_constraintTop_toBottomOf="@id/lastname_input" />
 
     <Button
         android:id="@+id/cancel_button"
@@ -99,11 +99,11 @@
         android:layout_width="222dp"
         android:layout_height="38dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="55dp"
-        android:text="Enable/disable notifications from Organizers and Admins"
+        android:text="Disable notifications from Organizers and Admins"
         app:layout_constraintEnd_toStartOf="@+id/switch1"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cancel_button" />
 
@@ -111,8 +111,8 @@
         android:id="@+id/switch1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:layout_marginEnd="36dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="28dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cancel_button" />
 
@@ -120,12 +120,24 @@
         android:id="@+id/switch_profile_facility"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginTop="17dp"
+        android:layout_marginBottom="68dp"
         android:text="Manage Facility Profile"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-    <!-- Additional toggle switch for switching between Profile and Facility screens -->
-
+    <Button
+        android:id="@+id/switch_admin_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        android:text="Switch to Admin View"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/switch_profile_facility" />
 </androidx.constraintlayout.widget.ConstraintLayout>

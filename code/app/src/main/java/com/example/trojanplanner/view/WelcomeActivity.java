@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -77,7 +78,9 @@ public class WelcomeActivity extends AppCompatActivity {
                 App.currentUser = (Entrant) object;  // Set the current user
                 requestNotificationPermission(); // Request notification permission
                 addtoNotifications(App.currentUser.getDeviceId());
-                addtoNotifications("organizer/admin");
+                Toast.makeText(WelcomeActivity.this, "Welcome back, " + App.currentUser.getFirstName() + "!", Toast.LENGTH_SHORT).show();
+                addtoNotifications("organizer" + App.currentUser.getDeviceId());
+                addtoNotifications("admin" + App.currentUser.getDeviceId());
                 startMainActivity();
             }
         };
@@ -105,7 +108,7 @@ public class WelcomeActivity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE); // Hide progress bar
         Intent intent = new Intent(WelcomeActivity.this, ProfileActivity.class);
         requestNotificationPermission(); // Request notification permission
-        addtoNotifications("organizer/admin"); // Subscribe to the "default" topic
+        addtoNotifications("default"); // Subscribe to the "default" topic
         startActivity(intent); // Start the ProfileActivity for profile creation
         finish(); // Finish the WelcomeActivity to remove it from the back stack
     }

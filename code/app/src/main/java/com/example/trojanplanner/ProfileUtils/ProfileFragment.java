@@ -2,6 +2,7 @@ package com.example.trojanplanner.ProfileUtils;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -38,10 +40,14 @@ import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.ProfileActivity;
+import com.example.trojanplanner.view.QRActivity;
+import com.example.trojanplanner.view.admin.AdminActivity;
+import com.example.trojanplanner.view.admin.AdminUsersActivity;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import java.util.Objects;
+
 public class ProfileFragment extends Fragment {
-    private Database database;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
     private ImageView profileImage;
     private Bitmap profileImageBitmap = null; // Null if placeholder
@@ -54,6 +60,7 @@ public class ProfileFragment extends Fragment {
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch notificationsSwitch;
     private Button switchProfileFacility;
+    private Button switchAdminView;
     private ActivityResultLauncher<String> requestNotificationPermissionLauncher;
 
     public ProfileFragment() {
@@ -106,6 +113,19 @@ public class ProfileFragment extends Fragment {
         } else {
             // Log an error if notificationsSwitch is null
             Log.e("ProfileFragment", "notificationsSwitch is null!");
+        }
+
+        switchAdminView = view.findViewById(R.id.switch_admin_view);
+        if (App.currentUser.isAdmin()){
+            switchAdminView.setVisibility(View.VISIBLE);
+            switchAdminView.setOnClickListener(v-> {
+                Intent intent = new Intent(getActivity(), AdminActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                profileActivity.finish();
+            });
+        } else {
+            switchAdminView.setVisibility(View.GONE);
         }
 
         switchProfileFacility = view.findViewById(R.id.switch_profile_facility);
@@ -198,6 +218,9 @@ public class ProfileFragment extends Fragment {
         else {
             deviceId = App.deviceId;
             App.currentUser = new Entrant(lastName, firstName, email, phone, deviceId, "Entrant", false, false);
+            addtoNotifications(deviceId);
+            addtoNotifications("organizer" + deviceId);
+            addtoNotifications("admin" + deviceId);
         }
 
         Database database = Database.getDB();
@@ -231,20 +254,30 @@ public class ProfileFragment extends Fragment {
                 return;
             }
 
-            FirebaseMessaging.getInstance().subscribeToTopic(App.currentUser.getDeviceId())
+            FirebaseMessaging.getInstance().subscribeToTopic("organizer" + App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
-                        String msg = task.isSuccessful() ? "Successfully subscribed to notifications." : "Subscription failed. Please try again.";
+                        String msg = task.isSuccessful() ? "Successfully subscribed to Organizer notifications." : "Subscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                        App.sendAnnouncement(App.currentUser.getDeviceId(), "Trojan Planner", "You have been subscribed to notifications!");
+                    });
+            FirebaseMessaging.getInstance().subscribeToTopic("admin" + App.currentUser.getDeviceId())
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully subscribed to Admin notifications." : "Subscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                     });
         } else {
-            FirebaseMessaging.getInstance().unsubscribeFromTopic(App.currentUser.getDeviceId())
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("organizer" + App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
-                        String msg = task.isSuccessful() ? "Successfully unsubscribed from notifications." : "Unsubscription failed. Please try again.";
+                        String msg = task.isSuccessful() ? "Successfully unsubscribed from organizer notifications." : "Unsubscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                    });
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("admin" + App.currentUser.getDeviceId())
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully unsubscribed from admin notifications." : "Unsubscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                     });
         }
     }
-
     /**
      * Resets profile picture to the current profile picture of the user.
      * If user is null, reset to default
@@ -312,4 +345,16 @@ public class ProfileFragment extends Fragment {
             profileImage.setImageResource(R.drawable.placeholder_avatar);
         }
     }
+
+    private void addtoNotifications(String topic) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Notifications", "Successfully subscribed to the topic: " + topic);
+                    } else {
+                        Log.e("Notifications", "Failed to subscribe to the topic: " + topic + ". Error: " + task.getException());
+                    }
+                });
+    }
+
 }

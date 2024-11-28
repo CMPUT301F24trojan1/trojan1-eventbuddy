@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
@@ -39,7 +38,6 @@ import java.util.Objects;
  * them in a scrollable list. When an event is clicked, the user is navigated to an editing screen.
  */
 public class EventsFragment extends Fragment implements EventArrayAdapter.OnEventClickListener {
-
     private FragmentEventsListBinding binding;
     private EventArrayAdapter eventsAdapter;
     private List<Event> eventList;
@@ -126,6 +124,7 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
             createEventOrBecomeOrganizerButton.setVisibility(View.GONE);
         }
     }
+
     private void loadEventsFromDatabase() {
         eventList.clear();
 
