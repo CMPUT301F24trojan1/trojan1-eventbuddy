@@ -1,0 +1,135 @@
+<!-- res/layout/item_admin_event_card.xml -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <!-- Event Image -->
+    <ImageView
+        android:id="@+id/event_image"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_event_pic"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Event Name -->
+    <TextView
+        android:id="@+id/event_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Event Name"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/event_image"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- Container for Event Details -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/details_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/event_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:paddingTop="8dp">
+
+        <TextView
+            android:id="@+id/event_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Event Description"
+            android:textSize="14sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/event_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Price: $0.00"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/event_description"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/event_facility"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Facility"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/event_price"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/event_start_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start Date"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/event_facility"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/event_end_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="End Date"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/event_start_date"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/days_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Days Left to Register"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/event_end_date"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/total_spots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Spots"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/days_left"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/available_spots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Available Spots"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/total_spots"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="4dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Button at the Bottom -->
+    <Button
+        android:id="@+id/delete_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete Event!!"
+        app:layout_constraintTop_toBottomOf="@id/details_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

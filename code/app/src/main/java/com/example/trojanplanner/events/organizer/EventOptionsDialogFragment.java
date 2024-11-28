@@ -1,28 +1,23 @@
 package com.example.trojanplanner.events.organizer;
 
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.core.app.NotificationCompat;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.example.trojanplanner.HelperFragments.WaitlistFragment;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
-import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.User;
 
 import java.io.Serializable;
@@ -44,10 +39,11 @@ public class EventOptionsDialogFragment extends DialogFragment {
      * @param event The event object for which options are to be displayed.
      * @return A new instance of EventOptionsDialogFragment.
      */
+    @NonNull
     public static EventOptionsDialogFragment newInstance(Event event) {
         EventOptionsDialogFragment fragment = new EventOptionsDialogFragment();
         Bundle args = new Bundle();
-        args.putSerializable(ARG_EVENT, (Serializable) event);
+        args.putSerializable(ARG_EVENT, event);
         fragment.setArguments(args);
         return fragment;
     }
@@ -74,7 +70,13 @@ public class EventOptionsDialogFragment extends DialogFragment {
      */
     @Override
     public android.app.Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Create an AlertDialog to show the event options
+        Database.getDB().getEvent(object -> {
+            event = (Event) object;
+            Log.d("EventOptionsDialog", "Fetched Event: " + event.getName());
+        }, () -> {
+            Log.e("EventOptionsDialog", "Failed to fetch event.");
+        }, event.getEventId());
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle("Event Options")
@@ -88,174 +90,141 @@ public class EventOptionsDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    /**
-     * Handles the selection of an option from the event options dialog.
-     *
-     * @param optionIndex The index of the selected option.
-     */
-    private void handleOptionSelection(int optionIndex) {
-        switch (optionIndex) {
-            case 0:
-                String eventId = event.getEventId();
-                String message = "You're getting this because you expressed interest for this event!";
-                String title = "Announcement Title";
-                sendAnnouncement(eventId, title, message);
-                break;
-            case 1:
-                viewCancelled();
-                break;
-            case 2:
-                viewMap();
-                break;
-            case 3:
-                showCheckinCode();
-                break;
-            case 4:
-                generateEventCode();
-                break;
-            case 5:
-                deleteEvent();
-                break;
-            case 6: // View Waitlist
-                viewWaitlist();
-                break;
-            case 7: // Initiate Lottery
-                initiateLottery();
-                break;
-            case 8:
-                viewSelected();
-                break;
-            default:
-                break;
-        }
+    private void navigateToPendingList() {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.PendingListFragment, args);
     }
 
-    private void viewSelected() {
+    //TO DO
+    private void editEvent() {
+        Toast.makeText(getContext(), "Edit Event clicked", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Handles sending Announcements to different user lists
+     *
+     * @param event The event to send announcements for
+     */
+    private void sendAnnouncementPage(Event event) {
         Bundle args = new Bundle();
-        event.setWaitingList(event.getEnrolledList());
         args.putSerializable("event", event);
 
         // Use NavController from the parent fragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.NotificationSenderFragment, args);
+    }
+
+    /**
+     * Logic to view waitlists of the event.
+     */
+    private void viewWaitlist(Event event) {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+        String listType = "waiting";
+        args.putString("listType", listType);
+
         NavController navController = Navigation.findNavController(getParentFragment().requireView());
         navController.navigate(R.id.waitlistFragment, args);
     }
 
     /**
-     * Logic to send an announcement for the event.
+     * Logic to view enrolled attendees of the event.
      */
-    private void sendAnnouncement(String eventId, String title, String message) {
-        if (eventId == null || title == null || message == null) {
-            Toast.makeText(getContext(), "Invalid event details. Cannot send announcement.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    private void viewEnrolled(Event event) {
+        Bundle args = new Bundle();
+        // Add the event and list type as arguments
+        args.putSerializable("event", event);
+        String listType = "enrolled";
+        args.putString("listType", listType);
 
-        String channelId = "EventChannel_" + eventId; // Use the eventId to identify the channel
-
-        // Create a Notification Manager
-        NotificationManager notificationManager =
-                (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // For Android 8.0+ (Oreo and above), create a notification channel dynamically
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(
-                    channelId,
-                    "Event Updates for " + eventId,
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            notificationChannel.setDescription("Notifications for updates on event " + eventId);
-            notificationManager.createNotificationChannel(notificationChannel);
-        }
-
-        // Create the notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getContext(), channelId)
-                .setSmallIcon(R.drawable.logo) // Replace with your app's notification icon
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-
-        // Show the notification
-        notificationManager.notify(eventId.hashCode(), notificationBuilder.build()); // Use eventId's hash as a unique ID
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
     }
 
     /**
      * Logic to view attendees of the event.
      */
-    private void viewCancelled() {
+    private void viewCancelled(Event event) {
         Bundle args = new Bundle();
-        event.setWaitingList(event.getCancelledList());
         args.putSerializable("event", event);
+        String listType = "cancelled";
+        args.putString("listType", listType);
+
+        Log.d("EventOptionsDialog", "Cancelled List: " + event.getCancelledList());
 
         // Use NavController from the parent fragment
         NavController navController = Navigation.findNavController(getParentFragment().requireView());
         navController.navigate(R.id.waitlistFragment, args);
     }
 
-    /**
-     * Logic to view the event location on a map.
-     */
-    private void viewMap() {
-        // Add your logic to view the event location on a map
-        Toast.makeText(getContext(), "View Map clicked", Toast.LENGTH_SHORT).show();
-    }
+    private void initiateLottery() {
+        ArrayList<User> Lottery_waitlist = new ArrayList<>(event.getWaitingList()); // Copy to avoid modifying the original list
 
-    /**
-     * Logic to show the event's check-in code (e.g., generating a QR code).
-     */
-    private void showCheckinCode() {
-        if (event == null || event.getEventId() == null) {
-            Log.e("EventOptionsDialog", "Event or Event ID is null");
-            Toast.makeText(requireContext(), "No event data available", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Show a popup dialog to specify the number of attendees to select
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Choose Number of Attendees, " + Lottery_waitlist.size() + " available");
 
-        String eventId = event.getEventId();
-        Log.d("EventOptionsDialog", "Fetched Event ID: " + eventId);
+        final EditText input = new EditText(requireContext());
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER); // Restricting inputs to numbers
+        builder.setView(input);
 
-        // Hash the event ID
-        String hashedEventId = QRCodeUtil.hashText(eventId);
-        if (hashedEventId == null) {
-            Log.e("EventOptionsDialog", "Failed to hash Event ID.");
-            Toast.makeText(requireContext(), "Failed to process Event ID.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        builder.setPositiveButton("Confirm", (dialog, which) -> {
+            String inputText = input.getText().toString();
+            if (inputText.isEmpty()) {
+                Toast.makeText(requireContext(), "Please enter a valid number.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        Log.d("EventOptionsDialog", "Hashed Event ID: " + hashedEventId);
+            // This is just a invalid input checker
+            int numUsersToSelect;
+            try {
+                numUsersToSelect = Integer.parseInt(inputText);
+            } catch (NumberFormatException e) {
+                Toast.makeText(requireContext(), "Invalid number entered.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        // Generate QR code bitmap
-        Bitmap qrCodeBitmap = QRCodeUtil.generateQRCode(hashedEventId);
-        if (qrCodeBitmap == null) {
-            Log.e("EventOptionsDialog", "QR Code generation failed.");
-            Toast.makeText(requireContext(), "QR Code generation failed.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            if (numUsersToSelect > Lottery_waitlist.size()) {
+                Toast.makeText(requireContext(), "Not enough attendees on the waitlist.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        // Display QR Code in a dialog
-        showQRCodeInDialog(qrCodeBitmap);
-    }
+            ArrayList<User> selectedAttendees = new ArrayList<>();
+            for (int i = 0; i < numUsersToSelect; i++) {
+                int randomIndex = (int) (Math.random() * Lottery_waitlist.size());
+                User selectedUser = Lottery_waitlist.remove(randomIndex); // Remove to prevent duplicates
+                selectedAttendees.add(selectedUser);
+            }
 
-    private void generateEventCode() {
-        if (event == null || event.getEventId() == null) {
-            Log.e("EventOptionsDialog", "Event or Event ID is null");
-            Toast.makeText(requireContext(), "No event data available to generate event code.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            for (User winner : selectedAttendees) {
+                Lottery_waitlist.add(winner);
+                event.setPendingList(Lottery_waitlist); // Add to the pending list
+                Log.d("InitiateLottery", "Winner selected: " + winner.getFirstName() + " " + winner.getLastName());
+            }
 
-        String eventId = event.getEventId();
-        Log.d("EventOptionsDialog", "Generating event code for Event ID: " + eventId);
+            // Notify the organizer
+            String successMessage = numUsersToSelect + " attendee(s) successfully registered.";
+            Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show();
 
-        // Hash the event ID
-        String hashedEventId = QRCodeUtil.hashText(eventId);
-        if (hashedEventId == null) {
-            Log.e("EventOptionsDialog", "Failed to hash Event ID.");
-            Toast.makeText(requireContext(), "Failed to generate event code.", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Lottery Winners")
+                    .setMessage("The following attendees have been selected:\n" +
+                            selectedAttendees.stream()
+                                    .map(user -> user.getFirstName() + " " + user.getLastName())
+                                    .reduce("", (a, b) -> a + "\n" + b))
+                    .setPositiveButton("OK", (winnerDialog, whichWinner) -> winnerDialog.dismiss())
+                    .create()
+                    .show();
 
-        Log.d("EventOptionsDialog", "Generated Hashed Event ID: " + hashedEventId);
+            event.setPendingList(Lottery_waitlist);
+            Database.getDB().insertEvent(event);
+        });
 
-        // Upload the hashed event ID to the database
-        uploadQRHashToDatabase(hashedEventId, event);
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
     }
 
     private void uploadQRHashToDatabase(String qrHash, Event event) {
@@ -296,49 +265,123 @@ public class EventOptionsDialogFragment extends DialogFragment {
         Log.d("EventOptionsDialog", "QR Code displayed in dialog successfully.");
     }
 
-
     /**
-     * Logic to delete the event, potentially by calling an API or updating the database.
+     * Logic for generating a QR code).
      */
-    private void deleteEvent() {
-        // Add your logic to delete the event
-        Toast.makeText(getContext(), "Delete Event clicked", Toast.LENGTH_SHORT).show();
-    }
-
-    private void viewWaitlist() {
-        Bundle args = new Bundle();
-        args.putSerializable("event", event);
-
-        // Use NavController from the parent fragment
-        NavController navController = Navigation.findNavController(getParentFragment().requireView());
-        navController.navigate(R.id.waitlistFragment, args);
-    }
-
-
-    private void initiateLottery() {
-        if (event == null || event.getWaitingList() == null || event.getWaitingList().isEmpty()) {
-            Toast.makeText(requireContext(), "Cannot initiate a lottery. Waitlist is empty or missing.", Toast.LENGTH_SHORT).show();
+    private void generateEventCode() {
+        if (event == null || event.getEventId() == null) {
+            Log.e("EventOptionsDialog", "Event or Event ID is null");
+            Toast.makeText(requireContext(), "No event data available to generate event code.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        ArrayList<User> waitlist = event.getWaitingList();
+        String eventId = event.getEventId();
+        Log.d("EventOptionsDialog", "Generating event code for Event ID: " + eventId);
 
-        // Simple random lottery logic
-        int winnerIndex = (int) (Math.random() * waitlist.size());
-        User winner = waitlist.get(winnerIndex);
+        // Hash the event ID
+        String hashedEventId = QRCodeUtil.hashText(eventId);
+        if (hashedEventId == null) {
+            Log.e("EventOptionsDialog", "Failed to hash Event ID.");
+            Toast.makeText(requireContext(), "Failed to generate event code.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Notify the winner and log
-        String winnerMessage = "Congratulations! " + winner.getFirstName() + " " + winner.getLastName() + " has won the lottery.";
-        Log.d("EventOptionsDialog", "Lottery Winner: " + winnerMessage);
+        Log.d("EventOptionsDialog", "Generated Hashed Event ID: " + hashedEventId);
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Lottery Winner")
-                .setMessage(winnerMessage)
-                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
-                .create()
-                .show();
+        // Upload the hashed event ID to the database
+        uploadQRHashToDatabase(hashedEventId, event);
+    }
 
-        // Optionally, update the event or database with the winner's details
-        // database.updateLotteryWinner(event.getEventId(), winner);
+    /**
+     * Logic to view the event location on a map.
+     */
+    private void viewMap(Event event) {
+        // Show a Toast message
+        Toast.makeText(getContext(), "View Map clicked", Toast.LENGTH_SHORT).show();
+
+        // Create a Bundle and put the Event object inside it
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);  // Put the event object as a Parcelable
+
+        // Use NavController to navigate to the MarkedMapFragment
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.action_eventDetailsFragment_to_markedMapFragment, args);
+    }
+
+    /**
+     * Logic for showing the event's current QR code
+     */
+    private void showCheckinCode() {
+        if (event == null || event.getEventId() == null) {
+            Log.e("EventOptionsDialog", "Event or Event ID is null");
+            Toast.makeText(requireContext(), "No event data available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String eventId = event.getEventId();
+        Log.d("EventOptionsDialog", "Fetched Event ID: " + eventId);
+
+        // Hash the event ID
+        String hashedEventId = QRCodeUtil.hashText(eventId);
+        if (hashedEventId == null) {
+            Log.e("EventOptionsDialog", "Failed to hash Event ID.");
+            Toast.makeText(requireContext(), "Failed to process Event ID.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d("EventOptionsDialog", "Hashed Event ID: " + hashedEventId);
+
+        // Generate QR code bitmap
+        Bitmap qrCodeBitmap = QRCodeUtil.generateQRCode(hashedEventId);
+        if (qrCodeBitmap == null) {
+            Log.e("EventOptionsDialog", "QR Code generation failed.");
+            Toast.makeText(requireContext(), "QR Code generation failed.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Display QR Code in a dialog
+        showQRCodeInDialog(qrCodeBitmap);
+    }
+
+    /**
+     * Handles the selection of an option from the event options dialog.
+     *
+     * @param optionIndex The index of the selected option.
+     */
+    private void handleOptionSelection(int optionIndex) {
+        switch (optionIndex) {
+            case 0:
+                showCheckinCode();
+                break;
+            case 1:
+                generateEventCode();
+                break;
+            case 2:
+                sendAnnouncementPage(event);
+                break;
+            case 3: // View Waitlist
+                viewWaitlist(event);
+                break;
+            case 4:
+                viewEnrolled(event);
+                break;
+            case 5:
+                viewCancelled(event);
+                break;
+            case 6:
+                viewMap(event);
+                break;
+            case 7: // Initiate Lottery
+                initiateLottery();
+                break;
+            case 8: // edit the event information and the poster
+                editEvent();
+                break;
+            case 9:
+                navigateToPendingList();
+                break;
+            default:
+                break;
+        }
     }
 }

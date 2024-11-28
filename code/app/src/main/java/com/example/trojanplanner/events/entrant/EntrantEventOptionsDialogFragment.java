@@ -9,14 +9,19 @@ import android.widget.Toast;
 
 import androidx.fragment.app.DialogFragment;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.User;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
- * A DialogFragment for entrants to manage event options, specifically notification preferences.
+ * A DialogFragment for entrants to manage event options.
  */
 public class EntrantEventOptionsDialogFragment extends DialogFragment {
 
@@ -63,12 +68,61 @@ public class EntrantEventOptionsDialogFragment extends DialogFragment {
 
         builder.setTitle("Event Options")
                 .setItems(R.array.entrant_event_options, (dialog, which) -> {
-                    if (which == 0) {
-                        toggleNotificationPreference();
+                    switch (which){
+                        case 0:
+                            toggleNotificationPreference();
+                            break;
+                        case 1:
+                            leaveWaitlist();
                     }
                 });
 
         return builder.create();
+    }
+
+    private void leaveWaitlist(){
+        if (event.getWaitingList() == null || event.getWaitingList().isEmpty()
+                || ((Entrant)App.currentUser).getCurrentWaitlistedEvents() == null
+                || ((Entrant)App.currentUser).getCurrentWaitlistedEvents().isEmpty())
+        {
+            Toast.makeText(getContext(), "No waitlist found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ArrayList<User> waitlist = event.getWaitingList();
+        ArrayList<Event> waitlistEvents = ((Entrant)App.currentUser).getCurrentWaitlistedEvents();
+        boolean userRemoved = false;
+        boolean eventRemoved = false;
+        for (User entrant: waitlist) {
+            if (entrant.getDeviceId().equals(App.deviceId)){
+                waitlist.remove((entrant));
+                event.setWaitingList(waitlist);
+                Database.getDB().insertEvent(event);
+                userRemoved = true;
+                break;
+            }
+        }
+
+        for (Event waitlistedEvent: waitlistEvents){
+            if (waitlistedEvent.getEventId().equals(event.getEventId())){
+                waitlistEvents.remove(waitlistedEvent);
+                Database.getDB().insertUserDocument(App.currentUser);
+                eventRemoved = true;
+                break;
+            }
+        }
+
+        if (userRemoved && eventRemoved) {
+            Toast.makeText(getContext(), "You have left the waitlist.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "Failed to leave the waitlist.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        App.sendAnnouncement(App.currentUser.getDeviceId(), event.getName(), "You have left the waitlist.");
+        // Dismiss the dialog and navigate up
+        dismiss();
+        requireActivity().getSupportFragmentManager().popBackStack();
     }
 
     /**
@@ -88,7 +142,7 @@ public class EntrantEventOptionsDialogFragment extends DialogFragment {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             isSubscribed = false;
-                            Toast.makeText(getContext(), "Unsubscribed from event notifications.", Toast.LENGTH_SHORT).show();
+                            Log.d("Notifications", "Successfully unsubscribed from notifications for event: " + eventId);
                         } else {
                             Log.e("Notifications", "Failed to unsubscribe from notifications: " + task.getException());
                             Toast.makeText(getContext(), "Failed to unsubscribe.", Toast.LENGTH_SHORT).show();
@@ -100,7 +154,7 @@ public class EntrantEventOptionsDialogFragment extends DialogFragment {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             isSubscribed = true;
-                            Toast.makeText(getContext(), "Subscribed to event notifications.", Toast.LENGTH_SHORT).show();
+                            Log.d("Notifications", "Successfully subscribed for event: " + eventId);
                         } else {
                             Log.e("Notifications", "Failed to subscribe to notifications: " + task.getException());
                             Toast.makeText(getContext(), "Failed to subscribe.", Toast.LENGTH_SHORT).show();

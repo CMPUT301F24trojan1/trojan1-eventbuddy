@@ -1,11 +1,16 @@
 <resources>
     <string name="splash_description">Trojan Planner welcome page logo</string>
-    <string name="welcomeText">Testing if it\'s running</string>
-    <string name="welcomeSubtext"></string>
+    <string name="welcomeText">Welcome to Trojan Planner</string>
+    <string name="welcomeSubtext">Connecting You to Unforgettable Events!</string>
     <string name="app_name">TrojanPlanner</string>
     <string name="title_events">MyEvents</string>
     <string name="title_qr">QR Scanner</string>
     <string name="title_profile">Profile</string>
+    <string name="admin_home">Home</string>
+    <string name="admin_facilities">Facilities</string>
+    <string name="admin_users">Users</string>
+    <string name="admin_images">Images</string>
+    <string name="admin_profile">Profile</string>
 
     <string name="firebase_storage_upload_success">Storage upload successful!</string>
     <string name="firebase_storage_upload_fail">Storage upload failed, try again later</string>
@@ -15,16 +20,22 @@
 
 
     <string-array name="event_options">
-        <item>Send Announcement</item>
-        <item>View Cancelled</item>
-        <item>View Map</item>
         <item>Show Check-In Code</item>
         <item>Generate Event Code</item>
-        <item>Delete Event</item>
-        <item>View Waitlist</item>
+        <item>Send Announcement</item>
+        <item>View Event Waitlist</item>
+        <item>View Selected Entrants</item>
+        <item>View Cancelled Entrants</item>
+        <item>View Map of Entrants</item>
         <item>Initiate Lottery</item>
-        <item>Update Event Poster</item>
-        <item>View Selected</item>
+        <item>Edit Events</item>
+        <item>View Pending List</item>
     </string-array>
 
+    <!-- Spinner options -->
+    <string-array name="notification_types">
+        <item>Current Waitlist</item>
+        <item>Selected Entrants</item>
+        <item>Cancelled Entrants</item>
+    </string-array>
 </resources>

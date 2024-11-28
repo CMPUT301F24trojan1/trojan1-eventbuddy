@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.EventDetailsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
@@ -16,7 +15,7 @@ import com.example.trojanplanner.model.Entrant;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.example.trojanplanner.model.Event;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -30,7 +29,6 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-
 
     private Database database;
 
@@ -49,20 +47,14 @@ public class MainActivity extends AppCompatActivity {
         facilityPhotoPicker.initPhotoPicker();
 
 
+        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
+        if (App.currentUser == null) {
+            // Get/check entrant from db based on device ID (note: this is async)
+            getEntrantFromDeviceId(App.deviceId); // Redirects if no entrant exists!
+        }
 
         setupNavigation();
 
-    }
-
-    private void navigateToEventDetailsFragment(Event event) {
-        System.out.println("Navigating to EventDetailsFragment with event: " + event.getName());
-        // Create the EventDetailsFragment and pass the event data
-        EventDetailsFragment eventDetailsFragment = EventDetailsFragment.newInstance(event, (Entrant) App.currentUser);
-
-        // Replace the current fragment with EventDetailsFragment
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, eventDetailsFragment) // R.id.fragment_container is your fragment container
-                .commit();
     }
 
     /**
@@ -81,9 +73,10 @@ public class MainActivity extends AppCompatActivity {
                  System.out.println("getEntrantFromDeviceId success! current user: " + currentEntrant.getFirstName() + " " + currentEntrant.getLastName());
                  Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
                  myToast.show();
+                 System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
 
-
-                 // Check if the user has any events // TODO does this really work? they should return an empty arraylist if empty, not null
+                 // TODO: populate events array
+                 // Check if the user has any events
                  if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
                          (currentEntrant.getCurrentPendingEvents() == null || currentEntrant.getCurrentPendingEvents().isEmpty())) {
                      // Show the EmptyEventsFragment if no events are found
@@ -113,28 +106,25 @@ public class MainActivity extends AppCompatActivity {
         database.getEntrant(successAction, failureAction, deviceId);
     }
 
-    // Likely unnecessary function now because the pfp should be collected in the WelcomeActivity
-    public void getUserPfp() {
-        System.out.println("Getting user's PFP bitmap...");
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
-            @Override
-            public void OnSuccess(Object object) {
-                byte[] bytes = (byte[]) object;
-                Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                App.currentUser.setPfpBitmap(decodedImage);
-                System.out.println("success!! User pfp bitmap received!");
-            }
-        };
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
-            @Override
-            public void OnFailure() {
-                System.out.println("NOOOOOOOOOOOOOOOOO user pfp bitmap query failed");
-            }
-        };
-
-        database.downloadImage(successAction, failureAction, App.currentUser.getPfpFilePath());
-    }
-
+//    public void getUserPfp() {
+//        System.out.println("Getting user's PFP bitmap...");
+//        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+//            @Override
+//            public void onSuccess(byte[] bytes) {
+//                Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//                App.currentUser.setPfpBitmap(decodedImage);
+//                System.out.println("success!! User pfp bitmap received!");
+//            }
+//        };
+//        OnFailureListener failureListener = new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                System.out.println("NOOOOOOOOOOOOOOOOO user pfp bitmap query failed");
+//            }
+//        };
+//
+//        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
+//    }
 
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.
@@ -181,12 +171,14 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             } else if (item.getItemId() == R.id.qrActivity) {
                 Intent intent = new Intent(MainActivity.this, QRActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                // Clear any savedInstanceState SO to not cause a crash due to Bundle size being too big
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 return true;
             } else if (item.getItemId() == R.id.profileActivity) {
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                // Clear any savedInstanceState SO to not cause a crash due to Bundle size being too big
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 return true;
             }

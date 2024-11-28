@@ -25,8 +25,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
-
-
     public PhotoPicker photoPicker;
     public ProfileFragment profileFragment;
     private Database database;
@@ -66,6 +64,30 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
 
+//    /**
+//     * Sets an action on image retrieval to set the profile picture of the fragment.
+//     * This function is only called if the MainActivity user profile retrieval is not finished yet.
+//     * @author Jared Gourley
+//     */
+//    private void getIncomingPfp() {
+//        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+//            @Override
+//            public void onSuccess(byte[] bytes) {
+//                // Assume that the MainActivity call set the user attribute already, we just want to reset state
+//                profileFragment.resetState(App.currentUser);
+//            }
+//        };
+//        OnFailureListener failureListener = new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                ; // Should never happen: user pfp filepath attribute should point to valid bitmap
+//            }
+//        };
+//
+//        // Add the actions to the query
+//        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
+//    }
+
 
     /**
      * Sets up the navigation for the BottomNavigationView.
@@ -95,7 +117,7 @@ public class ProfileActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.navigation_home) {
                 if (App.currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                    // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
                 }
@@ -103,7 +125,7 @@ public class ProfileActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.qrActivity) {
                 if (App.currentUser != null) {
                     Intent intent = new Intent(ProfileActivity.this, QRActivity.class);
-                    // Bundle attributes to be passed here i.e. intent.putExtra(...)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
                 }

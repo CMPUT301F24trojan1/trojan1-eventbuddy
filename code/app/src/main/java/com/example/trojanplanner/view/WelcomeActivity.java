@@ -1,12 +1,18 @@
 package com.example.trojanplanner.view;
 
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,9 +24,10 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.R;
+import com.google.firebase.messaging.FirebaseMessaging;
+
 
 public class WelcomeActivity extends AppCompatActivity {
-
     private ProgressBar progressBar;
 
     @Override
@@ -28,6 +35,9 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_welcome);
+
+        //addtoNotifications("testing"); // Subscribe to the "default" topic
+        //sendAnnouncement("testing", "Please work", "please bro");
 
         progressBar = findViewById(R.id.progressBar);
         View funnyTextView = findViewById(R.id.funnyTextView);
@@ -66,8 +76,11 @@ public class WelcomeActivity extends AppCompatActivity {
             @Override
             public void OnSuccess(Object object) {
                 App.currentUser = (Entrant) object;  // Set the current user
-
-                // If user exists, proceed to MainActivity
+                requestNotificationPermission(); // Request notification permission
+                addtoNotifications(App.currentUser.getDeviceId());
+                Toast.makeText(WelcomeActivity.this, "Welcome back, " + App.currentUser.getFirstName() + "!", Toast.LENGTH_SHORT).show();
+                addtoNotifications("organizer" + App.currentUser.getDeviceId());
+                addtoNotifications("admin" + App.currentUser.getDeviceId());
                 startMainActivity();
             }
         };
@@ -94,7 +107,38 @@ public class WelcomeActivity extends AppCompatActivity {
     private void startProfileActivity() {
         progressBar.setVisibility(View.GONE); // Hide progress bar
         Intent intent = new Intent(WelcomeActivity.this, ProfileActivity.class);
+        requestNotificationPermission(); // Request notification permission
+        addtoNotifications("default"); // Subscribe to the "default" topic
         startActivity(intent); // Start the ProfileActivity for profile creation
         finish(); // Finish the WelcomeActivity to remove it from the back stack
+    }
+
+    private void addtoNotifications(String topic) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Notifications", "Successfully subscribed to the topic: " + topic);
+                    } else {
+                        Log.e("Notifications", "Failed to subscribe to the topic: " + topic + ". Error: " + task.getException());
+                    }
+                });
+    }
+
+    private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1;
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Check if the app has notification permission
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (!notificationManager.areNotificationsEnabled()) {
+                // Permission not granted, ask user to allow notifications
+                Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+                startActivityForResult(intent, NOTIFICATION_PERMISSION_REQUEST_CODE);
+            }
+        } else {
+            // For Android 12 and below, the permission is granted by default.
+            Log.d("Notifications", "No need to request permission for notifications");
+        }
     }
 }

@@ -3,6 +3,8 @@ package com.example.trojanplanner.model;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.NonNull;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,7 +31,6 @@ public class SerialBitmap implements Serializable {
         else {
             this.byteArray = null;
         }
-
     }
 
     // Getter to retrieve Bitmap

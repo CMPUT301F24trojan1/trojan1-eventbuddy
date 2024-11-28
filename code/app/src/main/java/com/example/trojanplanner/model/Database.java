@@ -1,16 +1,12 @@
 package com.example.trojanplanner.model;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-
+import com.google.android.gms.maps.model.LatLng;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.R;
@@ -19,21 +15,29 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.AggregateQuery;
+import com.google.firebase.firestore.AggregateSource;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A class that handles adding/querying/modifying/removing documents from the Firestore Database,
@@ -96,7 +100,7 @@ public class Database {
         return database;
     }
 
- // ========================= (private) Constructors ==========================
+    // ========================= (private) Constructors ==========================
     /**
      * The default constructor which creates a working Database object
      */
@@ -370,7 +374,6 @@ public class Database {
         }
     };
 
-
     /**
      * Downloads a file from Firebase Storage with the given path. Executes the function defined in
      * successListener on success and the function defined in failureListener on failure.
@@ -417,7 +420,6 @@ public class Database {
         };
         downloadImage(successListener, failureListener, filePath, false);
     }
-
 
     // ===================== Add documents to Firestore Database =====================
 
@@ -497,9 +499,18 @@ public class Database {
             userMap.put("currentDeclinedEvents", convertEventArrayToDocRefs(entrant.getCurrentDeclinedEvents()));
             userMap.put("currentPendingEvents", convertEventArrayToDocRefs(entrant.getCurrentPendingEvents()));
         } else if (user.getClass() == Organizer.class) {
-            userMap.put("createdEvents", convertEventArrayToDocRefs( ((Organizer) user).getCreatedEvents() ));
-        } // (no special attributes for admins)
+            Organizer organizer = (Organizer) user;
+            userMap.put("createdEvents", convertEventArrayToDocRefs( organizer.getCreatedEvents() ));
 
+            DocumentReference facilityRef;
+            if (organizer.getFacility() != null) {
+                facilityRef = db.document("facilities/" + organizer.getFacility().getFacilityId());
+            }
+            else {
+                facilityRef = null;
+            }
+            userMap.put("facility", facilityRef);
+        } // (no special attributes for admins)
 
         db.collection("users")
                 .document(user.getDeviceId())
@@ -657,6 +668,7 @@ public class Database {
         Map<String, Object> facilityMap = new HashMap<>();
         facilityMap.put("facilityID", facility.getFacilityId());
         facilityMap.put("name", facility.getName());
+        facilityMap.put("location", facility.getLocation());
         facilityMap.put("facilityPhoto", facility.getPfpFacilityFilePath());
 
         DocumentReference ownerRef;
@@ -823,32 +835,41 @@ public class Database {
 
         // Create incomplete entrant objects from document id
         ArrayList<User> userArray = new ArrayList<User>();
-        if (m.get("enrolledList") != null) {
-            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("enrolledList")) {
+        if (m.get("enrolledlist") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("enrolledlist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+            Log.d("unpackEventMap", "Enrolled List: " + userArray);
         }
+        Log.d("unpackEventMap", "Enrolled List is empty");
         event.setEnrolledList(userArray);
         userArray = new ArrayList<User>(); // This instead of .clear in case it clears the entrant current enrolled array because same reference
-        if (m.get("pendingList") != null) {
-            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("pendingList")) {
+        if (m.get("pendinglist") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("pendinglist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+            Log.d("unpackEventMap", "Pending List: " + userArray);
         }
+        Log.d("unpackEventMap", "Pending List is empty");
         event.setPendingList(userArray);
         userArray = new ArrayList<User>();
         if (m.get("waitlist") != null) {
             for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("waitlist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+            Log.d("unpackEventMap", "Waitlist: " + userArray);
         }
+        Log.d("unpackEventMap", "WaitList is empty ");
         event.setWaitingList(userArray);
         userArray = new ArrayList<User>();
-        if (m.get("cancelledList") != null) {
-            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("cancelledList")) {
+        if (m.get("cancelledlist") != null) {
+            for (DocumentReference userDocRef : (ArrayList<DocumentReference>) m.get("cancelledlist")) {
                 userArray.add(new Entrant(getIdFromDocRef(userDocRef)));
             }
+
+            Log.d("unpackEventMap", "Cancelled List: " + userArray);
         }
+        Log.d("unpackEventMap", "Cancelled List is empty ");
         event.setCancelledList(userArray);
 
         return event;
@@ -870,7 +891,7 @@ public class Database {
      * @param facility If non-null, use this facility instead of querying for it (prevents infinite loop)
      * @author Jared Gourley
      */
-    public void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId, boolean escapeSharing, Facility facility) {
+    private void getEvent(@NonNull QuerySuccessAction successAction, @NonNull QueryFailureAction failureAction, String eventId, boolean escapeSharing, Facility facility) {
         if (!escapeSharing) { // escapeSharing can only be set true by the Database class itself for backdoor functionality
             // If this query is already happening, simply add listeners instead of re-running
             if (activeEventQuery != null && activeEventQuery == eventId) {
@@ -890,6 +911,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get event " + eventId);
 
         DocumentReference docRef = db.collection("events").document(eventId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1034,7 +1056,7 @@ public class Database {
                         getFacility(queryTrackerSuccess, queryTrackerFailure, event.getFacility().getFacilityId(), true, null, false);
                     }
                     if (pfpNeeded) {
-                        System.out.println("Launching query for event photo: " + event.getFacility().getFacilityId());
+                        System.out.println("Launching query for event photo: " + event.getPictureFilePath());
                         downloadImage(queryTrackerSuccess, queryTrackerFailure, event.getPictureFilePath());
                     }
 
@@ -1117,6 +1139,8 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentAcceptedEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+
+            Log.d("unpackEntrantMap", "Current Accepted Events: " + eventArray);
         }
         entrant.setCurrentEnrolledEvents(eventArray);
         eventArray = new ArrayList<Event>(); // This instead of .clear in case it clears the entrant current enrolled array because same reference
@@ -1124,6 +1148,7 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentPendingEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+            Log.d("unpackEntrantMap", "Current Pending Events: " + eventArray);
         }
         entrant.setCurrentPendingEvents(eventArray);
         eventArray = new ArrayList<Event>();
@@ -1131,6 +1156,7 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentWaitlistedEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+            Log.d("unpackEntrantMap", "Current Waitlisted Events: " + eventArray);
         }
         entrant.setCurrentWaitlistedEvents(eventArray);
         eventArray = new ArrayList<Event>();
@@ -1138,6 +1164,7 @@ public class Database {
             for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentDeclinedEvents")) {
                 eventArray.add(new Event(getIdFromDocRef(eventDocRef)));
             }
+            Log.d("unpackEntrantMap", "Current Declined Events: " + eventArray);
         }
         entrant.setCurrentDeclinedEvents(eventArray);
 
@@ -1183,6 +1210,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get entrant " + androidId);
 
         DocumentReference docRef = db.collection("users").document(androidId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1231,7 +1259,7 @@ public class Database {
                 if (loadPfp && entrant.getPfpFilePath() != null) {
                     subQueryCount += 1;
                 }
-                
+
                 if (subQueryCount > 0) {
                     QueryTracker queryTracker = new QueryTracker(subQueryCount);
 
@@ -1288,7 +1316,7 @@ public class Database {
                             return;
                         }
                     };
-                    
+
                     // Launch queries
                     if (expandEvents) {
                         for (Event event : entrant.getCurrentEnrolledEvents()) {
@@ -1309,6 +1337,7 @@ public class Database {
                         }
                     }
                     if (loadPfp && entrant.getPfpFilePath() != null) {
+                        System.out.println("Launching query for entrant pfp: " + entrant.getPfpFilePath());
                         downloadImage(queryTrackerSuccess, queryTrackerFailure, entrant.getPfpFilePath());
                     }
 
@@ -1321,10 +1350,10 @@ public class Database {
                         successAction.OnSuccess(entrant);
                     }
                 }
-                
+
 
             }
-            
+
 
         });
 
@@ -1408,9 +1437,7 @@ public class Database {
         // Get id of facility document and then split on the / character to remove the collection name
         Facility facility;
         if ((DocumentReference) m.get("facility") != null) {
-            String[] facilityIdPath = ((DocumentReference) m.get("facility")).getId().split("/");
-            String facilityId = facilityIdPath[facilityIdPath.length - 1];
-            facility = new Facility(facilityId);
+            facility = new Facility(getIdFromDocRef((DocumentReference) m.get("facility")));
         }
         else {
             facility = null;
@@ -1468,7 +1495,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
-        System.out.println("finalEscapeSharing: " + finalEscapeSharing);
+        System.out.println("Requesting to get organizer " + androidId);
 
         DocumentReference docRef = db.collection("users").document(androidId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1521,14 +1548,15 @@ public class Database {
                 }
                 // Only send subqueries for events if expandEvents is true, else leave them as only eventIds
                 if (expandEvents && organizer.getCreatedEvents().size() > 0) {
-                     createdEventsNeeded = true;
-                     subQueryCount += organizer.getCreatedEvents().size();
+                    createdEventsNeeded = true;
+                    subQueryCount += organizer.getCreatedEvents().size();
                 }
                 if (organizer.getPfpFilePath() != null) {
                     pfpNeeded = true;
                     subQueryCount += 1;
                 }
 
+                System.out.println("SubQueryCount: " + subQueryCount);
                 // If we need to run subqueries, run them all and the last one to finish will trigger the listeners
                 if (subQueryCount > 0) {
                     QueryTracker queryTracker = new QueryTracker(subQueryCount);
@@ -1596,16 +1624,17 @@ public class Database {
                     };
 
                     if (facilityNeeded) {
-                        //System.out.println("Launching query for facility: " + organizer.getFacility().getFacilityId());
+                        System.out.println("Launching query for facility: " + organizer.getFacility().getFacilityId());
                         expandFacilityAttribute(queryTrackerSuccess, queryTrackerFailure, organizer, true); // TODO i think making this funciton was overrated i could just call getFacility directly
                     }
                     if (createdEventsNeeded) {
                         for (Event event : organizer.getCreatedEvents()) {
-                            //System.out.println("Launching query for event: " + event.getEventId());
+                            System.out.println("Launching query for event: " + event.getEventId());
                             getEvent(queryTrackerSuccess, queryTrackerFailure, event.getEventId(), true, new Facility("0")); // Pass a fake facility just so the event doesn't go query for it
                         }
                     }
                     if (pfpNeeded) {
+                        System.out.println("Launching query for organizer pfp: " + organizer.getPfpFilePath());
                         downloadImage(queryTrackerSuccess, queryTrackerFailure, organizer.getPfpFilePath());
                     }
 
@@ -1770,6 +1799,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get admin " + androidId);
 
         DocumentReference docRef = db.collection("users").document(androidId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1779,8 +1809,8 @@ public class Database {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Admin admin = unpackAdminMap(document.getData());
-                        if (admin != null) {
-                            // Send success signals // TODO get pfp if we ever need it?
+                        if (admin != null) { // TODO get pfp if we ever need it?
+                            // Send success signals
                             if (!finalEscapeSharing) {
                                 sendToAdminListeners(admin, true);
                             } else {
@@ -1878,7 +1908,7 @@ public class Database {
         else {
             owner = null;
         }
-        
+
         Facility facility = new Facility((String) facilityMap.get("name"), (String) facilityMap.get("facilityID"), (String) facilityMap.get("location"), owner, (String) facilityMap.get("facilityPhoto"));
 
         return facility;
@@ -1887,7 +1917,7 @@ public class Database {
 
     /**
      * (Private method so that other classes cannot escape sharing - wrapper method enforces this)
-     * Gets a facility document from the Firestore Database if the given facilityId exists. 
+     * Gets a facility document from the Firestore Database if the given facilityId exists.
      * This action is asynchronous and so the class calling this must initialize a
      * QuerySuccessAction and QueryFailureAction and pass it into the function to determine what
      * action should be taken when receiving the results. On a success, the facility object can be
@@ -1921,6 +1951,7 @@ public class Database {
             }
         }
         final boolean finalEscapeSharing = escapeSharing; // because of https://stackoverflow.com/questions/14425826/variable-is-accessed-within-inner-class-needs-to-be-declared-final
+        System.out.println("Requesting to get facility " + facilityId);
 
         DocumentReference docRef = db.collection("facilities").document(facilityId);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -1958,7 +1989,8 @@ public class Database {
                     return;
                 }
 
-                // Now that we have the facility object, either send success signals or expand the owner/pfp if needed
+                // Now that we have the facility object, either send success signals or expand the owner if needed
+
                 boolean ownerNeeded = false;
                 boolean pfpNeeded = false;
                 int subQueryCount = 0;
@@ -1975,11 +2007,9 @@ public class Database {
                     pfpNeeded = true;
                     subQueryCount += 1;
                 }
-
                 // If we need to run subqueries, run them all and the last one to finish will trigger the listeners
                 if (subQueryCount > 0) {
                     QueryTracker queryTracker = new QueryTracker(subQueryCount);
-
                     QuerySuccessAction queryTrackerSuccess = new QuerySuccessAction() {
                         @Override
                         public void OnSuccess(Object object) {
@@ -1987,7 +2017,6 @@ public class Database {
                             if (!queryTracker.stillGoing) {
                                 return;
                             }
-
                             // Actually assign the value
                             // Check the type to figure out if it's an owner or pfp
                             if (Organizer.class.isAssignableFrom(object.getClass())) {
@@ -1996,10 +2025,8 @@ public class Database {
                             else {
                                 facility.setPfpFacilityBitmap((Bitmap) object);
                             }
-
                             queryTracker.currentReceived += 1;
                             System.out.println("getFacility queryTracker.currentReceived: " + queryTracker.currentReceived);
-
                             // Call the success listeners if all sub queries finished
                             if (queryTracker.currentReceived == queryTracker.totalNeeded) {
                                 System.out.println("getFacility queryTracker finishing!");
@@ -2009,7 +2036,6 @@ public class Database {
                                     successAction.OnSuccess(facility);
                                 }
                             }
-
 
                         }
                     };
@@ -2038,7 +2064,6 @@ public class Database {
                     if (pfpNeeded) {
                         downloadImage(queryTrackerSuccess, queryTrackerFailure, facility.getPfpFacilityFilePath());
                     }
-
                 }
                 // // Otherwise just consider this a success!
                 else {
@@ -2244,11 +2269,12 @@ public class Database {
                         eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
                     }
                 }
-                if (m.get("currentDeclinedEvents") != null) {
-                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentDeclinedEvents")) {
-                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
-                    }
-                }
+                // For this use case we don't want declined events
+//                if (m.get("currentDeclinedEvents") != null) {
+//                    for (DocumentReference eventDocRef : (ArrayList<DocumentReference>) m.get("currentDeclinedEvents")) {
+//                        eventsList.add(new Event(getIdFromDocRef(eventDocRef)));
+//                    }
+//                }
 
                 if ((boolean) m.get("hasOrganizerRights") && m.get("createdEvents") != null) {
                     System.out.println();
@@ -2298,12 +2324,8 @@ public class Database {
                     @Override
                     public void OnFailure() {
                         // Mark that this query has failed so other queries should not trigger successes
-                        // If this is the first query to fail, call the failure listeners because we are done here
-                        if (queryTracker.stillGoing) {
-                            queryTracker.stillGoing = false;
-                            System.out.println("getAllEventsFromDeviceId queryTracker FAILED");
-                            failureAction.OnFailure();
-                        }
+                        System.out.println("getAllEventsFromDeviceId queryTracker FAILED");
+                        queryTracker.stillGoing = false;
                         return;
                     }
                 };
@@ -2341,7 +2363,6 @@ public class Database {
 
     public static void downloadImageTest() {
         Database database = Database.getDB();
-
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
             public void OnSuccess(Object object) {
@@ -2527,14 +2548,14 @@ public class Database {
 
             }
         };
-    
+
         Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
             @Override
             public void OnFailure() {
                 System.out.println("Query attempt failed!");
             }
         };
-    
+
         database.getOrganizer(successAction, failureAction, "testOrganizer");
     }
 
@@ -2572,10 +2593,8 @@ public class Database {
 
         database.getFacility(successAction, failureAction, "1a2b3c4567890-0001239389382");
     }
-    
-    
-    
-    
+
+
     public static void getQRTest() {
         Database database = Database.getDB();
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
@@ -2597,50 +2616,507 @@ public class Database {
     }
 
 
-    public static void getAllEventsFromDeviceIdTest() {
-        Database database = Database.getDB();
-        System.out.println("getAllEventsFromDeviceIdTest started");
+    //I added these for map - Dric
+    public void insertLocation(String eventID, String userID, double latitude, double longitude, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        // Reference to the Firestore document for the event location
+        DocumentReference eventRef = db.collection("maps").document(eventID);
 
-        Database.QuerySuccessAction successAction = new QuerySuccessAction() {
+        // Create a GeoPoint object with the provided latitude and longitude
+        GeoPoint geoPoint = new GeoPoint(latitude, longitude);
+
+        // Use a transaction to ensure the update/insert is atomic
+        db.runTransaction(transaction -> {
+            // Get the current document snapshot
+            DocumentSnapshot snapshot = transaction.get(eventRef);
+
+            // Check if the document exists
+            if (snapshot.exists()) {
+                // Retrieve the existing 'locations' map, or create a new one if null
+                Map<String, Object> locationMap = (Map<String, Object>) snapshot.get("locations");
+                if (locationMap == null) {
+                    locationMap = new HashMap<>();
+                }
+
+                // Add or update the user's location
+                locationMap.put(userID, geoPoint);
+
+                // Update the document
+                transaction.update(eventRef, "locations", locationMap);
+            } else {
+                // If the document doesn't exist, create it with the initial location data
+                Map<String, Object> initialLocationMap = new HashMap<>();
+                initialLocationMap.put(userID, geoPoint);
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("locations", initialLocationMap);
+
+                transaction.set(eventRef, data);
+            }
+
+            return null;
+        }).addOnSuccessListener(unused -> {
+            // Transaction successful
+            Log.d("FirestoreInsert", "Location successfully updated/inserted for event: " + eventID);
+            successAction.OnSuccess(null); // Pass null or any relevant result as needed
+        }).addOnFailureListener(e -> {
+            // Transaction failed
+            Log.e("FirestoreInsert", "Error updating/inserting location: " + e.getMessage(), e);
+            failureAction.OnFailure();
+        });
+    }
+
+    public void getLocation(String eventId, String userId,
+                            OnSuccessListener<LatLng> onSuccessListener,
+                            OnFailureListener onFailureListener) {
+        Log.d("FirestoreDebug", "Fetching location for eventId: " + eventId + ", userId: " + userId);
+
+        db.collection("maps").document(eventId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        DocumentSnapshot document = task.getResult();
+                        Log.d("FirestoreDebug", "Document fetched successfully for eventId: " + eventId);
+                        Log.d("FirestoreDebug", "Document data: " + document.getData());
+
+                        // Get the 'locations' field
+                        Map<String, Object> locationMap = (Map<String, Object>) document.get("locations");
+                        if (locationMap != null && locationMap.containsKey(userId)) {
+                            Object locationObject = locationMap.get(userId);
+                            if (locationObject instanceof GeoPoint) {
+                                // Handle GeoPoint
+                                GeoPoint geoPoint = (GeoPoint) locationObject;
+                                LatLng latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
+                                onSuccessListener.onSuccess(latLng);
+                            } else {
+                                onFailureListener.onFailure(new Exception("Invalid location type for user: " + userId));
+                            }
+                        } else {
+                            onFailureListener.onFailure(new Exception("User not found in location map for event: " + eventId));
+                        }
+                    } else {
+                        onFailureListener.onFailure(task.getException() != null
+                                ? task.getException()
+                                : new Exception("Failed to fetch document for event: " + eventId));
+                    }
+                });
+    }
+
+    //This WILL ONLY BE CALLED WITH THE ASSUMPTION THE ID is a organizer
+    public void getFacilityIDbyUserID(String userID, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        // Query the "users" collection for the Organizer's document using the userID
+        DocumentReference docRef = db.collection("users").document(userID);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void OnSuccess(Object object) {
-                ArrayList<Event> myEvents = (ArrayList<Event>) object;
-                for (int j = 0; j < myEvents.size(); j++) {
-                    System.out.println("Event id: " + myEvents.get(j).getEventId());
-                    System.out.println("Event name: " + myEvents.get(j).getName());
-                    System.out.println("Event description: " + myEvents.get(j).getDescription());
-                    System.out.println("Event price: " + myEvents.get(j).getPrice());
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                // Check if the query was successful
+                if (!task.isSuccessful()) {
+                    // If the query fails, handle the failure
+                    Log.d("WARN", "getOrganizer failed with ", task.getException());
+                    failureAction.OnFailure();
+                    return;
+                }
+
+                // Retrieve the document snapshot from the task result
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    // Get the facilityId from the "facility" field
+                    String facilityId = getIdFromDocRef(document.getDocumentReference("facility"));
+
+                    if (facilityId != null && !facilityId.isEmpty()) {
+                        // Facility ID found, pass it to success callback
+                        successAction.OnSuccess(facilityId);
+                    } else {
+                        // If there's no facilityId, handle accordingly
+                        Log.d("WARN", "Facility ID is missing for this organizer.");
+                        failureAction.OnFailure();
+                    }
+                } else {
+                    // If the user document doesn't exist
+                    Log.d("WARN", "No such document for user ID: " + userID);
+                    failureAction.OnFailure();
                 }
             }
-        };
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("Query attempt failed!");
-            }
-        };
+        });
+    }
 
-        database.getAllEventsFromDeviceId(successAction, failureAction, "4f73207b9240b980");
+
+    public void getEventDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference eventsCollection = db.collection("events");
+
+        // Create the base query, ordering by creation time and limiting by the page size
+        final Query[] query = {eventsCollection
+                .orderBy("creationTime")
+                .limit(pageSize)};
+
+        // If this is not the first page, start after the last visible document
+        if (page > 1 && lastDocumentId != null) {
+            // Make the call asynchronous to fetch the last visible document
+            getLastVisibleDocument(lastDocumentId, (lastVisible) -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);  // Paginate by starting after the last document
+                }
+
+                // After getting the last visible document, execute the query
+                query[0].get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            List<String> documentIDs = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                documentIDs.add(document.getId()); // Collect document IDs
+                            }
+
+                            // Update the last fetched event document with the last document of the current page
+                            if (!querySnapshot.isEmpty()) {
+                                DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                                // Save last document snapshot for pagination
+                            }
+
+                            // Trigger the success action with the retrieved document IDs
+                            successAction.OnSuccess(documentIDs);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Database", "Error fetching event IDs: ", e);
+                            failureAction.OnFailure();
+                        });
+            });
+        } else {
+            // If it's the first page, simply fetch the documents
+            query[0].get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        List<String> documentIDs = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            documentIDs.add(document.getId()); // Collect document IDs
+                        }
+
+                        // Update the last fetched event document with the last document of the current page
+                        if (!querySnapshot.isEmpty()) {
+                            DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                            // Save last document snapshot for pagination
+                        }
+
+                        // Trigger the success action with the retrieved document IDs
+                        successAction.OnSuccess(documentIDs);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Database", "Error fetching event IDs: ", e);
+                        failureAction.OnFailure();
+                    });
+        }
+    }
+
+    private void getLastVisibleDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        // Retrieve the last visible document asynchronously
+        db.collection("events")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);  // Notify listener of failure
+                    }
+                });
+    }
+
+    // Define an interface to handle the result of fetching the last document
+    public interface OnLastDocumentFetchedListener {
+        void onLastDocumentFetched(DocumentSnapshot documentSnapshot);
+    }
+
+    public void getTotalEventDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        // Create an aggregation query for the count
+        AggregateQuery countQuery = db.collection("events").count();
+
+        // Execute the query and handle results
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();  // Get the count
+                    successListener.onSuccess(totalDocuments);  // Trigger success listener
+                })
+                .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
+    }
+
+    // Admin specific Queries for Facilities
+    public void getFacilityDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference facilitiesCollection = db.collection("facilities");
+
+        // Create the base query, ordering by creation time and limiting by the page size
+        final Query[] query = {facilitiesCollection
+                .orderBy("facilityID")
+                .limit(pageSize)};
+
+        // If this is not the first page, start after the last visible document
+        if (page > 1 && lastDocumentId != null) {
+            // Make the call asynchronous to fetch the last visible document
+            getLastVisibleFacilityDocument(lastDocumentId, (lastVisible) -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);  // Paginate by starting after the last document
+                }
+
+                // After getting the last visible document, execute the query
+                query[0].get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            List<String> documentIDs = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                documentIDs.add(document.getId()); // Collect document IDs
+                            }
+
+                            // Update the last fetched facility document with the last document of the current page
+                            if (!querySnapshot.isEmpty()) {
+                                DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                                // Save last document snapshot for pagination
+                            }
+
+                            // Trigger the success action with the retrieved document IDs
+                            successAction.OnSuccess(documentIDs);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Database", "Error fetching facility IDs: ", e);
+                            failureAction.OnFailure();
+                        });
+            });
+        } else {
+            // If it's the first page, simply fetch the documents
+            query[0].get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        List<String> documentIDs = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            documentIDs.add(document.getId()); // Collect document IDs
+                        }
+
+                        // Update the last fetched facility document with the last document of the current page
+                        if (!querySnapshot.isEmpty()) {
+                            DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                            // Save last document snapshot for pagination
+                        }
+
+                        // Trigger the success action with the retrieved document IDs
+                        successAction.OnSuccess(documentIDs);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Database", "Error fetching facility IDs: ", e);
+                        failureAction.OnFailure();
+                    });
+        }
+    }
+
+    private void getLastVisibleFacilityDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        // Retrieve the last visible document asynchronously from "facilities" collection
+        db.collection("facilities")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);  // Notify listener of failure
+                    }
+                });
+    }
+
+    public void getTotalFacilityDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        // Create an aggregation query for the count of facilities
+        AggregateQuery countQuery = db.collection("facilities").count();
+
+        // Execute the query and handle results
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();  // Get the count
+                    successListener.onSuccess(totalDocuments);  // Trigger success listener
+                })
+                .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
+    }
+
+    // Admin specific Queries for Users
+    public void getUserDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference userCollection = db.collection("users");
+
+        // Create the base query, ordering by creation time and limiting by the page size
+        final Query[] query = {userCollection
+                .orderBy("deviceID")
+                .limit(pageSize)};
+
+        // If this is not the first page, start after the last visible document
+        if (page > 1 && lastDocumentId != null) {
+            // Make the call asynchronous to fetch the last visible document
+            getLastVisibleUserDocument(lastDocumentId, (lastVisible) -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);  // Paginate by starting after the last document
+                }
+
+                // After getting the last visible document, execute the query
+                query[0].get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            List<String> documentIDs = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                documentIDs.add(document.getId()); // Collect document IDs
+                            }
+
+                            // Update the last fetched facility document with the last document of the current page
+                            if (!querySnapshot.isEmpty()) {
+                                DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                                // Save last document snapshot for pagination
+                            }
+
+                            // Trigger the success action with the retrieved document IDs
+                            successAction.OnSuccess(documentIDs);
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("Database", "Error fetching facility IDs: ", e);
+                            failureAction.OnFailure();
+                        });
+            });
+        } else {
+            // If it's the first page, simply fetch the documents
+            query[0].get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        List<String> documentIDs = new ArrayList<>();
+
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            documentIDs.add(document.getId()); // Collect document IDs
+                        }
+
+                        // Update the last fetched facility document with the last document of the current page
+                        if (!querySnapshot.isEmpty()) {
+                            DocumentSnapshot lastDoc = querySnapshot.getDocuments().get(querySnapshot.size() - 1);
+                            // Save last document snapshot for pagination
+                        }
+
+                        // Trigger the success action with the retrieved document IDs
+                        successAction.OnSuccess(documentIDs);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Database", "Error fetching facility IDs: ", e);
+                        failureAction.OnFailure();
+                    });
+        }
+    }
+
+    private void getLastVisibleUserDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        // Retrieve the last visible document asynchronously from "users" collection
+        db.collection("users")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);  // Notify listener of failure
+                    }
+                });
+    }
+
+    public void getTotalUserDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        // Create an aggregation query for the count of facilities
+        AggregateQuery countQuery = db.collection("users").count();
+
+        // Execute the query and handle results
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();  // Get the count
+                    successListener.onSuccess(totalDocuments);  // Trigger success listener
+                })
+                .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
+    }
+
+
+    // ================================== DELETE FUNCTIONS =====================================
+
+    /**
+     * Deletes the event with the given eventId. This will also delete the QR code for the event,
+     * the event map, and any references that any entrant or organizer had to that event.
+     *
+     * @param successListener (Unused) Listener to be notified when a successful delete happens
+     * @param failureListener (Unused) Listener to be notified when a failed delete happens
+     * @param eventId
+     */
+    private void deleteEvent(OnSuccessListener successListener, OnFailureListener failureListener, String eventId) {
+
+        // First, get the event docRef we want to delete.
+        DocumentReference eventDocRef = db.collection("events").document(eventId);
+        System.out.println("DELETE_EVENT_" + eventId + ": Requesting to delete event and all associated references");
+
+        // Find all users that have a reference to this event
+
+        String[] arraysToSearch = {"currentEnrolledEvents", "currentPendingEvents", "currentWaitlistedEvents", "currentDeclinedEvents", "createdEvents"};
+        for (String arrayNameString : arraysToSearch) {
+            // For a given array to search, send a query to get all documents with this event docRef in it and send an update to each of them to remove it
+            Query query = db.collection("users").whereArrayContains(arrayNameString, eventDocRef);
+            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    // For every returned document, get the DocumentReference and remove the event element from the array
+                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                        String deviceId = docSnapshot.getString("deviceID");
+                        DocumentReference docRefToUpdate = db.collection("users").document(deviceId);
+                        docRefToUpdate.update(arrayNameString, FieldValue.arrayRemove(eventDocRef)); // Deletes any element from the array matching eventDocRef
+                        System.out.println("DELETE_EVENT_" + eventId + ": Deleted event reference from " + arrayNameString + "of user " + deviceId);
+                    }
+                }
+            });
+
+        }
+
+
+        // Second, delete the QR code for the event if one exists.
+        // Note: we have to find where the eventID field of any documents matches the eventId
+        Query query = db.collection("eventHashes").whereEqualTo("eventID", eventId);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    // For every returned document, get the DocumentReference and remove the event element from the array
+                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                        System.out.println("DELETE_EVENT_"+ eventId + ": Event hash " + docSnapshot.getId() + " being deleted");
+                        docSnapshot.getReference().delete();
+                    }
+                }
+            });
+
+
+        // Third, delete the map for the event if one exists.
+        // Note: simply request the deletion of the document with the primary key matching the eventId.
+        // If that document doesn't exist, no problem, still worked
+        db.collection("maps").document(eventId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_EVENT_"+ eventId + ": Event map deleted (if it existed)");
+            }
+        });
+
+        // Finally, delete the event itself (if it exists).
+        db.collection("events").document(eventId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_EVENT_"+ eventId + ": Event deleted (if it existed)");
+            }
+        });
 
     }
 
 
     /**
-     * Non-standard query function which gets surface-level event information given an eventID.
+     * Deletes the event with the given eventId. This will also delete the QR code for the event,
+     * the event map, and any references that any entrant or organizer had to that event.
      * <br>
-     * <strong>This function does not expand nested references!</strong>
+     * (No success or failure listeners given for this function, assume deletes will work successfully
      *
-     * @param eventId
-     * @param successListener
-     * @param failureListener
+     * @param eventId The event ID to fully delete from the database
      */
-    public void getEventDocumentById(String eventId, OnSuccessListener<DocumentSnapshot> successListener, OnFailureListener failureListener) {
-        DocumentReference eventRef = db.collection("events").document(eventId);
-
-        eventRef.get()
-                .addOnSuccessListener(successListener)
-                .addOnFailureListener(failureListener);
+    public void deleteEvent(String eventId) {
+        deleteEvent(null, null, eventId);
     }
+
+
+
+
 }
-
-
