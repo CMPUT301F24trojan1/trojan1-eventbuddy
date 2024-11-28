@@ -524,13 +524,13 @@ public class EventDetailsFragment extends Fragment {
             Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
             return;
         }
-        // Remove the event from the waitlist
+
         ArrayList<Event> currentWaitlist = ((Entrant) App.currentUser).getCurrentWaitlistedEvents();
         currentWaitlist.removeIf(pendingEvent -> pendingEvent.getEventId().equals(event.getEventId()));
         ((Entrant) App.currentUser).setCurrentPendingEvents(currentWaitlist);
 
         ArrayList<User> currentEventWaitingList = event.getPendingList();
-        currentEventWaitingList.remove(App.currentUser);
+        currentEventWaitingList.removeIf(pendingUser -> pendingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
         event.setPendingList(currentEventWaitingList);
 
         // Now move only the database operations to the background thread
@@ -554,7 +554,7 @@ public class EventDetailsFragment extends Fragment {
         ((Entrant) App.currentUser).setCurrentWaitlistedEvents(currentEnrolled);
 
         ArrayList<User> currentPendingList = event.getPendingList();
-        currentPendingList.remove(App.currentUser);
+        currentPendingList.removeIf(pendingUser -> pendingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
         event.setPendingList(currentPendingList);
 
         ArrayList<User> currentEnrolledList = event.getEnrolledList();
@@ -587,7 +587,7 @@ public class EventDetailsFragment extends Fragment {
         Database.getDB().insertUserDocument(App.currentUser);
 
         ArrayList<User> currentPendingList = event.getPendingList();
-        currentPendingList.remove(App.currentUser);
+        currentPendingList.removeIf(pendingUser -> pendingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
         event.setPendingList(currentPendingList);
 
         ArrayList<User> currentCancelledList = event.getCancelledList();
