@@ -48,7 +48,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
-    private Database database;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
     private ImageView profileImage;
     private Bitmap profileImageBitmap = null; // Null if placeholder
@@ -219,6 +218,9 @@ public class ProfileFragment extends Fragment {
         else {
             deviceId = App.deviceId;
             App.currentUser = new Entrant(lastName, firstName, email, phone, deviceId, "Entrant", false, false);
+            addtoNotifications(deviceId);
+            addtoNotifications("organizer" + deviceId);
+            addtoNotifications("admin" + deviceId);
         }
 
         Database database = Database.getDB();
@@ -252,20 +254,30 @@ public class ProfileFragment extends Fragment {
                 return;
             }
 
-            FirebaseMessaging.getInstance().subscribeToTopic(App.currentUser.getDeviceId())
+            FirebaseMessaging.getInstance().subscribeToTopic("organizer" + App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
-                        String msg = task.isSuccessful() ? "Successfully subscribed to notifications." : "Subscription failed. Please try again.";
+                        String msg = task.isSuccessful() ? "Successfully subscribed to Organizer notifications." : "Subscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                        App.sendAnnouncement(App.currentUser.getDeviceId(), "Trojan Planner", "You have been subscribed to notifications!");
+                    });
+            FirebaseMessaging.getInstance().subscribeToTopic("admin" + App.currentUser.getDeviceId())
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully subscribed to Admin notifications." : "Subscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                     });
         } else {
-            FirebaseMessaging.getInstance().unsubscribeFromTopic(App.currentUser.getDeviceId())
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("organizer" + App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
-                        String msg = task.isSuccessful() ? "Successfully unsubscribed from notifications." : "Unsubscription failed. Please try again.";
+                        String msg = task.isSuccessful() ? "Successfully unsubscribed from organizer notifications." : "Unsubscription failed. Please try again.";
+                        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                    });
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("admin" + App.currentUser.getDeviceId())
+                    .addOnCompleteListener(task -> {
+                        String msg = task.isSuccessful() ? "Successfully unsubscribed from admin notifications." : "Unsubscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
                     });
         }
     }
-
     /**
      * Resets profile picture to the current profile picture of the user.
      * If user is null, reset to default
@@ -333,4 +345,16 @@ public class ProfileFragment extends Fragment {
             profileImage.setImageResource(R.drawable.placeholder_avatar);
         }
     }
+
+    private void addtoNotifications(String topic) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Notifications", "Successfully subscribed to the topic: " + topic);
+                    } else {
+                        Log.e("Notifications", "Failed to subscribe to the topic: " + topic + ". Error: " + task.getException());
+                    }
+                });
+    }
+
 }
