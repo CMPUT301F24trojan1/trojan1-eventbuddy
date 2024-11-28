@@ -56,6 +56,8 @@ public class EventDetailsFragment extends Fragment {
     private Button buttonLeaveWaitlist;
     private Button manageButton;
     private Button optionsButton;
+    private Button acceptButton, declineButton;
+    private TextView invitationText;
 
     @NonNull
     public static EventDetailsFragment newInstance(Event event, Entrant entrant) {
@@ -532,6 +534,10 @@ public class EventDetailsFragment extends Fragment {
         manageButton = view.findViewById(R.id.ManageEvents);
         optionsButton = view.findViewById(R.id.EntrantManageEvents);
 
+        invitationText = view.findViewById(R.id.invitationText);
+        acceptButton = view.findViewById(R.id.Accept);
+        declineButton = view.findViewById(R.id.Decline);
+
         // Populate event details
         if (event != null) {
             populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
@@ -578,19 +584,59 @@ public class EventDetailsFragment extends Fragment {
             });
         }
 
-        // Check if the user is waitlisted for this event
-        if (((Entrant) App.currentUser).getCurrentWaitlistedEvents().contains(event)) {
+        boolean isEventInPendingList = false;
+        for (Event pendingEvent : ((Entrant) App.currentUser).getCurrentPendingEvents()) {
+            if (pendingEvent.getEventId().equals(event.getEventId())) {
+                // If event IDs match, set isEventInPendingList to true
+                isEventInPendingList = true;
+                break;
+            }
+        }
+        if (isEventInPendingList) {
+            acceptButton.setVisibility(View.VISIBLE);
+            declineButton.setVisibility(View.VISIBLE);
+            acceptButton.setOnClickListener(v -> {
+                acceptEvent();
+            });
+            declineButton.setOnClickListener(v -> {
+                declineEvent();
+            });
+
+            invitationText.setText("You've been selected from the wishlist!");
+        } else {
+            acceptButton.setVisibility(View.GONE);
+            declineButton.setVisibility(View.GONE);
+        }
+
+        boolean isEventInWaitlist = false;
+        for (Event waitlistedEvent : ((Entrant) App.currentUser).getCurrentWaitlistedEvents()) {
+            if (waitlistedEvent.getEventId().equals(event.getEventId())) {
+                // If event IDs match, set isEventInWaitlist to true
+                isEventInWaitlist = true;
+                break;
+            }
+        }
+
+        if (isEventInWaitlist) {
             buttonLeaveWaitlist.setVisibility(View.VISIBLE);
         } else {
             buttonLeaveWaitlist.setVisibility(View.GONE);
         }
-
         buttonLeaveWaitlist.setOnClickListener(v -> {
             leaveWaitlist();
         });
 
         return view;
     }
+
+    private void acceptEvent() {
+
+    }
+
+    private void declineEvent() {
+
+    }
+
     private void updateButtonVisibility() {
         if (event == null || event.getWaitingList() == null) {
             // Default to showing "Enter Now" if there's no event or waitlist
