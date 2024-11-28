@@ -79,14 +79,17 @@ public class NotificationSenderFragment extends Fragment {
         // Determine the list of users based on the notification type
         List<User> users;
         switch (notificationType) {
-            case "Waitlist":
+            case "Current Waitlist":
                 users = event.getWaitingList(); // Get the waitlist users from the event
+                Toast.makeText(getContext(), "Notifying Entrants on the waiting list.", Toast.LENGTH_SHORT).show();
                 break;
-            case "Selected":
+            case "Selected Entrants":
                 users = event.getEnrolledList(); // Get the selected users from the event
+                Toast.makeText(getContext(), "Notifying Selected Entrants.", Toast.LENGTH_SHORT).show();
                 break;
-            case "Cancelled":
+            case "Cancelled Entrants":
                 users = event.getCancelledList(); // Get the cancelled users from the event
+                Toast.makeText(getContext(), "Notifying Cancelled Entrants.", Toast.LENGTH_SHORT).show();
                 break;
             default:
                 Toast.makeText(getContext(), "Invalid notification type selected.", Toast.LENGTH_SHORT).show();
