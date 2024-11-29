@@ -8,6 +8,15 @@ android {
     namespace = "com.example.trojanplanner"
     compileSdk = 34
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("/Users/fairuzzarif/Desktop/KeyStore/Untitled") // Make sure this path is correct
+            storePassword = "Carlton156"
+            keyAlias = "trojan-key"
+            keyPassword = "Carlton156"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.trojanplanner"
         minSdk = 27
@@ -19,7 +28,8 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -27,17 +37,14 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     buildFeatures {
         viewBinding = true
-    }
-    packagingOptions {
-        resources {
-            excludes += "mockito-extensions/org.mockito.plugins.MockMaker"
-        }
     }
 }
 
@@ -49,37 +56,29 @@ dependencies {
     implementation(libs.core)
     implementation(libs.camera.camera2)
     implementation(libs.firebase.database)
-    implementation("com.google.firebase:firebase-messaging:23.0.0")
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")  // OkHttp version
-    implementation(libs.play.services.maps)
-    implementation(libs.play.services.location)
-    implementation(libs.activity)
+    implementation("com.google.android.gms:play-services-maps:18.1.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
-    // Test dependencies
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
-        exclude(group = "com.google.protobuf", module = "protobuf-lite") // Exclude protobuf-lite
-    }
     androidTestImplementation("androidx.test:runner:1.4.0")
     androidTestImplementation("androidx.navigation:navigation-testing:2.5.3")
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.4.0")
     androidTestImplementation("androidx.test:rules:1.4.0")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
     androidTestImplementation("androidx.fragment:fragment-testing:1.3.6")
-    androidTestImplementation("org.mockito:mockito-android:4.0.0")
-    androidTestImplementation("com.linkedin.dexmaker:dexmaker-mockito:2.28.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.1")
+    testImplementation("org.mockito:mockito-core:4.+") // Update to the latest Mockito version
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.0.1")
 
-    // Firebase dependencies
     implementation(libs.barcode.scanning)
     implementation(libs.common)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.appcheck)
-    implementation("com.google.firebase:firebase-messaging:23.0.0")
 
-    // UI dependencies
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
@@ -87,8 +86,6 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
-
-    // Unit testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
