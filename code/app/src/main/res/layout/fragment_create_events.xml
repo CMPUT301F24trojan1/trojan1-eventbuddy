@@ -7,27 +7,48 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Add this inside the layout -->
-    <Button
-        android:id="@+id/testButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Test"
-        android:layout_marginTop="16dp"
-        android:layout_gravity="center_horizontal" />
-
-    <!-- Event Image -->
-    <ImageView
-        android:id="@+id/eventImageView"
+    <!-- Event Image in Rounded CardView with overlay -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/eventImageCardView"
         android:layout_width="0dp"
         android:layout_height="200dp"
-        android:contentDescription="Event Image"
-        android:src="@drawable/event_placeholder"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/eventImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Event Image"
+                android:src="@drawable/event_placeholder"
+                android:scaleType="centerCrop" />
+
+            <!-- Overlay Buttons -->
+            <Button
+                android:id="@+id/testButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Test"
+                android:layout_gravity="top|start"
+                android:layout_margin="8dp" />
+
+            <Switch
+                android:id="@+id/eventGeolocationSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enable Geolocation"
+                android:layout_gravity="top|end"
+                android:layout_margin="8dp" />
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
 
     <!-- Event Name -->
     <EditText
@@ -37,8 +58,8 @@
         android:hint="Event Name"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventImageView"
-        android:layout_marginBottom="8dp"/>
+        app:layout_constraintTop_toBottomOf="@id/eventImageCardView"
+        android:layout_marginBottom="8dp" />
 
     <!-- Spots Available -->
     <EditText
@@ -50,7 +71,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventNameEditText"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp" />
 
     <!-- Event Description -->
     <EditText
@@ -61,7 +82,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventSpotsAvailableEditText"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp" />
 
     <!-- Event Date -->
     <EditText
@@ -73,7 +94,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventDescriptionEditText"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp" />
 
     <!-- Event Time -->
     <EditText
@@ -85,21 +106,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventDateEditText"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp" />
 
     <!-- Event Price -->
-
-    <Switch
-        android:id="@+id/eventGeolocationSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="140dp"
-        android:layout_marginEnd="3dp"
-        android:text="Enable Geolocation"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/testButton"
-        tools:layout_editor_absoluteY="16dp" />
-
     <EditText
         android:id="@+id/eventPriceEditText"
         android:layout_width="0dp"
@@ -109,9 +118,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventTimeEditText"
-        android:layout_marginBottom="16dp"/>
-
-
+        android:layout_marginBottom="16dp" />
 
     <!-- Create and Cancel Buttons -->
     <Button
@@ -121,7 +128,7 @@
         android:text="Create Event"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventPriceEditText"
-        android:layout_marginEnd="8dp"/>
+        android:layout_marginEnd="8dp" />
 
     <Button
         android:id="@+id/cancelEventButton"
@@ -130,5 +137,6 @@
         android:text="Cancel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/eventPriceEditText"
-        android:layout_marginStart="8dp"/>
+        android:layout_marginStart="8dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
