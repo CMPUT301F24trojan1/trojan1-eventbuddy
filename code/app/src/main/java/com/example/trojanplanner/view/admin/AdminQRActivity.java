@@ -11,7 +11,6 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.trojanplanner.R;
 
 public class AdminQRActivity extends AppCompatActivity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,4 +22,6 @@ public class AdminQRActivity extends AppCompatActivity {
             return insets;
         });
     }
+
+
 }

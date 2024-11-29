@@ -313,7 +313,7 @@ public class ProfileFragment extends Fragment {
             // If 'remove pfp' button was pressed, we are actually changing it if user pfp was not null before
             if (profileImageBitmap != null) {changedPfp = true; };
             profileImageBitmap = null;
-            profileImage.setImageResource(R.drawable.placeholder_avatar);
+            profileImage.setImageResource(R.drawable.profile_avatar);
         }
 
     }
@@ -362,7 +362,7 @@ public class ProfileFragment extends Fragment {
         }
         else {
             profileImageBitmap = null;
-            profileImage.setImageResource(R.drawable.placeholder_avatar);
+            profileImage.setImageResource(R.drawable.profile_avatar);
         }
     }
 

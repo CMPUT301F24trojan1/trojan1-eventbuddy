@@ -487,7 +487,6 @@ public class EventDetailsFragment extends Fragment {
             declineButton.setOnClickListener(v -> {
                 declineEvent();
             });
-
             invitationText.setText("You've been selected from the wishlist!");
         } else {
             acceptButton.setVisibility(View.GONE);
@@ -551,7 +550,7 @@ public class EventDetailsFragment extends Fragment {
 
         ArrayList<Event> currentEnrolled = ((Entrant) App.currentUser).getCurrentEnrolledEvents();
         currentEnrolled.add(event);
-        ((Entrant) App.currentUser).setCurrentWaitlistedEvents(currentEnrolled);
+        ((Entrant) App.currentUser).setCurrentEnrolledEvents(currentEnrolled);
 
         ArrayList<User> currentPendingList = event.getPendingList();
         currentPendingList.removeIf(pendingUser -> pendingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
@@ -582,7 +581,7 @@ public class EventDetailsFragment extends Fragment {
 
         ArrayList<Event> currentDeclined = ((Entrant) App.currentUser).getCurrentDeclinedEvents();
         currentDeclined.add(event);
-        ((Entrant) App.currentUser).setCurrentWaitlistedEvents(currentDeclined);
+        ((Entrant) App.currentUser).setCurrentDeclinedEvents(currentDeclined);
 
         Database.getDB().insertUserDocument(App.currentUser);
 
@@ -658,7 +657,6 @@ public class EventDetailsFragment extends Fragment {
         FragmentManager fragmentManager = getParentFragmentManager();
         fragmentManager.popBackStack(); // Navigate back in the fragment stack
     }
-
 
     // ONLY FOR TESTING PURPOSES
     public Event getEvent() {

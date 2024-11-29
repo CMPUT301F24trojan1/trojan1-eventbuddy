@@ -17,7 +17,6 @@ import com.example.trojanplanner.model.Event;
 import java.util.List;
 
 public class AdminEventArrayAdapter extends RecyclerView.Adapter<AdminEventArrayAdapter.EventViewHolder> {
-
     private final List<Event> eventList;
     private final Context context;
     private final OnEventClickListener onEventClickListener;
