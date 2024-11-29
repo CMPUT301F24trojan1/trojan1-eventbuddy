@@ -187,10 +187,11 @@ public class AdminActivity extends AppCompatActivity {
             }
 
             runOnUiThread(() -> {
+                Toast.makeText(AdminActivity.this, "Event deleted: " + event.getName(), Toast.LENGTH_SHORT).show();
+                recreate();
             });
         });
 
-        // Optionally, shut down the executor when done (to avoid memory leaks)
         executor.shutdown();
     }
 

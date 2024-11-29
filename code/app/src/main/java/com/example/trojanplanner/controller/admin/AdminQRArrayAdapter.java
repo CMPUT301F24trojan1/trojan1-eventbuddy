@@ -18,10 +18,16 @@ import java.util.List;
 public class AdminQRArrayAdapter extends RecyclerView.Adapter<AdminQRArrayAdapter.QRViewHolder> {
     private final Context context;
     private final List<AdminQRActivity.QRModel> qrList;
+    private final OnItemClickListener onItemClickListener;
 
-    public AdminQRArrayAdapter(Context context, List<AdminQRActivity.QRModel> qrList) {
+    public interface OnItemClickListener {
+        void onItemClick(AdminQRActivity.QRModel qrModel);
+    }
+
+    public AdminQRArrayAdapter(Context context, List<AdminQRActivity.QRModel> qrList, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.qrList = qrList;
+        this.onItemClickListener = onItemClickListener;
     }
 
     @NonNull
