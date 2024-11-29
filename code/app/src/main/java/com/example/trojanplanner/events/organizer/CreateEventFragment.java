@@ -136,89 +136,47 @@ public class CreateEventFragment extends Fragment {
             return false;
         }
 
+        // We will query for the organizer with this device ID, and then set the event using that
         // Define the success action for getting the organizer
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
             public void OnSuccess(Object object) {
-                if (object instanceof Organizer) {
-                    // Successfully fetched the organizer
-                    Organizer currentOrganizer = (Organizer) object;
-                    Log.d("CreateEvent", "Organizer fetched: " + currentOrganizer.getDeviceId());
+                // Successfully fetched the organizer
+                Organizer currentOrganizer = (Organizer) object;
+                Log.d("CreateEvent", "Organizer fetched: " + currentOrganizer.getDeviceId());
 
-                    currentOrganizer.setFacility(null);
-                    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
-                        @Override
-                        public void OnSuccess(Object object) {
-                            // object will be the facilityId
-                            String facilityId = (String) object;
-                            Log.d("SUCCESS", "Facility ID retrieved: " + facilityId);
 
-                            // Using facilityId, retrieve the facility object
-                            database.getFacility(new Database.QuerySuccessAction() {
-                                @Override
-                                public void OnSuccess(Object object) {
-                                    // Now that we have the Facility object, handle it here
-                                    Facility facility = (Facility) object;
-                                    currentOrganizer.setFacility(facility);
-                                    Log.d("SUCCESS", "Facility retrieved: " + facility.toString());
+                // Create the event ID using the organizer's device ID and current timestamp
+                String newEventId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
 
-                                    // You can now use the `facility` object as needed
-                                }
-                            }, new Database.QueryFailureAction() {
-                                @Override
-                                public void OnFailure() {
-                                    Log.d("FAILURE", "Failed to retrieve the Facility.");
-                                    // Handle failure (e.g., show an error message)
-                                }
-                            }, facilityId);
-                        }
-                    };
+                // Set default values for event start and end time (you can replace these with actual values)
+                Date startDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
+                Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
 
-                    Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
-                        @Override
-                        public void OnFailure() {
-                            Log.d("FAILURE", "Failed to retrieve Facility ID");
+                Facility facility = currentOrganizer.getFacility();
 
-                        }
-                    };
-                    database.getFacilityIDbyUserID(currentOrganizer.getDeviceId(), successAction, failureAction);
+                // Create the event object
+                Event newEvent = new Event(newEventId, name, description, 0.0f, facility, startDateTime, endDateTime,
+                        30, 100L, 100L); // Adjust parameters as needed
 
-                    Facility facility = currentOrganizer.getFacility();
+                newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation by default for testing
+                // Insert the new event into the database
+                database.insertEvent(newEvent);
 
-                    // Create the event ID using the organizer's device ID and current timestamp
-                    String newEventId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
-
-                    // Set default values for event start and end time (you can replace these with actual values)
-                    Date startDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
-                    Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
-
-                    // Create the event object
-                    Event newEvent = new Event(newEventId, name, description, 0.0f, facility, startDateTime, endDateTime,
-                            30, 100L, 100L); // Adjust parameters as needed
-
-                    newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation by default for testing
-                    // Insert the new event into the database
-                    database.insertEvent(newEvent);
-
-                    // Add the event to the organizer's list of created events
-                    currentOrganizer.addEvent(newEvent);
-                    // Log the updated list of events for the current organizer
-                    Log.d("CreateEvent", "Organizer's events after addition: " + currentOrganizer.getCreatedEvents().size() + " events.");
-                    for (Event event : currentOrganizer.getCreatedEvents()) {
-                        Log.d("CreateEvent", "Organizer Event: " + event.getEventId() + ", " + event.getName());
-                    }
-
-                    // Update the organizer in the database
-                    database.insertUserDocument(currentOrganizer);
-
-                    // Notify the user and navigate to the events list fragment
-                    Toast.makeText(App.activity, "Event created successfully!", Toast.LENGTH_SHORT).show();
-                    navigateToEventsListFragment(view);
-                } else {
-                    // If the fetched object is not an organizer, log the error
-                    Log.e("CreateEvent", "Fetched object is not an instance of Organizer.");
-                    Toast.makeText(App.activity, "Unexpected error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+                // Add the event to the organizer's list of created events
+                currentOrganizer.addEvent(newEvent);
+                // Log the updated list of events for the current organizer
+                Log.d("CreateEvent", "Organizer's events after addition: " + currentOrganizer.getCreatedEvents().size() + " events.");
+                for (Event event : currentOrganizer.getCreatedEvents()) {
+                    Log.d("CreateEvent", "Organizer Event: " + event.getEventId() + ", " + event.getName());
                 }
+
+                // Update the organizer in the database
+                database.insertUserDocument(currentOrganizer);
+
+                // Notify the user and navigate to the events list fragment
+                Toast.makeText(App.activity, "Event created successfully!", Toast.LENGTH_SHORT).show();
+                navigateToEventsListFragment(view);
             }
         };
 

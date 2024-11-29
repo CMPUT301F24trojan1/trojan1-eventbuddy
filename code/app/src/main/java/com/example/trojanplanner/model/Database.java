@@ -3078,6 +3078,19 @@ public class Database {
         // If that document doesn't exist, no problem, still worked
         deleteMap(eventId);
 
+        // Fourth, delete the event photo if it exists.
+        // We don't actually have the event attributes so we'll have to query to get it and then delete
+        eventDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String imagePath = documentSnapshot.getString("eventPhoto");
+                if (imagePath != null) {
+                    deleteImage(imagePath);
+                }
+            }
+        });
+
+
         // Finally, delete the event itself (if it exists).
         eventDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -3181,6 +3194,17 @@ public class Database {
             }
         });
 
+        // Third, delete the facility photo if it exists.
+        // We don't actually have the facility attributes so we'll have to query to get it and then delete
+        facilityDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String imagePath = documentSnapshot.getString("facilityPhoto");
+                if (imagePath != null) {
+                    deleteImage(imagePath);
+                }
+            }
+        });
 
         // Finally, delete the facility document itself (if it exists).
         facilityDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -3245,6 +3269,17 @@ public class Database {
             }
         });
 
+        // Third, delete the user photo if it exists.
+        // We don't actually have the user attributes so we'll have to query to get it and then delete
+        userDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String imagePath = documentSnapshot.getString("pfp");
+                if (imagePath != null) {
+                    deleteImage(imagePath);
+                }
+            }
+        });
 
         // Finally, delete the user document itself.
         // Finally, delete the facility document itself (if it exists).
@@ -3260,6 +3295,18 @@ public class Database {
     }
 
 
+    public void deleteImage(String imagePath) {
+        System.out.println("DELETE_IMAGE_" + imagePath + ": Requesting to delete image");
+        StorageReference storageRef = storage.getReference();
+        StorageReference pathReference = storageRef.child(imagePath);
+
+        pathReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_IMAGE_" + imagePath + ": Image deleted");
+            }
+        });
+    }
 
 
 
