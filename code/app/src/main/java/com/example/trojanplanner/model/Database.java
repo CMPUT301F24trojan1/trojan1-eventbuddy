@@ -6,6 +6,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+
+import com.example.trojanplanner.view.admin.AdminQRActivity;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
@@ -2739,7 +2741,7 @@ public class Database {
         });
     }
 
-
+    // ================================== Admin Browse Event FUNCTIONS =====================================
     public void getEventDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         CollectionReference eventsCollection = db.collection("events");
 
@@ -2839,7 +2841,7 @@ public class Database {
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
 
-    // Admin specific Queries for Facilities
+    // ================================== Admin Browse Faciltiies FUNCTIONS =====================================
     public void getFacilityDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         CollectionReference facilitiesCollection = db.collection("facilities");
 
@@ -2934,7 +2936,7 @@ public class Database {
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
 
-    // Admin specific Queries for Users
+    // ================================== Admin Browse User FUNCTIONS =====================================
     public void getUserDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         CollectionReference userCollection = db.collection("users");
 
@@ -3029,6 +3031,93 @@ public class Database {
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
 
+    // ================================== Admin Browse QR FUNCTIONS =====================================
+    public void getQRDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference qrCollection = db.collection("eventHashes");
+
+        // Create the base query, ordering by QR hash and limiting by page size
+        final Query[] query = {qrCollection.orderBy("eventID").limit(pageSize)};
+
+        if (page > 1 && lastDocumentId != null) {
+            // Fetch the last visible document for pagination
+            getLastVisibleQRDocument(lastDocumentId, lastVisible -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);
+                }
+
+                // Execute the paginated query
+                executeQRQuery(query[0], successAction, failureAction);
+            });
+        } else {
+            // For the first page, directly execute the query
+            executeQRQuery(query[0], successAction, failureAction);
+        }
+    }
+
+    private void executeQRQuery(Query query, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        query.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<String> documentIDs = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        documentIDs.add(document.getId()); // Collect QR document IDs (QR hashes)
+                    }
+                    successAction.OnSuccess(documentIDs);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Database", "Error fetching QR IDs: ", e);
+                    failureAction.OnFailure();
+                });
+    }
+
+    private void getLastVisibleQRDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        db.collection("eventHashes")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);
+                    }
+                });
+    }
+
+    public void getTotalQRDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        AggregateQuery countQuery = db.collection("eventHashes").count();
+
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();
+                    successListener.onSuccess(totalDocuments);
+                })
+                .addOnFailureListener(failureListener);
+    }
+
+    public void getEventIDForQRDoc(String qrDocId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        db.collection("eventHashes").document(qrDocId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Extract the eventID from the document
+                        String eventID = documentSnapshot.getString("eventID");
+                        if (eventID != null) {
+                            successAction.OnSuccess(eventID); // Pass eventID to the success action
+                        } else {
+                            Log.e("Database", "eventID is null for document: " + qrDocId);
+                            failureAction.OnFailure();
+                        }
+                    } else {
+                        Log.e("Database", "Document does not exist: " + qrDocId);
+                        failureAction.OnFailure();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Database", "Error fetching eventID for document: " + qrDocId, e);
+                    failureAction.OnFailure();
+                });
+    }
 
     // ================================== DELETE FUNCTIONS =====================================
 

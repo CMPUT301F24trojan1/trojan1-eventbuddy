@@ -130,7 +130,7 @@ public class AdminActivity extends AppCompatActivity {
     private void showAdminIntroDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Welcome to Admin View")
-                .setMessage("You've swapped to the admin view. Here, you can manage events and other administrative tasks. The switch button on the home page will take you back to the user view anytime you want.")
+                .setMessage("You're in admin mode. Here, you can manage events and other administrative tasks. The switch button on the home page will take you back to the user view anytime you want.")
                 .setPositiveButton("Got it!", (dialog, which) -> {
                     // Mark the dialog as shown in SharedPreferences
                     SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -165,6 +165,14 @@ public class AdminActivity extends AppCompatActivity {
             } else if (item.getItemId() == R.id.navigation_users) {
                 if (App.currentUser != null) {
                     Intent intent = new Intent(AdminActivity.this, AdminUsersActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+                return true;
+            } else if (item.getItemId() == R.id.navigation_qr) {
+                if (App.currentUser != null) {
+                    Intent intent = new Intent(AdminActivity.this, AdminQRActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
