@@ -1,11 +1,16 @@
 package com.example.trojanplanner.events.organizer;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -14,14 +19,20 @@ import androidx.fragment.app.DialogFragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.trojanplanner.App;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.User;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 /**
  * A DialogFragment that provides a set of options for an event. The options include actions like
@@ -90,17 +101,9 @@ public class EventOptionsDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    private void navigateToPendingList() {
-        Bundle args = new Bundle();
-        args.putSerializable("event", event);
-
-        NavController navController = Navigation.findNavController(getParentFragment().requireView());
-        navController.navigate(R.id.PendingListFragment, args);
-    }
-
     //TO DO
     private void editEvent() {
-        Toast.makeText(getContext(), "Edit Event clicked", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "We're sorry this feature is not available yet :(", Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -115,6 +118,16 @@ public class EventOptionsDialogFragment extends DialogFragment {
         // Use NavController from the parent fragment
         NavController navController = Navigation.findNavController(getParentFragment().requireView());
         navController.navigate(R.id.NotificationSenderFragment, args);
+    }
+
+    private void viewPendingList(Event event) {
+        Bundle args = new Bundle();
+        args.putSerializable("event", event);
+        String listType = "pending";
+        args.putString("listType", listType);
+
+        NavController navController = Navigation.findNavController(getParentFragment().requireView());
+        navController.navigate(R.id.waitlistFragment, args);
     }
 
     /**
@@ -161,70 +174,174 @@ public class EventOptionsDialogFragment extends DialogFragment {
     }
 
     private void initiateLottery() {
-        ArrayList<User> Lottery_waitlist = new ArrayList<>(event.getWaitingList()); // Copy to avoid modifying the original list
+        Context context = getContext(); // Capture context at the start
+        if (context == null) {
+            return; // Exit if fragment is not attached
+        }
+        
+        // Copy the waiting list and remove null entries
+        ArrayList<User> Lottery_waitlist = new ArrayList<>(event.getWaitingList());
+        Lottery_waitlist.removeIf(Objects::isNull); // Remove null values
 
-        // Show a popup dialog to specify the number of attendees to select
+        // Debugging: Show the Lottery_waitlist size and contents after removing nulls
+        StringBuilder waitlistDebug = new StringBuilder("Lottery_waitlist after removeIf:\n");
+        if (Lottery_waitlist.isEmpty()) {
+            Log.d("EventOptionsDialogFragment", "Lottery_waitlist is empty after removing null values.");
+        } else {
+            for (User user : Lottery_waitlist) {
+                if (user != null) {
+                    waitlistDebug.append(user.getFirstName()).append(" ").append(user.getLastName()).append("\n");
+                }
+            }
+            Log.d("EventOptionsDialogFragment", waitlistDebug.toString());
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Choose Number of Attendees, " + Lottery_waitlist.size() + " available");
 
+        FrameLayout container = new FrameLayout(requireContext());
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(50, 20, 50, 20); // Left, top, right, bottom margins (adjust values as needed)
+
         final EditText input = new EditText(requireContext());
-        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER); // Restricting inputs to numbers
-        builder.setView(input);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER); // Restrict input to numbers only
+        input.setLayoutParams(params);
+        container.addView(input);
+        builder.setView(container);
 
         builder.setPositiveButton("Confirm", (dialog, which) -> {
             String inputText = input.getText().toString();
             if (inputText.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter a valid number.", Toast.LENGTH_SHORT).show();
+                Log.d("EventOptionsDialogFragment", "Please enter a valid number.");
                 return;
             }
 
-            // This is just a invalid input checker
             int numUsersToSelect;
             try {
-                numUsersToSelect = Integer.parseInt(inputText);
+                numUsersToSelect = Integer.parseInt(inputText); // Assign the user input directly to numUsersToSelect
             } catch (NumberFormatException e) {
-                Toast.makeText(requireContext(), "Invalid number entered.", Toast.LENGTH_SHORT).show();
+                Log.d("EventOptionsDialogFragment", "Invalid number entered.");
                 return;
             }
 
-            if (numUsersToSelect > Lottery_waitlist.size()) {
-                Toast.makeText(requireContext(), "Not enough attendees on the waitlist.", Toast.LENGTH_SHORT).show();
+            if (numUsersToSelect <= 0 || numUsersToSelect > Lottery_waitlist.size()) {
+                Log.d("EventOptionsDialogFragment", "Please enter a number between 1 and " + Lottery_waitlist.size());
                 return;
             }
 
             ArrayList<User> selectedAttendees = new ArrayList<>();
             for (int i = 0; i < numUsersToSelect; i++) {
+                if (Lottery_waitlist.isEmpty()) {
+                    Log.d("LotterySelection", "Lottery_waitlist is empty. No more users to select.");
+                    break;
+                }
                 int randomIndex = (int) (Math.random() * Lottery_waitlist.size());
-                User selectedUser = Lottery_waitlist.remove(randomIndex); // Remove to prevent duplicates
-                selectedAttendees.add(selectedUser);
+                User selectedUser = Lottery_waitlist.remove(randomIndex); // Remove to avoid duplicates
+
+                // Debugging: Log the user removed and current waitlist state
+                Log.d("LotterySelection", "Removing user: " + (selectedUser != null ? selectedUser.getFirstName() : "null") +
+                        " at index: " + randomIndex);
+                Log.d("LotterySelection", "Current Lottery_waitlist size after removal: " + Lottery_waitlist.size());
+
+                // Ensure the selected user is not null
+                if (selectedUser != null) {
+                    selectedAttendees.add(selectedUser);
+                } else {
+                    Log.d("EventOptionsDialogFragment", "Encountered a null user during selection.");
+                }
             }
 
-            for (User winner : selectedAttendees) {
-                Lottery_waitlist.add(winner);
-                event.setPendingList(Lottery_waitlist); // Add to the pending list
-                Log.d("InitiateLottery", "Winner selected: " + winner.getFirstName() + " " + winner.getLastName());
+            // Debugging: Show the selected attendees after lottery
+            StringBuilder selectedAttendeesDebug = new StringBuilder("Selected Attendees:\n");
+            for (User selectedUser : selectedAttendees) {
+                if (selectedUser != null) {
+                    selectedAttendeesDebug.append(selectedUser.getFirstName()).append(" ").append(selectedUser.getLastName()).append("\n");
+                }
+            }
+            Log.d("LotterySelection", "Selected Attendees:\n" + selectedAttendeesDebug.toString());
+
+            // Update the pending list with winners
+            event.setPendingList(selectedAttendees);
+            Log.d("EventOptionsDialogFragment", numUsersToSelect + " attendee(s) successfully registered.");
+
+            // Display winners in a new dialog
+            StringBuilder winnersList = new StringBuilder();
+            CountDownLatch latch = new CountDownLatch(event.getPendingList().size()); // Count for each query
+
+            for (User winner : event.getPendingList()) {
+                if (winner != null) {
+                    Database.getDB().getEntrant(object -> {
+                        Entrant user = (Entrant) object;
+
+                        ArrayList<Event> currentPending = user.getCurrentPendingEvents();
+                        if (currentPending == null) {
+                            currentPending = new ArrayList<>();
+                        }
+                        currentPending.add(event);
+                        user.setCurrentPendingEvents(currentPending);
+
+                        ArrayList<Event> currentWaitlist = user.getCurrentWaitlistedEvents();
+                        if (currentWaitlist == null) {
+                            currentWaitlist = new ArrayList<>();
+                        }
+
+                        ArrayList<Event> finalCurrentPending = currentPending;
+                        currentWaitlist.removeIf(pendingEvent -> finalCurrentPending.contains(pendingEvent));
+                        user.setCurrentWaitlistedEvents(currentWaitlist);
+                        // Custom async insert with callback
+                        asyncInsertUserDocument(user, () -> {
+                            winnersList.append(user.getFirstName()).append(" ").append(user.getLastName()).append("\n");
+                            latch.countDown(); // Decrement latch after async operation completes
+                        });
+                    }, () -> {
+                        latch.countDown(); // Ensure latch decrements even on failure
+                    }, winner.getDeviceId());
+                } else {
+                    latch.countDown(); // Account for null winners
+                }
             }
 
-            // Notify the organizer
-            String successMessage = numUsersToSelect + " attendee(s) successfully registered.";
-            Toast.makeText(requireContext(), successMessage, Toast.LENGTH_SHORT).show();
+            new Thread(() -> {  // Background thread to wait for all queries
+                try {
+                    latch.await(); // Wait for all queries to complete
+                    ((Activity) context).runOnUiThread(() -> {  // Update UI on main thread
+                        new AlertDialog.Builder(context)
+                                .setTitle("Lottery Winners")
+                                .setMessage("The following attendees have been selected:\n" + winnersList.toString().trim())
+                                .setPositiveButton("OK", (winnerDialog, whichWinner) -> winnerDialog.dismiss())
+                                .create()
+                                .show();
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace(); // Handle interruption
+                }
+            }).start();
 
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Lottery Winners")
-                    .setMessage("The following attendees have been selected:\n" +
-                            selectedAttendees.stream()
-                                    .map(user -> user.getFirstName() + " " + user.getLastName())
-                                    .reduce("", (a, b) -> a + "\n" + b))
-                    .setPositiveButton("OK", (winnerDialog, whichWinner) -> winnerDialog.dismiss())
-                    .create()
-                    .show();
-
-            event.setPendingList(Lottery_waitlist);
+            ArrayList<User> resultList = event.getWaitingList().stream()
+                    .filter(user -> !event.getPendingList().contains(user))
+                    .collect(Collectors.toCollection(ArrayList::new)); // Ensures resultList is an ArrayList
+            event.setWaitingList(resultList);
             Database.getDB().insertEvent(event);
-        });
 
+            new Thread(() -> {
+                // Loop through the pending list and send the announcement to each user
+                for (User user : event.getPendingList()) {
+                    App.sendAnnouncement(user.getDeviceId(), event.getName(),
+                            "CONGRATS!! You've won, accept/decline your invitation in the app");
+                }
+
+            }).start();
+        });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.create().show();
+    }
+
+    private void asyncInsertUserDocument(Entrant user, Runnable onComplete) {
+        Database.getDB().insertUserDocument(user);
+        new Handler(Looper.getMainLooper()).post(onComplete);
     }
 
     private void uploadQRHashToDatabase(String qrHash, Event event) {
@@ -369,7 +486,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 viewCancelled(event);
                 break;
             case 6:
-                viewMap(event);
+                viewPendingList(event);
                 break;
             case 7: // Initiate Lottery
                 initiateLottery();
@@ -378,7 +495,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 editEvent();
                 break;
             case 9:
-                navigateToPendingList();
+                viewMap(event);
                 break;
             default:
                 break;
