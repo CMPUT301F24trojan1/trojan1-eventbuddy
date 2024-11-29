@@ -21,12 +21,17 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.admin.AdminEventArrayAdapter;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.trojanplanner.model.Event;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AdminActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "com.example.trojanplanner.PREFS";
@@ -63,8 +68,30 @@ public class AdminActivity extends AppCompatActivity {
         nextButton = findViewById(R.id.next_button);
 
         events = new ArrayList<>();
-        adapter = new AdminEventArrayAdapter(this, events, event ->
-                Toast.makeText(this, "Clicked: " + event.getName(), Toast.LENGTH_SHORT).show());
+        adapter = new AdminEventArrayAdapter(this, events, event -> {
+            // Create an AlertDialog with a warning about the event deletion
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Event")
+                    .setMessage("Are you sure you want to delete this event? \nEvent Name:"
+                            + event.getName() + "?\n\n" +
+                            "This will potentially affect:\n" +
+                            "1. The creator \n" +
+                            "2. Waiting and selected users\n" +
+                            "3. Delete any relvant reference to the event in the database.\n\n" +
+                            "This action cannot be undone.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // If the user clicks "Yes", delete the event from the database
+                        deleteEventFromDatabase(event);  // Add your database deletion logic here
+                        Toast.makeText(this, "Event deleted: " + event.getName(), Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        // If the user clicks "No", just dismiss the dialog
+                        dialog.dismiss();
+                    })
+                    .create()
+                    .show();
+        });
+
         recyclerView.setAdapter(adapter);
 
         // Fetch total documents and initialize the first page
@@ -110,6 +137,61 @@ public class AdminActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private void deleteEventFromDatabase(Event event) {
+        // Create an Executor with a fixed thread pool (you can adjust the number of threads)
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        // Submit the task to delete the event on the background thread
+        executor.submit(() -> {
+            // Perform the database operation here (delete the event)
+            Database.getDB().deleteEvent(event.getEventId());
+
+            App.sendAnnouncement(App.currentUser.getDeviceId(), "Admin", "Successfully deleted event: " + event.getName() + ".");
+
+            // Check and send announcements for waiting list
+            if (event.getWaitingList() != null) {
+                for (User user : event.getWaitingList()) {
+                    if (user != null && user.getDeviceId() != null) {
+                        App.sendAnnouncement("admin" + user.getDeviceId(), "Admin", "Event " + event.getName() + " has been cancelled");
+                    }
+                }
+            }
+
+            // Check and send announcements for pending list
+            if (event.getPendingList() != null) {
+                for (User user : event.getPendingList()) {
+                    if (user != null && user.getDeviceId() != null) {
+                        App.sendAnnouncement("admin" + user.getDeviceId(), "Admin", "Event " + event.getName() + " has been cancelled");
+                    }
+                }
+            }
+
+            // Check and send announcements for cancelled list
+            if (event.getCancelledList() != null) {
+                for (User user : event.getCancelledList()) {
+                    if (user != null && user.getDeviceId() != null) {
+                        App.sendAnnouncement("admin" + user.getDeviceId(), "Admin", "Event " + event.getName() + " has been cancelled");
+                    }
+                }
+            }
+
+            // Check and send announcements for Enrolled list
+            if (event.getEnrolledList() != null) {
+                for (User user : event.getEnrolledList()) {
+                    if (user != null && user.getDeviceId() != null) {
+                        App.sendAnnouncement("admin" + user.getDeviceId(), "Admin", "Event " + event.getName() + " has been cancelled");
+                    }
+                }
+            }
+
+            runOnUiThread(() -> {
+            });
+        });
+
+        // Optionally, shut down the executor when done (to avoid memory leaks)
+        executor.shutdown();
     }
 
     private boolean isFirstTimeSwitchingToAdminView() {
