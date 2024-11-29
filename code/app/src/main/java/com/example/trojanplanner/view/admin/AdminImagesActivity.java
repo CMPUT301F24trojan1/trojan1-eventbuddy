@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.admin.AdminImagesArrayAdapter;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -36,7 +37,7 @@ public class AdminImagesActivity extends AppCompatActivity {
     private List<String> directoriesList = new ArrayList<>(); // List to hold directories
     private int currentDirectoryIndex = 0; // To track the current directory index
     private Button nextButton, previousButton;
-
+    private TextView directoryID;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +76,7 @@ public class AdminImagesActivity extends AppCompatActivity {
 
         nextButton = findViewById(R.id.next_button);
         previousButton = findViewById(R.id.previous_button);
-        TextView directory = findViewById(R.id.directory);
+        directoryID = findViewById(R.id.directory);
         nextButton.setOnClickListener( v -> onNextClicked(v));
         previousButton.setOnClickListener( v -> onPreviousClicked(v));
 
@@ -183,37 +184,63 @@ public class AdminImagesActivity extends AppCompatActivity {
         // Enable/Disable buttons based on the current position in directoriesList
         previousButton.setEnabled(currentDirectoryIndex > 0);
         nextButton.setEnabled(currentDirectoryIndex < directoriesList.size() - 1);
-    }
 
-    public void onPreviousClicked(View view) {
-        if (currentDirectoryIndex > 0) {
-            currentDirectoryIndex--;
-            listImagesInDirectory(directoriesList.get(currentDirectoryIndex));
-            updateDirectoryNavigation();
+        // Update the directory text view to show the current directory
+        if (directoriesList.size() > 0) {
+            String currentDirectoryPath = directoriesList.get(currentDirectoryIndex);
+            Database.getDB().getEntrant(
+                    v->{
+                        directoryID.setText("Viewing User: " + ((User)v).getFirstName());
+                    },
+                    () ->{
+                        directoryID.setText("Directory: " + currentDirectoryPath.replace("/", ""));
+                    },
+                    currentDirectoryPath.replace("/",""));
+        } else {
+            directoryID.setText("No directories available");
         }
     }
 
+
     public void onNextClicked(View view) {
-        // Log the current state of directoriesList
         Log.d("DirectoryListDebug", "directoriesList: " + directoriesList.toString());
         Log.d("DirectoryListDebug", "Current directory index: " + currentDirectoryIndex);
 
-        // Check if there is a next directory to go to
         if (currentDirectoryIndex < directoriesList.size() - 1) {
             currentDirectoryIndex++;
 
-            // Log the new index and the directory we're about to list images for
             Log.d("DirectoryListDebug", "Next directory index: " + currentDirectoryIndex);
             Log.d("DirectoryListDebug", "Directory to load: " + directoriesList.get(currentDirectoryIndex));
 
-            // Call the function to list images in the new directory
+            // Clear previous images from the list and notify the adapter
+            imagesList.clear(); // Clears the previous list of images
+            imagefilepath.clear(); // Clear file paths
+            adapter.notifyDataSetChanged(); // Notify adapter that data is cleared
+
+            // List images for the next directory
             listImagesInDirectory(directoriesList.get(currentDirectoryIndex));
 
-            // Update directory navigation (UI update)
+            // Update directory navigation buttons
             updateDirectoryNavigation();
         } else {
             Log.d("DirectoryListDebug", "No more directories to navigate to.");
         }
     }
 
+    public void onPreviousClicked(View view) {
+        if (currentDirectoryIndex > 0) {
+            currentDirectoryIndex--;
+
+            // Clear previous images from the list and notify the adapter
+            imagesList.clear(); // Clears the previous list of images
+            imagefilepath.clear(); // Clear file paths
+            adapter.notifyDataSetChanged(); // Notify adapter that data is cleared
+
+            // List images for the previous directory
+            listImagesInDirectory(directoriesList.get(currentDirectoryIndex));
+
+            // Update directory navigation buttons
+            updateDirectoryNavigation();
+        }
+    }
 }
