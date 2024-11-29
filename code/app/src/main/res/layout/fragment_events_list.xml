@@ -23,18 +23,18 @@
         android:id="@+id/eventsRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@id/createEvent_or_become_an_organizer_button"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/createEvent_or_become_an_organizer_button" />
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/createEvent_or_become_an_organizer_button"
-        android:layout_width="380dp"
+        android:layout_width="190dp"
         android:layout_height="55dp"
-        android:layout_margin="15dp"
-        android:backgroundTint="@android:color/holo_red_dark"
+        android:backgroundTint="@color/red_primary"
         android:text="Button"
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toTopOf="@id/nav_view"
