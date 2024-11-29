@@ -18,11 +18,18 @@ public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacil
 
     private final List<Facility> facilityList;
     private final Context context;
+    private final OnItemClickListener onItemClickListener;
 
-    // Constructor
-    public AdminFacilitiesArrayAdapter(Context context, List<Facility> facilityList) {
+    // Listener interface for click events
+    public interface OnItemClickListener {
+        void onItemClick(Facility facility);
+    }
+
+    // Constructor with listener
+    public AdminFacilitiesArrayAdapter(Context context, List<Facility> facilityList, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.facilityList = facilityList;
+        this.onItemClickListener = onItemClickListener;
     }
 
     @NonNull
@@ -70,6 +77,13 @@ public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacil
             holder.facilityOwner.setText(""); // or placeholder text
             holder.facilityImage.setImageResource(R.drawable.default_facility_pic); // Set default image if facility is null
         }
+
+        // Set click listener for the entire item
+        holder.itemView.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(facility);
+            }
+        });
     }
 
     @Override

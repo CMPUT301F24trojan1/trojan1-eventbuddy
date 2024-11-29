@@ -13,17 +13,25 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.User;
+import com.example.trojanplanner.view.admin.AdminQRActivity;
+import com.example.trojanplanner.view.admin.AdminUsersActivity;
 
 import java.io.File;
 import java.util.List;
 
 public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArrayAdapter.UserViewHolder> {
-    private Context context;
-    private List<User> userList;
+    private final Context context;
+    private final List<User> userList;
+    private final AdminUsersArrayAdapter.OnItemClickListener onItemClickListener;
 
-    public AdminUsersArrayAdapter(Context context, List<User> userList) {
+    public interface OnItemClickListener {
+        void onItemClick(User user);
+    }
+
+    public AdminUsersArrayAdapter(Context context, List<User> userList, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.userList = userList;
+        this.onItemClickListener = onItemClickListener;
     }
 
     @Override
