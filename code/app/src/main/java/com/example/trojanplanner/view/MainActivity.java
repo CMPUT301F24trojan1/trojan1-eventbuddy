@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.EventDetailsFragment;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
@@ -16,7 +15,7 @@ import com.example.trojanplanner.model.Entrant;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.example.trojanplanner.model.Event;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -30,7 +29,6 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-
 
     private Database database;
 
@@ -59,17 +57,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void navigateToEventDetailsFragment(Event event) {
-        System.out.println("Navigating to EventDetailsFragment with event: " + event.getName());
-        // Create the EventDetailsFragment and pass the event data
-        EventDetailsFragment eventDetailsFragment = EventDetailsFragment.newInstance(event, (Entrant) App.currentUser);
-
-        // Replace the current fragment with EventDetailsFragment
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, eventDetailsFragment) // R.id.fragment_container is your fragment container
-                .commit();
-    }
-
     /**
      *
      * @param deviceId
@@ -87,9 +74,7 @@ public class MainActivity extends AppCompatActivity {
                  Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
                  myToast.show();
                  System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
-                 if (currentEntrant.getPfpFilePath() != null) {
-                     getUserPfp();
-                 }
+
                  // TODO: populate events array
                  // Check if the user has any events
                  if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
@@ -121,25 +106,25 @@ public class MainActivity extends AppCompatActivity {
         database.getEntrant(successAction, failureAction, deviceId);
     }
 
-    public void getUserPfp() {
-        System.out.println("Getting user's PFP bitmap...");
-        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                App.currentUser.setPfpBitmap(decodedImage);
-                System.out.println("success!! User pfp bitmap received!");
-            }
-        };
-        OnFailureListener failureListener = new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                System.out.println("NOOOOOOOOOOOOOOOOO user pfp bitmap query failed");
-            }
-        };
-
-        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
-    }
+//    public void getUserPfp() {
+//        System.out.println("Getting user's PFP bitmap...");
+//        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
+//            @Override
+//            public void onSuccess(byte[] bytes) {
+//                Bitmap decodedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//                App.currentUser.setPfpBitmap(decodedImage);
+//                System.out.println("success!! User pfp bitmap received!");
+//            }
+//        };
+//        OnFailureListener failureListener = new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                System.out.println("NOOOOOOOOOOOOOOOOO user pfp bitmap query failed");
+//            }
+//        };
+//
+//        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
+//    }
 
     /**
      * Sets up the navigation for the BottomNavigationView and the ActionBar.

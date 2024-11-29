@@ -53,6 +53,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")  // OkHttp version
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.activity)
 
     // Test dependencies
     testImplementation("junit:junit:4.13.2")
@@ -86,6 +87,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation("pl.droidsonroids.gif:android-gif-drawable:1.2.29")
 
     // Unit testing dependencies
     testImplementation(libs.junit)

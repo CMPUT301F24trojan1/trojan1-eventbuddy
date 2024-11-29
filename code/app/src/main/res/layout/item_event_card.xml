@@ -1,6 +1,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/rectangle_background"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp">
@@ -62,4 +64,26 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+    <!-- Event Description -->
+    <TextView
+        android:id="@+id/event_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Event Description"
+        android:textSize="14sp"
+        android:textColor="#555555"
+        android:paddingTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/event_name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/pending_notif"
+        android:layout_width="49dp"
+        android:layout_height="54dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/event_description"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/pending" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
