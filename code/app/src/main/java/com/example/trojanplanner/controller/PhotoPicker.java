@@ -17,15 +17,17 @@ import androidx.lifecycle.LifecycleOwner;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.User;
+import com.example.trojanplanner.view.MainActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Class that provides the ability to open the user's photo library and select a photo
  * Refer to the selectedPhoto attribute to get the last selected photo.
  * <br>
- * - Note that if reusing the same PhotoPicker the selectedPhoto attribute could be from a
- * previous prompt if the user has not selected again yet
+ * - To use, MUST call initPhotoPicker in the onCreate function of the ACTIVITY the PhotoPicker
+ * will be used inside. Callback functions to trigger on photo selection can be registered at any time.
  */
 public class PhotoPicker {
 
@@ -42,16 +44,12 @@ public class PhotoPicker {
     private boolean hasDatabase = false;
     private User user; // Just to assign a user for uploading
 
-    public PhotoPickerCallback dummyCallback;
+    private ArrayList<PhotoPickerCallback> callbacks = new ArrayList<PhotoPickerCallback>();
 
     public PhotoPicker() {
         activity = App.activity;
         owner = (LifecycleOwner) activity;
         registry = ( (AppCompatActivity) activity).getActivityResultRegistry();
-        dummyCallback = new PhotoPickerCallback() {
-            @Override
-            public void OnPhotoPickerFinish(Bitmap bitmap) { return; }
-        };
     }
 
 
@@ -76,6 +74,22 @@ public class PhotoPicker {
         void OnPhotoPickerFinish(Bitmap bitmap);
     }
 
+    /**
+     * Notify all callbacks that the PhotoPicker has finished and selected an image. This array
+     * is important to allow adding callbacks after being the PhotoPicker is already initialized.
+     * @param bitmap
+     */
+    private void notifyCallbacks(Bitmap bitmap) {
+        for (PhotoPickerCallback callback : callbacks) {
+            callback.OnPhotoPickerFinish(bitmap);
+        }
+    }
+
+    public void addCallback(PhotoPickerCallback callback) {
+        if (!callbacks.contains(callback)) {
+            callbacks.add(callback);
+        }
+    }
 
     /**
      * Method to initialize the PhotoPicker instance. This must be called before attempting to call
@@ -87,6 +101,11 @@ public class PhotoPicker {
      * @author Jared Gourley
      */
     public void initPhotoPicker(@NonNull PhotoPickerCallback callback, Database database) {
+        // Add callback if it isn't added already
+        if (callback != null && !callbacks.contains(callback)) {
+            callbacks.add(callback);
+        }
+
         // https://developer.android.com/training/data-storage/shared/photopicker#select-single-item
         // https://developer.android.com/training/basics/intents/result#separate - needed to modify call to work from non-Activity object
         photoPickerLauncher =
@@ -104,11 +123,11 @@ public class PhotoPicker {
                             Log.d("PhotoPicker", "uri invalid/no permissions");
                             selectedPhoto = null;
                             currentlyPicking = false;
-                            callback.OnPhotoPickerFinish(selectedPhoto);
+                            notifyCallbacks(selectedPhoto);
                             return;
                         }
                         // Trigger the successful callback with the photo and upload if desired
-                        callback.OnPhotoPickerFinish(selectedPhoto);
+                        notifyCallbacks(selectedPhoto);
                         if (database != null) {
                             database.uploadImage(bitmap, user);
                         }
@@ -118,7 +137,7 @@ public class PhotoPicker {
                         Log.d("PhotoPicker", "No media selected");
                         selectedPhoto = null;
                         currentlyPicking = false;
-                        callback.OnPhotoPickerFinish(selectedPhoto);
+                        notifyCallbacks(selectedPhoto);
                     }
                 });
 
@@ -138,7 +157,7 @@ public class PhotoPicker {
      * @author Jared Gourley
      */
     public void initPhotoPicker() {
-        initPhotoPicker(dummyCallback, null);
+        initPhotoPicker(null, null);
     }
 
     public void initPhotoPicker(PhotoPickerCallback callback) {
@@ -146,7 +165,7 @@ public class PhotoPicker {
     }
 
     public void initPhotoPicker(Database database) {
-        initPhotoPicker(dummyCallback, database);
+        initPhotoPicker(null, database);
     }
 
 

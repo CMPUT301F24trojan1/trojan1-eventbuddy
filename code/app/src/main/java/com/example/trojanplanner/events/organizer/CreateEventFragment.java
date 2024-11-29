@@ -1,5 +1,6 @@
 package com.example.trojanplanner.events.organizer;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -22,11 +24,14 @@ import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
+import com.example.trojanplanner.ProfileUtils.PfpClickPopupFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
+import com.example.trojanplanner.view.MainActivity;
 
 import java.util.Date;
 
@@ -35,6 +40,12 @@ import java.util.Date;
  * from the user through input fields and creates an event in the database.
  */
 public class CreateEventFragment extends Fragment {
+    private ImageView eventImageView;
+    private Bitmap eventImageBitmap;
+    private boolean changedPfp = false;
+
+    private PhotoPicker photoPicker; // We borrow the one initialized in MainActivity for this
+
     private EditText eventNameEditText;
     private EditText eventDescriptionEditText;
     private EditText eventDateEditText; // Add other fields as needed
@@ -43,10 +54,12 @@ public class CreateEventFragment extends Fragment {
     private Database database;
     private Switch eventGeolocationSwitch;
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);  // Ensure options menu is handled by the fragment
+
     }
 
     /**
@@ -73,6 +86,17 @@ public class CreateEventFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Create and register a callback for the photoPicker
+        photoPicker = ((MainActivity) App.activity).eventPhotoPicker;
+        PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) {
+                onSelectedPhoto(bitmap);
+            }
+        };
+        photoPicker.addCallback(photoPickerCallback);
+
+
         if (requireActivity() instanceof AppCompatActivity) {
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
             activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);  // Enable back button
@@ -81,6 +105,10 @@ public class CreateEventFragment extends Fragment {
 
         // Initialize database
         database = Database.getDB();
+
+        // Get views on the screen
+        eventImageView = view.findViewById(R.id.eventImageView);
+        eventImageView.setImageBitmap(Event.getDefaultPicture());
         eventGeolocationSwitch = view.findViewById(R.id.eventGeolocationSwitch);
         eventNameEditText = view.findViewById(R.id.eventNameEditText);
         eventDescriptionEditText = view.findViewById(R.id.eventDescriptionEditText);
@@ -88,6 +116,10 @@ public class CreateEventFragment extends Fragment {
         createEventButton = view.findViewById(R.id.createEventButton);
         cancelEventButton = view.findViewById(R.id.cancelEventButton); // Cancel button
 
+        // Handle image click to change photo
+        eventImageView.setOnClickListener(v -> {
+            createPfpPopup();
+        });
 
         // Handle "Create Event" button click
         createEventButton.setOnClickListener(v -> {
@@ -160,6 +192,23 @@ public class CreateEventFragment extends Fragment {
                         30, 100L, 100L); // Adjust parameters as needed
 
                 newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation by default for testing
+
+                // If a pfp was set, explicitly choose a filepath here
+                // and use it for both the Firebase Storage upload and the database document insert
+                if (changedPfp) {
+                    if (eventImageBitmap != null) {
+                        String newPfpFilepath = currentOrganizer.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
+                        newEvent.setPictureFilePath(newPfpFilepath);
+                        newEvent.setPicture(eventImageBitmap);
+                        database.uploadImage(eventImageBitmap, currentOrganizer, newPfpFilepath);
+                    }
+                    else {
+                        // Delete the image (include deleteImage call here if ever needed)
+                        newEvent.setPictureFilePath(null);
+                        newEvent.setPicture(null);
+                    }
+                }
+
                 // Insert the new event into the database
                 database.insertEvent(newEvent);
 
@@ -231,6 +280,44 @@ public class CreateEventFragment extends Fragment {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+    /**
+     * Action to be taken when the user successfully selects a photo for the event banner.
+     * The PhotoPicker is set up to call this function through a callback on selection.
+     *
+     * @param bitmap
+     */
+    public void onSelectedPhoto(Bitmap bitmap) {
+        changedPfp = true;
+        eventImageBitmap = bitmap;
+        eventImageView.setImageBitmap(bitmap);
+    }
+
+    public void resetEventPhoto() {
+        changedPfp = false;
+        eventImageBitmap = null;
+        eventImageView.setImageBitmap(Event.getDefaultPicture());
+    }
+
+
+    private void createPfpPopup() {
+        PfpClickPopupFragment.PfpPopupFunctions popupFunctions = new PfpClickPopupFragment.PfpPopupFunctions() {
+            @Override
+            public void changePFP() {
+                photoPicker.openPhotoPicker();
+            }
+            @Override
+            public void removePFP() {
+                resetEventPhoto();
+            }
+        };
+
+        new PfpClickPopupFragment(popupFunctions).show(((AppCompatActivity) App.activity).getSupportFragmentManager(), "Change Event Picture");
+    }
+
+
+
 }
 
 

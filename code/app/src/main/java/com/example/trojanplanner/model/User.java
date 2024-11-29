@@ -255,7 +255,7 @@ public abstract class User implements Serializable {
     }
 
     // Helper method to load a default picture
-    private Bitmap getDefaultPicture() {
+    public static Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
         return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.profile_avatar);
     }
