@@ -6,6 +6,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+
+import com.example.trojanplanner.view.admin.AdminQRActivity;
 import com.google.android.gms.maps.model.LatLng;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
@@ -2739,7 +2741,7 @@ public class Database {
         });
     }
 
-
+    // ================================== Admin Browse Event FUNCTIONS =====================================
     public void getEventDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         CollectionReference eventsCollection = db.collection("events");
 
@@ -2839,7 +2841,7 @@ public class Database {
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
 
-    // Admin specific Queries for Facilities
+    // ================================== Admin Browse Faciltiies FUNCTIONS =====================================
     public void getFacilityDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         CollectionReference facilitiesCollection = db.collection("facilities");
 
@@ -2934,7 +2936,7 @@ public class Database {
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
 
-    // Admin specific Queries for Users
+    // ================================== Admin Browse User FUNCTIONS =====================================
     public void getUserDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         CollectionReference userCollection = db.collection("users");
 
@@ -3029,6 +3031,93 @@ public class Database {
                 .addOnFailureListener(failureListener);  // Trigger failure listener if an error occurs
     }
 
+    // ================================== Admin Browse QR FUNCTIONS =====================================
+    public void getQRDocumentIDs(int page, int pageSize, String lastDocumentId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        CollectionReference qrCollection = db.collection("eventHashes");
+
+        // Create the base query, ordering by QR hash and limiting by page size
+        final Query[] query = {qrCollection.orderBy("eventID").limit(pageSize)};
+
+        if (page > 1 && lastDocumentId != null) {
+            // Fetch the last visible document for pagination
+            getLastVisibleQRDocument(lastDocumentId, lastVisible -> {
+                if (lastVisible != null) {
+                    query[0] = query[0].startAfter(lastVisible);
+                }
+
+                // Execute the paginated query
+                executeQRQuery(query[0], successAction, failureAction);
+            });
+        } else {
+            // For the first page, directly execute the query
+            executeQRQuery(query[0], successAction, failureAction);
+        }
+    }
+
+    private void executeQRQuery(Query query, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        query.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<String> documentIDs = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        documentIDs.add(document.getId()); // Collect QR document IDs (QR hashes)
+                    }
+                    successAction.OnSuccess(documentIDs);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Database", "Error fetching QR IDs: ", e);
+                    failureAction.OnFailure();
+                });
+    }
+
+    private void getLastVisibleQRDocument(String lastDocumentId, OnLastDocumentFetchedListener listener) {
+        db.collection("eventHashes")
+                .document(lastDocumentId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot documentSnapshot = task.getResult();
+                        listener.onLastDocumentFetched(documentSnapshot);
+                    } else {
+                        Log.e("Database", "Error retrieving last visible document", task.getException());
+                        listener.onLastDocumentFetched(null);
+                    }
+                });
+    }
+
+    public void getTotalQRDocumentCount(OnSuccessListener<Long> successListener, OnFailureListener failureListener) {
+        AggregateQuery countQuery = db.collection("eventHashes").count();
+
+        countQuery.get(AggregateSource.SERVER)
+                .addOnSuccessListener(aggregateQuerySnapshot -> {
+                    long totalDocuments = aggregateQuerySnapshot.getCount();
+                    successListener.onSuccess(totalDocuments);
+                })
+                .addOnFailureListener(failureListener);
+    }
+
+    public void getEventIDForQRDoc(String qrDocId, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        db.collection("eventHashes").document(qrDocId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Extract the eventID from the document
+                        String eventID = documentSnapshot.getString("eventID");
+                        if (eventID != null) {
+                            successAction.OnSuccess(eventID); // Pass eventID to the success action
+                        } else {
+                            Log.e("Database", "eventID is null for document: " + qrDocId);
+                            failureAction.OnFailure();
+                        }
+                    } else {
+                        Log.e("Database", "Document does not exist: " + qrDocId);
+                        failureAction.OnFailure();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Database", "Error fetching eventID for document: " + qrDocId, e);
+                    failureAction.OnFailure();
+                });
+    }
 
     // ================================== DELETE FUNCTIONS =====================================
 
@@ -3038,7 +3127,8 @@ public class Database {
      *
      * @param successListener (Unused) Listener to be notified when a successful delete happens
      * @param failureListener (Unused) Listener to be notified when a failed delete happens
-     * @param eventId
+     * @param eventId The event ID that we want to delete, along with all references of it
+     * @author Jared Gourley
      */
     private void deleteEvent(OnSuccessListener successListener, OnFailureListener failureListener, String eventId) {
 
@@ -3069,32 +3159,29 @@ public class Database {
 
 
         // Second, delete the QR code for the event if one exists.
-        // Note: we have to find where the eventID field of any documents matches the eventId
-        Query query = db.collection("eventHashes").whereEqualTo("eventID", eventId);
-        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    // For every returned document, get the DocumentReference and remove the event element from the array
-                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
-                        System.out.println("DELETE_EVENT_"+ eventId + ": Event hash " + docSnapshot.getId() + " being deleted");
-                        docSnapshot.getReference().delete();
-                    }
-                }
-            });
+        deleteQRCode(eventId);
 
 
         // Third, delete the map for the event if one exists.
         // Note: simply request the deletion of the document with the primary key matching the eventId.
         // If that document doesn't exist, no problem, still worked
-        db.collection("maps").document(eventId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+        deleteMap(eventId);
+
+        // Fourth, delete the event photo if it exists.
+        // We don't actually have the event attributes so we'll have to query to get it and then delete
+        eventDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
-            public void onSuccess(Void unused) {
-                System.out.println("DELETE_EVENT_"+ eventId + ": Event map deleted (if it existed)");
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String imagePath = documentSnapshot.getString("eventPhoto");
+                if (imagePath != null) {
+                    deleteImage(imagePath);
+                }
             }
         });
 
+
         // Finally, delete the event itself (if it exists).
-        db.collection("events").document(eventId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+        eventDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
                 System.out.println("DELETE_EVENT_"+ eventId + ": Event deleted (if it existed)");
@@ -3108,12 +3195,206 @@ public class Database {
      * Deletes the event with the given eventId. This will also delete the QR code for the event,
      * the event map, and any references that any entrant or organizer had to that event.
      * <br>
-     * (No success or failure listeners given for this function, assume deletes will work successfully
+     * (No success or failure listeners given for this function, assume deletes will work successfully)
      *
      * @param eventId The event ID to fully delete from the database
+     * @author Jared Gourley
      */
     public void deleteEvent(String eventId) {
         deleteEvent(null, null, eventId);
+    }
+
+
+    /**
+     * Deletes (all) QR codes associated with a given event ID.
+     *
+     * @param eventId The event ID to delete any QR codes of
+     * @author Jared Gourley
+     */
+    public void deleteQRCode(String eventId) {
+        // Note: we have to find where the eventID field of any documents matches the eventId
+        Query query = db.collection("eventHashes").whereEqualTo("eventID", eventId);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                // For every returned document, get the DocumentReference and delete it
+                for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                    System.out.println("DELETE_EVENT_"+ eventId + " qrcode: Event hash " + docSnapshot.getId() + " being deleted");
+                    docSnapshot.getReference().delete();
+                }
+            }
+        });
+
+    }
+
+
+    /**
+     * Deletes an event map associated with the given Event ID.
+     *
+     * @param eventId The ID of the map to delete (map ID == event ID)
+     * @author Jared Gourley
+     */
+    public void deleteMap(String eventId) {
+        db.collection("maps").document(eventId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_EVENT_"+ eventId + ": Event map deleted (if it existed)");
+            }
+        });
+
+
+    }
+
+
+    /**
+     * Deletes a facility from the database, INCLUDING ALL EVENTS AT THAT FACILITY! This method also
+     * sets the facility attribute of its owner to null as would be expected upon deletion.
+     *
+     * @param facilityId The facility ID to fully delete from the database
+     */
+    public void deleteFacility(String facilityId) {
+        System.out.println("DELETE_FACILITY_" + facilityId + ": Requesting to delete facility and all associated references");
+        DocumentReference facilityDocRef = db.collection("facilities").document(facilityId);
+
+        // First, set the facility attribute of the owner to null.
+
+        Query query = db.collection("users").whereEqualTo("facility", facilityDocRef);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                // For every returned document, get the DocumentReference and set the facility attribute to null
+                for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                    System.out.println("DELETE_FACILITY_"+ facilityId + " owner: organizer '" + docSnapshot.getString("firstName") + "' (" + docSnapshot.getId() + ") facility attribute being nulled");
+                    docSnapshot.getReference().update("facility", null);
+                }
+            }
+        });
+
+        // Second, find all events being hosted at this facility and delete them.
+        query = db.collection("events").whereEqualTo("facility", facilityDocRef);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                // For every returned document, get the DocumentReference and set the facility attribute to null
+                for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                    System.out.println("DELETE_FACILITY_"+ facilityId + " event: event '" + docSnapshot.getString("name") + "' (" + docSnapshot.getId() + ") must be deleted");
+                    deleteEvent(docSnapshot.getString("eventID"));
+                }
+            }
+        });
+
+        // Third, delete the facility photo if it exists.
+        // We don't actually have the facility attributes so we'll have to query to get it and then delete
+        facilityDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String imagePath = documentSnapshot.getString("facilityPhoto");
+                if (imagePath != null) {
+                    deleteImage(imagePath);
+                }
+            }
+        });
+
+        // Finally, delete the facility document itself (if it exists).
+        facilityDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_FACILITY_"+ facilityId + ": Facility deleted (if it existed)");
+            }
+        });
+
+
+    }
+
+
+    /**
+     * Deletes the user entirely from the database, including any references as well:
+     * <ul>
+     *     <li> If the user is only an entrant, simply delete their reference in any event lists they were in </li>
+     *     <li> If the user is an organizer, delete the facility they owned (including all events at that facility), as well as the above entrant logic </li>
+     *
+     * </ul>
+     *
+     * @param deviceId The ID of the user to delete along with all references
+     */
+    public void deleteUser(String deviceId) {
+        DocumentReference userDocRef = db.collection("users").document(deviceId);
+        System.out.println("DELETE_USER_" + deviceId + ": Requesting to delete user and all associated references");
+
+        // First, entrant logic. Delete the reference to the user in any event list
+
+        // Delete instances where the user is in an event as an entrant
+        String[] arraysToSearch = {"enrolledlist", "pendinglist", "waitlist", "cancelledlist"};
+        for (String arrayNameString : arraysToSearch) {
+            // For a given array to search, send a query to get all documents with this user docRef in it and send an update to each of them to remove it
+            Query query = db.collection("events").whereArrayContains(arrayNameString, userDocRef);
+            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    // For every returned document, get the DocumentReference and remove the event element from the array
+                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                        String eventId = docSnapshot.getString("eventID");
+                        DocumentReference docRefToUpdate = db.collection("events").document(eventId);
+                        docRefToUpdate.update(arrayNameString, FieldValue.arrayRemove(userDocRef)); // Deletes any element from the array matching userDocRef
+                        System.out.println("DELETE_USER_" + deviceId + ": Deleted user reference from " + arrayNameString + " of event " + eventId);
+                    }
+                }
+            });
+
+        }
+
+        // Second, organizer logic. If any facility has this organizer as the owner, we should delete the facility (which will delete all events at that facility)
+        // Note: We don't have to manually delete events this organizer created because deleteFacility does that
+        // This relies on the assumption that the facility attribute for all events is set correctly
+        Query query = db.collection("facilities").whereEqualTo("owner", userDocRef);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                // For every returned document, get the DocumentReference and set the facility attribute to null
+                for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                    System.out.println("DELETE_USER_"+ deviceId + " facility: must delete facility '" + docSnapshot.getString("name") + "' (" + docSnapshot.getId() + ")");
+                    deleteFacility(docSnapshot.getId());
+                }
+            }
+        });
+
+        // Third, delete the user photo if it exists.
+        // We don't actually have the user attributes so we'll have to query to get it and then delete
+        userDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String imagePath = documentSnapshot.getString("pfp");
+                if (imagePath != null) {
+                    deleteImage(imagePath);
+                }
+            }
+        });
+
+        // Finally, delete the user document itself.
+        // Finally, delete the facility document itself (if it exists).
+        userDocRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_USER_"+ deviceId + ": User deleted (if it existed)");
+            }
+        });
+
+
+
+    }
+
+
+    public void deleteImage(String imagePath) {
+        System.out.println("DELETE_IMAGE_" + imagePath + ": Requesting to delete image");
+        StorageReference storageRef = storage.getReference();
+        StorageReference pathReference = storageRef.child(imagePath);
+
+        pathReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                System.out.println("DELETE_IMAGE_" + imagePath + ": Image deleted");
+            }
+        });
     }
 
 

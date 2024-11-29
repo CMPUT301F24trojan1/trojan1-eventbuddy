@@ -91,6 +91,14 @@ public class AdminImagesActivity extends AppCompatActivity {
                     finish();
                 }
                 return true;
+            } else if (item.getItemId() == R.id.navigation_qr) {
+                if (App.currentUser != null) {
+                    Intent intent = new Intent(AdminImagesActivity.this, AdminQRActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+                return true;
             } else return item.getItemId() == R.id.navigation_images; // Stay in the same activity
         });
     }
