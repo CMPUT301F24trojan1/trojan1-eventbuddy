@@ -18,14 +18,24 @@ import com.example.trojanplanner.view.ProfileActivity;
 
 public class PfpClickPopupFragment extends DialogFragment {
 
-    private ProfileActivity profileActivity;
+
+    /**
+     * Allows the class that instantiates this popup to determine what actions the buttons should do.
+     * This makes the popup generalizable so it can be reused.
+     */
+    public interface PfpPopupFunctions {
+        void changePFP();
+        void removePFP();
+    }
+    private PfpPopupFunctions popupCallback;
+
 
     public PfpClickPopupFragment() {
         super();
     }
 
-    public PfpClickPopupFragment(ProfileActivity profileActivity) {
-        this.profileActivity = profileActivity;
+    public PfpClickPopupFragment(PfpPopupFunctions popupCallback) {
+        this.popupCallback = popupCallback;
     }
 
     @NonNull
@@ -36,7 +46,7 @@ public class PfpClickPopupFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
         builder.setView(view)
-                .setTitle("Change Profile Picture")
+                .setTitle("Change Picture")
                 .setNeutralButton("Cancel", null)
                 .setNegativeButton("Remove PFP", (dialogInterface, i) -> {removePFP(); })
                 .setPositiveButton("Change PFP", (dialogInterface, i) -> {changePFP(); });
@@ -46,11 +56,11 @@ public class PfpClickPopupFragment extends DialogFragment {
 
 
     private void removePFP() {
-        profileActivity.profileFragment.resetPFP(null); // pass null to reset
+        popupCallback.removePFP();
     }
 
     private void changePFP() {
-        profileActivity.photoPicker.openPhotoPicker();
+        popupCallback.changePFP();
     }
 
 
