@@ -4,141 +4,248 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:id="@+id/profile_fragment_parent"
+    android:background="@drawable/back2"
+    >
+
+    <!-- Profile Picture (in front) -->
+
 
     <ImageView
-        android:id="@+id/profile_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:id="@+id/imageView2"
+        android:layout_width="145dp"
+        android:layout_height="149dp"
         android:layout_gravity="center"
         android:layout_marginTop="44dp"
         android:background="@drawable/circle_shape"
+        android:backgroundTint="@color/trojanRed"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/profile_image"
+        android:layout_width="133dp"
+        android:layout_height="133dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="52dp"
+        android:background="@drawable/circle_shape"
+        android:clipToOutline="true"
         android:contentDescription="Profile Picture"
         android:scaleType="centerCrop"
-        android:src="@drawable/placeholder_avatar"
-        android:clipToOutline="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@tools:sample/avatars" />
 
     <EditText
-        android:id="@+id/lastname_input"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:hint="Last Name"
+        android:id="@+id/email_input"
+        android:layout_width="331dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="36dp"
+        android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.467"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/firstname_input" />
+        app:layout_constraintTop_toBottomOf="@+id/lastname_input" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="343dp"
+        android:layout_height="16dp"
+        android:layout_marginBottom="4dp"
+        android:alpha="0.7"
+        android:fontFamily="sans-serif-medium"
+        android:text="First Name:"
+        android:textColor="@color/trojanRed"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/firstname_input"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.58"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="343dp"
+        android:layout_height="16dp"
+        android:layout_marginBottom="4dp"
+        android:alpha="0.7"
+        android:fontFamily="sans-serif-medium"
+        android:text="Last Name:"
+        android:textColor="@color/trojanRed"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/lastname_input"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.58"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:layout_width="343dp"
+        android:layout_height="16dp"
+        android:layout_marginBottom="4dp"
+        android:alpha="0.7"
+        android:fontFamily="sans-serif-medium"
+        android:text="Email:"
+        android:textColor="@color/trojanRed"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/email_input"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.58"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="343dp"
+        android:layout_height="16dp"
+        android:layout_marginBottom="4dp"
+        android:alpha="0.7"
+        android:fontFamily="sans-serif-medium"
+        android:text="Phone Number:"
+        android:textColor="@color/trojanRed"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/phone_input"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.58"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
         android:id="@+id/firstname_input"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:hint="First Name"
+        android:layout_width="331dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.459"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profile_image" />
 
     <EditText
         android:id="@+id/phone_input"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:hint="Phone Number (Optional)"
+        android:layout_width="331dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="32dp"
         android:inputType="phone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.467"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/email_input" />
+        app:layout_constraintTop_toBottomOf="@+id/email_input" />
 
     <EditText
-        android:id="@+id/email_input"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
+        android:id="@+id/lastname_input"
+        android:layout_width="331dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="40dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.467"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lastname_input" />
+        app:layout_constraintTop_toBottomOf="@+id/firstname_input" />
+
+
+    <!-- Additional toggle switch for switching between Profile and Facility screens -->
+
 
     <Button
         android:id="@+id/cancel_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@android:color/holo_red_dark"
+        android:layout_width="150dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="29dp"
+        android:layout_marginBottom="228dp"
+        android:background="@drawable/rounded_button"
+        android:backgroundTint="@color/red_primary"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="2dp"
         android:text="Cancel"
         android:textColor="@android:color/white"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.83"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/save_button" />
+        app:layout_constraintTop_toBottomOf="@+id/phone_input"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/save_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="23dp"
-        android:backgroundTint="@android:color/holo_red_light"
+        android:layout_width="150dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="29dp"
+        android:layout_marginBottom="228dp"
+        android:background="@drawable/rounded_button"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="2dp"
         android:text="Save"
+        android:textColor="@android:color/white"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.144"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/phone_input" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="222dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="55dp"
-        android:text="Disable notifications from Organizers and Admins"
-        app:layout_constraintEnd_toStartOf="@+id/switch1"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cancel_button" />
+        app:layout_constraintTop_toBottomOf="@+id/phone_input"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Switch
         android:id="@+id/switch1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="28dp"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="8dp"
+        android:text="Enable/Disable Notifications"
+        android:textColor="@color/red_primary"
+        android:textSize="16sp"
+        android:thumbTint="@color/trojanRed"
+        android:trackTint="@color/darkGray"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cancel_button" />
+        app:layout_constraintHorizontal_bias="0.504"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cancel_button"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/switch_profile_facility"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="17dp"
-        android:layout_marginBottom="68dp"
-        android:visibility="gone"
-        android:text="Manage Facility Profile"
+        android:layout_width="139dp"
+        android:layout_height="48dp"
+        android:background="@drawable/rounded_button"
+        android:backgroundTint="@color/red_primary"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="10dp"
+        android:text="Facility Profile"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/switch1"
+        app:layout_constraintVertical_bias="0.089" />
 
     <Button
         android:id="@+id/switch_admin_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone"
-        android:text="Switch to Admin View"
+        android:layout_width="139dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="40dp"
+        android:background="@drawable/rounded_button"
+        android:backgroundTint="@color/red_primary"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="10dp"
+        android:text="Admin View"
+        android:textColor="@android:color/white"
+
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/switch_profile_facility" />
+        app:layout_constraintTop_toBottomOf="@+id/switch_profile_facility"
+        app:layout_constraintVertical_bias="0.514" />
 </androidx.constraintlayout.widget.ConstraintLayout>
