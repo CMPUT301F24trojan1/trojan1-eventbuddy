@@ -171,7 +171,19 @@ public class ProfileFragment extends Fragment {
     }
 
     private void createPfpPopup() {
-        new PfpClickPopupFragment(profileActivity).show(profileActivity.getSupportFragmentManager(), "Change Profile Picture");
+        PfpClickPopupFragment.PfpPopupFunctions popupFunctions = new PfpClickPopupFragment.PfpPopupFunctions() {
+            @Override
+            public void changePFP() {
+                profileActivity.photoPicker.openPhotoPicker();
+            }
+
+            @Override
+            public void removePFP() {
+                profileActivity.profileFragment.resetPFP(null);
+            }
+        };
+
+        new PfpClickPopupFragment(popupFunctions).show(profileActivity.getSupportFragmentManager(), "Change Profile Picture");
     }
 
     private void handleCancel() {
