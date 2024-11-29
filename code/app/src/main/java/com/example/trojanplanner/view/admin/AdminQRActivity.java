@@ -10,13 +10,13 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.trojanplanner.R;
 
-public class AdminProfileActivity extends AppCompatActivity {
+public class AdminQRActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_admin_profile);
+        setContentView(R.layout.activity_admin_qr);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.AdminProfileConstraintLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

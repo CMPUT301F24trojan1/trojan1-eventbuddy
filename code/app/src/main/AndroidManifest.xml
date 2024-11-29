@@ -73,6 +73,9 @@
         <!-- Admin Users Activity -->
         <activity android:name=".view.admin.AdminUsersActivity" />
 
+        <!-- Admin QR Activity -->
+        <activity android:name=".view.admin.AdminQRActivity" />
+
         <service
             android:name=".notifications.MyFirebaseMessagingService"
             android:exported="true"
