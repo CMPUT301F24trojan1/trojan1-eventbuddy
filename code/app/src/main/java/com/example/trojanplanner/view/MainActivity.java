@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private Database database;
 
     public PhotoPicker facilityPhotoPicker;
-    private PhotoPicker.PhotoPickerCallback facilityPhotoPickerCallback;
+    public PhotoPicker.PhotoPickerCallback facilityPhotoPickerCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,67 +44,67 @@ public class MainActivity extends AppCompatActivity {
 
         database = Database.getDB();
         facilityPhotoPicker = new PhotoPicker();
-        facilityPhotoPicker.initPhotoPicker();
+        facilityPhotoPicker.initPhotoPicker(facilityPhotoPickerCallback);
 
 
-        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
-        if (App.currentUser == null) {
-            // Get/check entrant from db based on device ID (note: this is async)
-            getEntrantFromDeviceId(App.deviceId); // Redirects if no entrant exists!
-        }
+//        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
+//        if (App.currentUser == null) {
+//            // Get/check entrant from db based on device ID (note: this is async)
+//            getEntrantFromDeviceId(App.deviceId); // Redirects if no entrant exists!
+//        }
 
         setupNavigation();
 
     }
 
-    /**
-     *
-     * @param deviceId
-     * @author Jared Gourley
-     */
-    private void getEntrantFromDeviceId(String deviceId) {
-        // On success, set the entrant object and populate the events list
-        // On failure, redirect to the make profile page (for now?)
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
-            @Override
-             public void OnSuccess(Object object) {
-                 App.currentUser = (Entrant) object;
-                 Entrant currentEntrant = (Entrant) App.currentUser; // Just to make this function have less typecasting
-                 System.out.println("getEntrantFromDeviceId success! current user: " + currentEntrant.getFirstName() + " " + currentEntrant.getLastName());
-                 Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
-                 myToast.show();
-                 System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
-
-                 // TODO: populate events array
-                 // Check if the user has any events
-                 if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
-                         (currentEntrant.getCurrentPendingEvents() == null || currentEntrant.getCurrentPendingEvents().isEmpty())) {
-                     // Show the EmptyEventsFragment if no events are found
-                     // will show by default
-                 } else {
-                     // Otherwise, show the EventsFragment
-//                     getSupportFragmentManager().beginTransaction()
-//                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
-//                             .commit();
-                     NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_activity_main);
-                     navController.navigate(R.id.eventsListFragment);
-                 }
-             }
-        };
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
-            @Override
-            public void OnFailure() {
-                System.out.println("getEntrantFromDeviceId failed: new user?");
-                Toast myToast = Toast.makeText(App.activity, "Hello new user! Make a profile to join events!", Toast.LENGTH_LONG);
-                myToast.show();
-                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-                // Bundle attributes to be passed here i.e. intent.putExtra(...)
-                startActivity(intent);
-            }
-        };
-
-        database.getEntrant(successAction, failureAction, deviceId);
-    }
+//    /**
+//     *
+//     * @param deviceId
+//     * @author Jared Gourley
+//     */
+//    private void getEntrantFromDeviceId(String deviceId) {
+//        // On success, set the entrant object and populate the events list
+//        // On failure, redirect to the make profile page (for now?)
+//        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction(){
+//            @Override
+//             public void OnSuccess(Object object) {
+//                 App.currentUser = (Entrant) object;
+//                 Entrant currentEntrant = (Entrant) App.currentUser; // Just to make this function have less typecasting
+//                 System.out.println("getEntrantFromDeviceId success! current user: " + currentEntrant.getFirstName() + " " + currentEntrant.getLastName());
+//                 Toast myToast = Toast.makeText(App.activity, "Hello " + currentEntrant.getFirstName() + "!", Toast.LENGTH_LONG);
+//                 myToast.show();
+//                 System.out.println("currentUser pfp file path: " + currentEntrant.getPfpFilePath());
+//
+//                 // TODO: populate events array
+//                 // Check if the user has any events
+//                 if ((currentEntrant.getCurrentWaitlistedEvents() == null || currentEntrant.getCurrentWaitlistedEvents().isEmpty()) &&
+//                         (currentEntrant.getCurrentPendingEvents() == null || currentEntrant.getCurrentPendingEvents().isEmpty())) {
+//                     // Show the EmptyEventsFragment if no events are found
+//                     // will show by default
+//                 } else {
+//                     // Otherwise, show the EventsFragment
+////                     getSupportFragmentManager().beginTransaction()
+////                             .replace(R.id.nav_host_fragment_activity_main, new EventsFragment())
+////                             .commit();
+//                     NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_activity_main);
+//                     navController.navigate(R.id.eventsListFragment);
+//                 }
+//             }
+//        };
+//        Database.QueryFailureAction failureAction = new Database.QueryFailureAction(){
+//            @Override
+//            public void OnFailure() {
+//                System.out.println("getEntrantFromDeviceId failed: new user?");
+//                Toast myToast = Toast.makeText(App.activity, "Hello new user! Make a profile to join events!", Toast.LENGTH_LONG);
+//                myToast.show();
+//                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+//                // Bundle attributes to be passed here i.e. intent.putExtra(...)
+//                startActivity(intent);
+//            }
+//        };
+//
+//        database.getEntrant(successAction, failureAction, deviceId);
+//    }
 
 //    public void getUserPfp() {
 //        System.out.println("Getting user's PFP bitmap...");

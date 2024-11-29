@@ -74,10 +74,10 @@ public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArray
                     Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                     holder.profileImageView.setImageBitmap(bitmap);
                 } else {
-                    holder.profileImageView.setImageResource(R.drawable.placeholder_avatar);  // Use default image if file does not exist
+                    holder.profileImageView.setImageResource(R.drawable.profile_avatar);  // Use default image if file does not exist
                 }
             } else {
-                holder.profileImageView.setImageResource(R.drawable.placeholder_avatar);  // Use default image if pfpFilePath is null or empty
+                holder.profileImageView.setImageResource(R.drawable.profile_avatar);  // Use default image if pfpFilePath is null or empty
             }
         } else {
             // Handle the case where the user object is null (though this should be rare if data is consistent)
@@ -85,7 +85,7 @@ public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArray
             holder.lastNameTextView.setText("Unknown Last Name");
             holder.emailTextView.setText("No email provided");
             holder.phoneTextView.setText("No phone number");
-            holder.profileImageView.setImageResource(R.drawable.placeholder_avatar);  // Default image if user is null
+            holder.profileImageView.setImageResource(R.drawable.profile_avatar);  // Default image if user is null
         }
     }
 

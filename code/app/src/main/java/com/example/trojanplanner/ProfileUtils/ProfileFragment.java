@@ -199,7 +199,6 @@ public class ProfileFragment extends Fragment {
     private void handleSave() {
         // Handle save action, e.g., validate input and save to a database or API
         System.out.println("Save!");
-        // TODO: This probably should not be allowed to run if the database is currently still retrieving the current user?
 
         // Input validation
         boolean errorCaught = false;
