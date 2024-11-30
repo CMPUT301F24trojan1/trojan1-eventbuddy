@@ -71,6 +71,7 @@
                 android:id="@+id/deleteButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/rounded_button"
                 android:layout_marginTop="16dp"
                 android:backgroundTint="@color/design_default_color_error"
                 android:text="Cancel From Event"

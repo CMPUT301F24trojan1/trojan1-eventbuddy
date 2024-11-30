@@ -50,6 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="4dp"
+        android:background="@drawable/rounded_button"
         android:enabled="false"
         android:text="Previous"
         app:layout_constraintBottom_toTopOf="@+id/admin_bottom_nav_menu"
@@ -61,6 +62,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="108dp"
         android:layout_marginBottom="4dp"
+        android:background="@drawable/rounded_button"
         android:text="Next"
         app:layout_constraintBottom_toTopOf="@+id/admin_bottom_nav_menu"
         app:layout_constraintEnd_toEndOf="parent" />

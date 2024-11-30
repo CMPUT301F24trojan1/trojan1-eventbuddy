@@ -50,6 +50,7 @@
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="4dp"
         android:enabled="false"
+        android:background="@drawable/rounded_button"
         android:text="Previous"
         app:layout_constraintBottom_toTopOf="@+id/admin_bottom_nav_menu"
         app:layout_constraintEnd_toStartOf="@+id/next_button" />
@@ -60,6 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="108dp"
         android:layout_marginBottom="4dp"
+        android:background="@drawable/rounded_button"
         android:text="Next"
         app:layout_constraintBottom_toTopOf="@+id/admin_bottom_nav_menu"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -69,6 +71,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-medium"
         android:text="Currently In Directory: "
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
