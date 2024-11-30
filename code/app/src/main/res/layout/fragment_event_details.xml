@@ -205,13 +205,11 @@
         android:id="@+id/edit_poster"
         android:layout_width="139dp"
         android:layout_height="47dp"
-        android:layout_marginStart="24dp"
         android:layout_marginTop="4dp"
-        android:layout_marginEnd="136dp"
+        android:layout_marginEnd="8dp"
         android:text="Edit Poster"
         android:visibility="invisible"
-        app:layout_constraintEnd_toStartOf="@+id/EntrantManageEvents"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/EntrantManageEvents" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

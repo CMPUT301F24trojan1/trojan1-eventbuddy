@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.trojanplanner.R;
@@ -88,10 +89,23 @@ public class WaitlistFragment extends Fragment {
                     Button finalizeButton = requireActivity().findViewById(R.id.finalizeButton);
                     finalizeButton.setVisibility(View.VISIBLE);
                     finalizeButton.setOnClickListener(v -> {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                        builder.setTitle("Finalize Event");
+                        builder.setMessage("Are you sure you want to finalize this event?");
 
-                        event.setCancelledList(event.getWaitingList());
-                        event.setWaitingList(new ArrayList<>());
-                        Database.getDB().insertEvent(event);
+                        builder.setPositiveButton("Yes", (dialog, which) -> {
+                            ArrayList<User> listevent = event.getWaitingList();
+                            ArrayList<User> listcancelled = event.getCancelledList();
+                            listcancelled.addAll(listevent);
+                            event.setCancelledList(listcancelled);
+                            event.setWaitingList(new ArrayList<>()); // Clear the waiting List
+                            Database.getDB().insertEvent(event);
+                            requireActivity().onBackPressed();
+                        });
+                        builder.setNegativeButton("No", (dialog, which) -> {
+                            dialog.dismiss();
+                        });
+                        builder.show();
                     });
                     users = updatedEvent.getEnrolledList(); // Assuming the event has a method to get enrolled users
                 } else if ("cancelled".equals(listType)) {
