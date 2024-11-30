@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="entrant_event_options">
-        <item>Toggle Notifications</item>
-        <item>Leave Waitlist</item>
+        <item>View your status</item>
     </string-array>
 
 </resources>

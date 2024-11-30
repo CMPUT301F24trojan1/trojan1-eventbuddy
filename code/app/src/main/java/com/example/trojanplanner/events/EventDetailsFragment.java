@@ -57,7 +57,6 @@ public class EventDetailsFragment extends Fragment {
     private Database database;
     private Button buttonLeaveWaitlist;
     private Button manageButton;
-    private Button optionsButton;
     private Button acceptButton, declineButton, edit_poster;
     private TextView invitationText;
     private boolean isEventInWaitlist = false;
@@ -483,9 +482,7 @@ public class EventDetailsFragment extends Fragment {
         // Initialize Buttons
         buttonLeaveWaitlist = view.findViewById(R.id.button_leave_waitlist);
         manageButton = view.findViewById(R.id.ManageEvents);
-        optionsButton = view.findViewById(R.id.EntrantManageEvents);
         edit_poster = view.findViewById(R.id.edit_poster);
-
         invitationText = view.findViewById(R.id.invitationText);
         acceptButton = view.findViewById(R.id.Accept);
         declineButton = view.findViewById(R.id.Decline);
@@ -505,7 +502,6 @@ public class EventDetailsFragment extends Fragment {
                     manageButton.setVisibility(View.VISIBLE);
                     edit_poster.setVisibility(View.VISIBLE);
                     invitationText.setVisibility(View.GONE);
-                    optionsButton.setVisibility(View.GONE);
 
                     // Hide Leave Waitlist buttons
                     buttonLeaveWaitlist.setVisibility(View.GONE);
@@ -524,21 +520,6 @@ public class EventDetailsFragment extends Fragment {
                     assert manageButton != null;
                     manageButton.setVisibility(View.GONE);
                     edit_poster.setVisibility(View.GONE);
-                    optionsButton.setVisibility(View.VISIBLE);
-                    optionsButton.setOnClickListener(v -> {
-                        if (event != null) {
-                            EntrantEventOptionsDialogFragment dialogFragment = EntrantEventOptionsDialogFragment.newInstance(event);
-                            dialogFragment.show(getChildFragmentManager(), "EntrantEventOptionsDialog");
-                        }
-                    });
-                }
-            });
-        } else if (App.currentUser != null && optionsButton != null) {
-            optionsButton.setVisibility(View.VISIBLE);
-            optionsButton.setOnClickListener(v -> {
-                if (event != null) {
-                    EntrantEventOptionsDialogFragment dialogFragment = EntrantEventOptionsDialogFragment.newInstance(event);
-                    dialogFragment.show(getChildFragmentManager(), "EntrantEventOptionsDialog");
                 }
             });
         }
