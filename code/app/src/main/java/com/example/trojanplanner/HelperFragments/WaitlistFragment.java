@@ -85,6 +85,14 @@ public class WaitlistFragment extends Fragment {
                 ArrayList<User> users = new ArrayList<>();
 
                 if ("enrolled".equals(listType)) {
+                    Button finalizeButton = requireActivity().findViewById(R.id.finalizeButton);
+                    finalizeButton.setVisibility(View.VISIBLE);
+                    finalizeButton.setOnClickListener(v -> {
+
+                        event.setCancelledList(event.getWaitingList());
+                        event.setWaitingList(new ArrayList<>());
+                        Database.getDB().insertEvent(event);
+                    });
                     users = updatedEvent.getEnrolledList(); // Assuming the event has a method to get enrolled users
                 } else if ("cancelled".equals(listType)) {
                     users = updatedEvent.getCancelledList(); // Assuming the event has a method to get cancelled users

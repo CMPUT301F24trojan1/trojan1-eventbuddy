@@ -229,10 +229,10 @@ public class CreateEventFragment extends Fragment {
                 database.insertUserDocument(currentOrganizer);
                 App.currentUser = currentOrganizer;
 
+                App.sendAnnouncement(App.currentUser.getDeviceId(), "TrojanPlanner", "New Event Created!");
                 Toast.makeText(App.activity, "Event created successfully!", Toast.LENGTH_SHORT).show();
             }, ()-> {Log.e("CreateEvent", "Something went wrong, please try again"); Toast.makeText(App.activity, "Failed to fetch organizer. Please try again.", Toast.LENGTH_SHORT).show();
         }, App.currentUser.getDeviceId());
-
         return true;
     }
 
@@ -244,27 +244,10 @@ public class CreateEventFragment extends Fragment {
             // Set the date in the calendar
             calendar.set(year, month, dayOfMonth);
 
-            // Now open TimePickerDialog
-            new TimePickerDialog(requireContext(), (timeView, hourOfDay, minute) -> {
-                // Set the time in the calendar
-                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                calendar.set(Calendar.MINUTE, minute);
-
-                // Get the current date and time
-                Calendar currentCalendar = Calendar.getInstance();
-
-                // Check if the selected time is the current time or in the past
-                if (calendar.before(currentCalendar)) {
-                    // Show an error if the selected date/time is before the current date/time
-                    Toast.makeText(getContext(), "Please select a future date and time", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Format and set the date + time if valid
-                    SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm", Locale.getDefault());
-                    String formattedDateTime = dateTimeFormat.format(calendar.getTime());
-                    targetEditText.setText(formattedDateTime);
-                }
-
-            }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show();
+            // Format and set the selected date
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+            String formattedDate = dateFormat.format(calendar.getTime());
+            targetEditText.setText(formattedDate);
 
         }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
@@ -282,7 +265,6 @@ public class CreateEventFragment extends Fragment {
         // Optional: You can add a transition animation if needed
         getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

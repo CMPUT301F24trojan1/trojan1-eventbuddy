@@ -106,14 +106,6 @@
             android:textColor="@color/black"
             android:layout_marginTop="8dp" />
 
-        <!-- Divider -->
-        <View
-            android:id="@+id/view"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/black" />
-
         <!-- Event Description -->
         <TextView
             android:id="@+id/eventDescriptionTextView"
@@ -125,25 +117,33 @@
             android:lineSpacingExtra="4dp"
             android:layout_marginTop="8dp" />
 
-        <!-- Lottery Entries -->
+        <!-- Divider -->
+        <View
+            android:id="@+id/view"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/black" />
+
+        <!-- Ticket Price -->
         <TextView
-            android:id="@+id/lotteryEntriesTextView"
+            android:id="@+id/ticketPriceTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🎟️ Lottery Entries: "
-            android:textSize="16sp"
+            android:layout_marginTop="4dp"
+            android:text="Price: "
             android:textColor="@color/black"
-            android:layout_marginTop="8dp" />
+            android:textSize="16sp" />
 
         <!-- Total Spots -->
         <TextView
             android:id="@+id/totalSpotsTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="🪑 Total Spots: "
-            android:textSize="16sp"
             android:textColor="@color/black"
-            android:layout_marginTop="4dp" />
+            android:textSize="16sp" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>
 

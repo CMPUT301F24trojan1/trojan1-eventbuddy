@@ -79,13 +79,17 @@ public class NotificationSenderFragment extends Fragment {
                 users = event.getWaitingList(); // Get the waitlist users from the event
                 Toast.makeText(getContext(), "Notifying Entrants on the waiting list.", Toast.LENGTH_SHORT).show();
                 break;
-            case "Selected Entrants":
+            case "Invited Entrants":
+                users = event.getPendingList(); // Get the invited users from the event
+                Toast.makeText(getContext(), "Notifying All Invited Entrants.", Toast.LENGTH_SHORT).show();
+                break;
+            case "Enrolled Entrants":
                 users = event.getEnrolledList(); // Get the selected users from the event
-                Toast.makeText(getContext(), "Notifying Selected Entrants.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Notifying All Enrolled Entrants.", Toast.LENGTH_SHORT).show();
                 break;
             case "Cancelled Entrants":
                 users = event.getCancelledList(); // Get the cancelled users from the event
-                Toast.makeText(getContext(), "Notifying Cancelled Entrants.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Notifying All Cancelled Entrants.", Toast.LENGTH_SHORT).show();
                 break;
             default:
                 Toast.makeText(getContext(), "Invalid notification type selected.", Toast.LENGTH_SHORT).show();
