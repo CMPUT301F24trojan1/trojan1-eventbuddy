@@ -1,8 +1,6 @@
 package com.example.trojanplanner.controller.admin;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +11,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.User;
-import com.example.trojanplanner.view.admin.AdminQRActivity;
-import com.example.trojanplanner.view.admin.AdminUsersActivity;
 
-import java.io.File;
 import java.util.List;
 
 public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArrayAdapter.UserViewHolder> {
     private final Context context;
     private final List<User> userList;
-    private final AdminUsersArrayAdapter.OnItemClickListener onItemClickListener;
+    private final OnItemClickListener onItemClickListener;
 
     public interface OnItemClickListener {
         void onItemClick(User user);
@@ -37,7 +32,7 @@ public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArray
     @Override
     public UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_user_card, parent, false);
-        return new UserViewHolder(view);
+        return new UserViewHolder(view, onItemClickListener);
     }
 
     @Override
@@ -100,13 +95,19 @@ public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArray
         TextView firstNameTextView, lastNameTextView, emailTextView, phoneTextView;
         ImageView profileImageView;
 
-        public UserViewHolder(View itemView) {
+        public UserViewHolder(View itemView, OnItemClickListener onItemClickListener) {
             super(itemView);
             firstNameTextView = itemView.findViewById(R.id.firstNameTextView);
             lastNameTextView = itemView.findViewById(R.id.lastNameTextView);
             emailTextView = itemView.findViewById(R.id.emailTextView);
             phoneTextView = itemView.findViewById(R.id.phoneTextView);
             profileImageView = itemView.findViewById(R.id.profileImageView);
+
+            itemView.setOnClickListener(v -> {
+                if (onItemClickListener != null) {
+                    onItemClickListener.onItemClick(userList.get(getAdapterPosition()));
+                }
+            });
         }
     }
 }

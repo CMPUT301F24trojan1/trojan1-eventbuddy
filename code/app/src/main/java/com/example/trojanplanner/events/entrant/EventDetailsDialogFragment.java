@@ -1,11 +1,7 @@
 package com.example.trojanplanner.events.entrant;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -103,7 +99,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
 
             for (User user: event.getWaitingList()){
                 if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
@@ -173,7 +169,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
                                 database.insertEvent(
                                         (OnSuccessListener<Void>) unused -> {
                                             Log.d("EventDetails", "Event successfully updated in the database.");
-                                            addtoNotifications();
+                                            addtoNotifications(App.currentUser.getDeviceId());
                                             App.sendAnnouncement(App.currentUser.getDeviceId(), event.getEventId() ,"Added to Waitlist, you'll be notified when your status updates.");
                                             // Save the updated entrant only after the event is successfully updated
                                             database.insertUserDocument(
@@ -256,70 +252,32 @@ public class EventDetailsDialogFragment extends DialogFragment {
         }, syncedEntrant.getDeviceId());
     }
 
-
-    private void addtoNotifications(){
-        if (event != null) {
-            String eventId = event.getEventId(); // Use eventId for channel and topic
-            String channelId = "EventChannel_" + eventId; // Dynamic channel ID
-            String channelName = "Event Updates for " + eventId;
-
-            // Create a Notification Manager
-            NotificationManager notificationManager =
-                    (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-            // For Android 8.0+ (Oreo and above), create a notification channel
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel notificationChannel = new NotificationChannel(
-                        channelId,
-                        channelName,
-                        NotificationManager.IMPORTANCE_HIGH
-                );
-                notificationChannel.setDescription("Notifications for updates on event " + eventId);
-                notificationManager.createNotificationChannel(notificationChannel);
-            }
-
-            // Subscribe the user to the event's notification topic
-            FirebaseMessaging.getInstance().subscribeToTopic(eventId)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Log.d("Notifications", "Successfully subscribed to notifications for event: " + eventId);
-                            Toast.makeText(getContext(), "Subscribed to event notifications.", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Log.e("Notifications", "Failed to subscribe to event notifications: " + task.getException());
-                            Toast.makeText(getContext(), "Failed to subscribe to notifications.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        } else {
-            Log.e("Notifications", "Event data is missing. Cannot create notification channel.");
-            Toast.makeText(getContext(), "Event data is missing.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void checkEntrantStatus() {
-        if (event != null && event.getWaitingList() != null) {
-            if (event.getWaitingList().contains(entrant)) {
-                buttonEnterNow.setVisibility(View.GONE);
-            } else {
-                buttonEnterNow.setVisibility(View.VISIBLE);
-            }
-        } else {
-            Log.e("EventDetailsFragment", "Event or waiting list is null in checkEntrantStatus");
-        }
+    private void addtoNotifications(String topic) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Notifications", "Successfully subscribed to the topic: " + topic);
+                    } else {
+                        Log.e("Notifications", "Failed to subscribe to the topic: " + topic + ". Error: " + task.getException());
+                    }
+                });
     }
 
     /**
      * Populates the event details in the respective text views.
      * If event details are missing, default values will be shown.
      *
+     * @param eventImageView
      * @param eventNameTextView        The TextView to display the event's name.
      * @param eventLocationTextView    The TextView to display the event's location.
      * @param eventDateTextView        The TextView to display the event's start and end date.
      * @param recurringDatesTextView   The TextView to display the event's recurrence days.
      * @param eventDescriptionTextView The TextView to display the event's description.
      */
-    public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView,
+    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
                                      TextView eventDateTextView, TextView recurringDatesTextView,
                                      TextView eventDescriptionTextView) {
+        eventImageView.setImageBitmap(event.getPicture());
 
         eventNameTextView.setText(event.getName());
         if (event.getFacility() != null) {

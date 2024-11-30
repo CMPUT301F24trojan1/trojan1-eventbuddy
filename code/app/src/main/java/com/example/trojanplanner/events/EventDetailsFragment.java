@@ -421,7 +421,6 @@ public class EventDetailsFragment extends Fragment {
 
                     for (Event waitlistedEvent : ((Entrant) App.currentUser).getCurrentWaitlistedEvents()) {
                         if (waitlistedEvent.getEventId().equals(event.getEventId())) {
-                            // If event IDs match, set isEventInWaitlist to true
                             isEventInWaitlist = true;
                             break;
                         }
@@ -707,98 +706,3 @@ public class EventDetailsFragment extends Fragment {
     }
 
 }
-//    private void checkEntrantStatus() {
-//        if (App.currentUser instanceof Entrant && event != null) {
-//            Entrant currentEntrant = (Entrant) App.currentUser;
-//            ArrayList<User> waitingList = event.getWaitingList();
-//
-//            // Compare using unique identifiers
-//            boolean isOnWaitlist = false;
-//            for (DocumentReference doc: waitingList) {
-//                if (user.getDeviceId().equals(currentEntrant.getDeviceId())) {
-//                    isOnWaitlist = true;
-//                    break;
-//                }
-//            }
-//
-//            // Update button visibility
-//            if (isOnWaitlist) {
-//                buttonEnterNow.setVisibility(View.GONE);
-//                buttonLeaveWaitlist.setVisibility(View.VISIBLE);
-//                Log.d("EventDetailsFragment", "User is on the waitlist. Showing 'Leave Waitlist' button.");
-//            } else {
-//                buttonEnterNow.setVisibility(View.VISIBLE);
-//                buttonLeaveWaitlist.setVisibility(View.GONE);
-//                Log.d("EventDetailsFragment", "User is not on the waitlist. Showing 'Enter Now' button.");
-//            }
-//        }
-//    }
-
-
-//    public void joinWaitlist() {
-//        if (event != null && App.currentUser != null) {
-//            // Cast the current user to Entrant
-//            Entrant currentEntrant = (Entrant) App.currentUser;
-//
-//            // Ensure the event's waiting list is initialized
-//            if (event.getWaitingList() == null) {
-//                event.setWaitingList(new ArrayList<>());
-//            }
-//            Log.d("EventDetails", "Current Event Waitlist before changes " + event.getWaitingList());
-//
-//            ArrayList<User> waitingList = event.getWaitingList();
-//
-//            // Add the entrant to the waiting list if not already present
-//            if (!waitingList.contains(currentEntrant)) {
-//                waitingList.add(currentEntrant);
-//                event.setWaitingList(waitingList);
-//
-//
-//                // TO FIX
-//                /*
-//                that "event" argument, needs to have a synced waitlist with the db and then .add("melonapopus")
-//                then db.insertEvent("event")
-//                it's not updating the CURRENTWaitlist
-//                its rewriting it with your local waitlist
-//                but the local waitlist isn't synced up
-//
-//                the enter now upload working from eventdetailsdialog fragment AND eventdetailsfragment->
-//                 meaning on db both user will have a ref to waitlisted events of theirs and events have one to
-//                 the users and that should fix the button displaying
-//                 right now is that the waitlist is being added to user on the database correctly
-//                 but user isn't being added to the database correctly
-//                 this causes the button toggle to fail
-//                 */
-//                ArrayList<Event> eventList = currentEntrant.getCurrentWaitlistedEvents();
-//                eventList.add(event);
-//                currentEntrant.setCurrentWaitlistedEvents(eventList);
-//
-//                // Log the addition
-//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
-//                        " successfully added to the waitlist for event " + event.getEventId());
-//                Log.d("EventDetails", "Current Event Waitlist: " + waitingList);
-//                Log.d("EventDetails", "Current Entrant Waitlisted Events: " + currentEntrant.getCurrentWaitlistedEvents());
-//
-//
-//                //TO FIX: currently it displays,
-////                Current Event Waitlist before changes [com.google.firebase.firestore.DocumentReference@310f0fb4]
-////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Entrant d0c6ba9291492596 successfully added to the waitlist for event 19cd6a862b96402f-1732064463678
-////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Current Event Waitlist: [com.google.firebase.firestore.DocumentReference@310f0fb4, Jennifer Wang (d0c6ba9291492596)]
-//// we want to do the code that extracts just the useres, ths is the case when the waitlist already has someone and it displays weirdly
-//                // Update the database
-//                database.insertEvent(event); // Save the updated event
-//                database.insertUserDocument(currentEntrant); // Save the updated entrant
-//
-//                // Notify the user and update UI
-//                Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
-//                addtoNotifications();
-//                checkEntrantStatus(); // Refresh the UI
-//            } else {
-//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
-//                        " is already on the waitlist for event " + event.getEventId());
-//                Toast.makeText(getContext(), "You are already on the waitlist.", Toast.LENGTH_SHORT).show();
-//            }
-//        } else {
-//            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
-//        }
-//    }
