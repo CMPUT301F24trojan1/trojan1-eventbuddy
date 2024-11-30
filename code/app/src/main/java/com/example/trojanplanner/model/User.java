@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.BitmapGenerator;
@@ -239,6 +241,7 @@ public abstract class User implements Serializable {
      * returns it to avoid null errors
      * @return The current bitmap for the user or the default bitmap
      */
+    @NonNull
     public Bitmap getPfpBitmap() {
         if (this.pfpBitmap == null) {
             // Assign a default picture if the provided one is null
@@ -256,7 +259,12 @@ public abstract class User implements Serializable {
         }
     }
 
-    // Helper method to load a default picture
+    /**
+     * Returns the default user bitmap for the app. This is used by any user that doesn't
+     * have a photo of its own set yet.
+     * @return The default user bitmap
+     */
+    @NonNull
     public static Bitmap getDefaultPicture() {
         return getDefaultPicture("");
     }

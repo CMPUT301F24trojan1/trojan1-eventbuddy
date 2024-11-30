@@ -41,13 +41,7 @@ public class UserWaitlistAdapter extends RecyclerView.Adapter<UserWaitlistAdapte
         holder.emailTextView.setText(user.getEmail());
 
         // Optional set profile pic can ddelete
-        if (user.getPfpBitmap() != null) {
-            holder.profileImageView.setImageBitmap(user.getPfpBitmap());
-        } else {
-            // default image
-            int defaultImageId = context.getResources().getIdentifier("default_profile_picture", "drawable", context.getPackageName());
-            holder.profileImageView.setImageResource(defaultImageId);
-        }
+        holder.profileImageView.setImageBitmap(user.getPfpBitmap());
 
         holder.roleTextView.setText(user.getRole());
     }
