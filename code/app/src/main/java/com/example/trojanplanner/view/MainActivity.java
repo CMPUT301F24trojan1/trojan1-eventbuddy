@@ -32,9 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Database database;
 
-//    public PhotoPicker facilityPhotoPicker;
-    public PhotoPicker eventPhotoPicker; // Initialized in MainActivity
-    public PhotoPicker.PhotoPickerCallback eventPhotoPickerCallback; // Will be set in CreateEventFragment
+    public PhotoPicker eventPhotoPicker; // Initialized in MainActivity, callback set in CreateEventFragment
+    public PhotoPicker facilityPhotoPicker; // Have to initialize this here in case we get directed to FacilitySetupFragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +43,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         database = Database.getDB();
-//        facilityPhotoPicker = new PhotoPicker();
-//        facilityPhotoPicker.initPhotoPicker();
         eventPhotoPicker = new PhotoPicker();
         eventPhotoPicker.initPhotoPicker();
+        facilityPhotoPicker = new PhotoPicker();
+        facilityPhotoPicker.initPhotoPicker();
 
 
 //        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)
