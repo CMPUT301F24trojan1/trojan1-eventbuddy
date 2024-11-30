@@ -93,7 +93,7 @@ public class FacilitySetupFragment extends Fragment {
             });
 
             // Override default photo picker callback function
-            mainActivity.facilityPhotoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
+//            mainActivity.facilityPhotoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
 
         } else {
             profileActivity = (ProfileActivity) getActivity();
@@ -112,9 +112,9 @@ public class FacilitySetupFragment extends Fragment {
             Database.QueryFailureAction failureAction = () -> Log.d("FacilitySetupFrom Profile: FAILURE", "Failed to retrieve Facility ID");
             Database.getDB().getFacilityIDbyUserID(App.currentUser.getDeviceId(), successAction, failureAction);
 
-            if (profileActivity != null) {
-                profileActivity.photoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
-            }
+//            if (profileActivity != null) {
+//                profileActivity.photoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
+//            }
         }
 
         return view;
@@ -125,9 +125,9 @@ public class FacilitySetupFragment extends Fragment {
      */
     private void openImagePicker() {
         if (getActivity() instanceof ProfileActivity) {
-            profileActivity.photoPicker.openPhotoPicker(App.currentUser);
+//            profileActivity.photoPicker.openPhotoPicker(App.currentUser);
         } else {
-            mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
+//            mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
         }
     }
 
