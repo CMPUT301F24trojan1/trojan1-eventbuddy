@@ -179,7 +179,7 @@ public class AdminImagesActivity extends AppCompatActivity {
         });
     }
 
-    // Update the directory navigation buttons' state
+    // Update the `directory` navigation buttons' state
     private void updateDirectoryNavigation() {
         // Enable/Disable buttons based on the current position in directoriesList
         previousButton.setEnabled(currentDirectoryIndex > 0);
@@ -193,7 +193,7 @@ public class AdminImagesActivity extends AppCompatActivity {
                         directoryID.setText("Viewing User: " + ((User)v).getFirstName());
                     },
                     () ->{
-                        directoryID.setText("Directory: " + currentDirectoryPath.replace("/", ""));
+                        directoryID.setText("Viewing Deleted User's Images:" + currentDirectoryPath.replace("/", ""));
                     },
                     currentDirectoryPath.replace("/",""));
         } else {

@@ -6,8 +6,10 @@ import android.provider.Settings;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.BitmapGenerator;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Contains and stores information tied to a user.
@@ -256,9 +258,16 @@ public abstract class User implements Serializable {
 
     // Helper method to load a default picture
     public static Bitmap getDefaultPicture() {
-        // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.profile_avatar);
+        return getDefaultPicture("");
     }
 
+    public static Bitmap getDefaultPicture(String name) {
+        String deviceID = name;
+
+        Bitmap defaultPicture = BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.profile_avatar);
+
+        BitmapGenerator generator = new BitmapGenerator(deviceID, defaultPicture);
+        return generator.generate();
+    }
 }
 
