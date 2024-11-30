@@ -70,6 +70,14 @@ public class EventOptionsDialogFragment extends DialogFragment {
         // Retrieve the event from the arguments
         if (getArguments() != null) {
             event = (Event) getArguments().getSerializable(ARG_EVENT);
+            Log.d("EventOptionsDialog", "Event received: " + event.getName());
+            Database.getDB().getEvent(object -> {
+                event = (Event) object;
+                Log.d("EventOptionsDialog", "Waitlist" + event.getWaitingList());
+                Log.d("EventOptionsDialog", "CancelledList" + event.getCancelledList());
+                Log.d("EventOptionsDialog", "PendingList" + event.getPendingList());
+                Log.d("EventOptionsDialog", "EnrolledList" + event.getEnrolledList());
+            }, ()-> {}, event.getEventId());
         }
     }
 

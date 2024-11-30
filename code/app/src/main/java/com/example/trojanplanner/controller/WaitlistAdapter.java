@@ -84,11 +84,11 @@ public class WaitlistAdapter extends ArrayAdapter<Entrant> {
         TextView phoneNumberView = popupView.findViewById(R.id.phone_number_View);
 
         // Populate popup fields with entrant data
-        deviceIdView.setText(entrant.getDeviceId());
-        firstNameTextView.setText(entrant.getFirstName());
-        lastNameTextView.setText(entrant.getLastName());
-        emailTextView.setText(entrant.getEmail());
-        phoneNumberView.setText(entrant.getPhoneNumber());
+        deviceIdView.setText("DeviceID: " + entrant.getDeviceId());
+        firstNameTextView.setText("First Name: " + entrant.getFirstName());
+        lastNameTextView.setText("Last Name: " +entrant.getLastName());
+        emailTextView.setText("Email: " +entrant.getEmail());
+        phoneNumberView.setText("contact: " + entrant.getPhoneNumber());
         profilePicture.setImageBitmap(entrant.getPfpBitmap());  // Assuming you have a valid Bitmap for the profile picture
 
         // Set up the dialog and show it

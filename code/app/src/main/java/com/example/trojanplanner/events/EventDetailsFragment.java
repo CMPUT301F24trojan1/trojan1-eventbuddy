@@ -39,6 +39,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,6 +60,8 @@ public class EventDetailsFragment extends Fragment {
     private Button optionsButton;
     private Button acceptButton, declineButton;
     private TextView invitationText;
+    private boolean isEventInWaitlist = false;
+    boolean isEventInPendingList = false;
 
     @NonNull
     public static EventDetailsFragment newInstance(Event event, Entrant entrant) {
@@ -383,6 +386,62 @@ public class EventDetailsFragment extends Fragment {
         }
         database = Database.getDB();
 
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        // Perform the database operation asynchronously using the Executor
+        executorService.execute(() -> {
+            // Perform the database query in the background thread
+            database.getEvent(object -> {
+                event = (Event) object;
+                // Update UI or handle event here
+                getActivity().runOnUiThread(() -> {
+                    for (Event pendingEvent : ((Entrant) App.currentUser).getCurrentPendingEvents()) {
+                        if (pendingEvent.getEventId().equals(event.getEventId())) {
+                            // If event IDs match, set isEventInPendingList to true
+                            isEventInPendingList = true;
+                            break;
+                        }
+                    }
+                    if (isEventInPendingList) {
+                        acceptButton.setVisibility(View.VISIBLE);
+                        declineButton.setVisibility(View.VISIBLE);
+                        acceptButton.setOnClickListener(v -> {
+                            acceptEvent();
+                        });
+                        declineButton.setOnClickListener(v -> {
+                            declineEvent();
+                        });
+                        invitationText.setText("You've been selected from the wishlist!");
+                    } else {
+                        acceptButton.setVisibility(View.GONE);
+                        declineButton.setVisibility(View.GONE);
+                    }
+
+                    for (Event waitlistedEvent : ((Entrant) App.currentUser).getCurrentWaitlistedEvents()) {
+                        if (waitlistedEvent.getEventId().equals(event.getEventId())) {
+                            // If event IDs match, set isEventInWaitlist to true
+                            isEventInWaitlist = true;
+                            break;
+                        }
+                    }
+
+                    if (isEventInWaitlist) {
+                        buttonLeaveWaitlist.setVisibility(View.VISIBLE);
+                    } else {
+                        buttonLeaveWaitlist.setVisibility(View.GONE);
+                    }
+                });
+            }, () -> {
+                // Handle failure or empty response
+                getActivity().runOnUiThread(() -> {
+                    // Handle failure here (show error message, etc.)
+                });
+            }, event.getEventId());
+        });
+
+        // Make sure to shut down the executor when done
+        executorService.shutdown();
+
         // Ensure the activity is AppCompatActivity
         if (getActivity() instanceof AppCompatActivity) {
             AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
@@ -470,43 +529,6 @@ public class EventDetailsFragment extends Fragment {
             });
         }
 
-        boolean isEventInPendingList = false;
-        for (Event pendingEvent : ((Entrant) App.currentUser).getCurrentPendingEvents()) {
-            if (pendingEvent.getEventId().equals(event.getEventId())) {
-                // If event IDs match, set isEventInPendingList to true
-                isEventInPendingList = true;
-                break;
-            }
-        }
-        if (isEventInPendingList) {
-            acceptButton.setVisibility(View.VISIBLE);
-            declineButton.setVisibility(View.VISIBLE);
-            acceptButton.setOnClickListener(v -> {
-                acceptEvent();
-            });
-            declineButton.setOnClickListener(v -> {
-                declineEvent();
-            });
-            invitationText.setText("You've been selected from the wishlist!");
-        } else {
-            acceptButton.setVisibility(View.GONE);
-            declineButton.setVisibility(View.GONE);
-        }
-
-        boolean isEventInWaitlist = false;
-        for (Event waitlistedEvent : ((Entrant) App.currentUser).getCurrentWaitlistedEvents()) {
-            if (waitlistedEvent.getEventId().equals(event.getEventId())) {
-                // If event IDs match, set isEventInWaitlist to true
-                isEventInWaitlist = true;
-                break;
-            }
-        }
-
-        if (isEventInWaitlist) {
-            buttonLeaveWaitlist.setVisibility(View.VISIBLE);
-        } else {
-            buttonLeaveWaitlist.setVisibility(View.GONE);
-        }
         buttonLeaveWaitlist.setOnClickListener(v -> {
             leaveWaitlist();
         });
