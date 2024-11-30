@@ -46,7 +46,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -56,39 +56,50 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Event Name"
+                android:textColor="@color/black"
                 android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"/>
+                android:textStyle="bold" />
 
             <!-- Event Location -->
             <TextView
                 android:id="@+id/eventLocationTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="📍 Event Location"
-                android:textSize="16sp"
                 android:textColor="@color/black"
-                android:layout_marginTop="8dp" />
+                android:textSize="16sp" />
 
             <!-- Event Time -->
             <TextView
                 android:id="@+id/eventDateTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="⏰ Start date to end date"
-                android:textSize="16sp"
                 android:textColor="@color/black"
-                android:layout_marginTop="8dp" />
+                android:textSize="16sp" />
 
             <!-- Recurring Dates Dropdown -->
             <TextView
                 android:id="@+id/recurringDatesTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="🔄 Recurring Dates"
-                android:textSize="16sp"
                 android:textColor="@color/black"
-                android:layout_marginTop="8dp" />
+                android:textSize="16sp" />
+
+            <!-- Event Description -->
+            <TextView
+                android:id="@+id/eventDescriptionTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Event Description"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
 
             <!-- Divider -->
             <View
@@ -98,41 +109,29 @@
                 android:layout_marginTop="8dp"
                 android:background="@color/black" />
 
-            <!-- Event Description -->
+            <!-- Ticket Price -->
             <TextView
-                android:id="@+id/eventDescriptionTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Event Description"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:lineSpacingExtra="4dp"
-                android:layout_marginTop="8dp" />
-
-            <!-- Lottery Entries -->
-            <TextView
-                android:id="@+id/lotteryEntriesTextView"
+                android:id="@+id/ticketPriceTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🎟️ Lottery Entries: "
-                android:textSize="16sp"
+                android:layout_marginTop="4dp"
+                android:text="Price: "
                 android:textColor="@color/black"
-                android:layout_marginTop="8dp" />
+                android:textSize="16sp" />
 
             <!-- Total Spots -->
             <TextView
                 android:id="@+id/totalSpotsTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="🪑 Total Spots: "
-                android:textSize="16sp"
                 android:textColor="@color/black"
-                android:layout_marginTop="4dp" />
+                android:textSize="16sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Enter Now Button -->
-
+    <!-- Leave Now Button -->
     <Button
         android:id="@+id/button_leave_waitlist"
         android:layout_width="wrap_content"
@@ -145,24 +144,12 @@
         app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
 
     <Button
-        android:id="@+id/EntrantManageEvents"
-        android:layout_width="104dp"
-        android:layout_height="45dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
-        android:text="Options"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
-
-    <Button
         android:id="@+id/ManageEvents"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="12dp"
-        android:text="Manage"
+        android:text="Options"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
@@ -200,6 +187,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
+
+    <Button
+        android:id="@+id/edit_poster"
+        android:layout_width="139dp"
+        android:layout_height="47dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:text="Edit Poster"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toStartOf="@+id/ManageEvents"
         app:layout_constraintTop_toBottomOf="@+id/detailsBox" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

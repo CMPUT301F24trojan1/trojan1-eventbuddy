@@ -254,14 +254,14 @@ public abstract class User implements Serializable {
     public Bitmap getPfpBitmap() {
         if (this.pfpBitmap == null) {
             // Assign a default picture if the provided one is null
-            this.pfpBitmap = new SerialBitmap(getDefaultPicture());
+            this.pfpBitmap = new SerialBitmap(getDefaultPicture(getUserName()));
         }
         return pfpBitmap.getBitmap();
     }
 
     public void setPfpBitmap(Bitmap pfpBitmap) {
         if (pfpBitmap == null) {
-            this.pfpBitmap = new SerialBitmap(getDefaultPicture());
+            this.pfpBitmap = new SerialBitmap(getDefaultPicture(getUserName()));
         }
         else {
             this.pfpBitmap = new SerialBitmap(pfpBitmap);
@@ -279,11 +279,10 @@ public abstract class User implements Serializable {
     }
 
     public static Bitmap getDefaultPicture(String name) {
-        String deviceID = name;
 
         Bitmap defaultPicture = BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.profile_avatar);
 
-        BitmapGenerator generator = new BitmapGenerator(deviceID, defaultPicture);
+        BitmapGenerator generator = new BitmapGenerator(name, defaultPicture);
         return generator.generate();
     }
 }

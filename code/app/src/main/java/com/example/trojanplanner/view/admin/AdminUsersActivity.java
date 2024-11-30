@@ -67,7 +67,8 @@ public class AdminUsersActivity extends AppCompatActivity {
                     .setMessage("Are you sure you want to delete this user?\n\n" +
                             "This will potentially affect:\n" +
                             "1. Events that this user is attending.\n" +
-                            "2. Events created by this user if they are the organizer.\n\n" +
+                            "2. The facility this user owns if they own one.\n" +
+                            "3. Events created by this user if they are the organizer.\n\n" +
                             "This action cannot be undone.")
                     .setPositiveButton("Yes", (dialog, which) -> {
                         // If the user clicks "Yes", proceed with deletion

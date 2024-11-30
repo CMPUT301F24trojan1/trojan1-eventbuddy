@@ -34,6 +34,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class EventDetailsDialogFragment extends DialogFragment {
     private Event event;
@@ -87,6 +89,8 @@ public class EventDetailsDialogFragment extends DialogFragment {
         TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
         TextView recurringDatesTextView = view.findViewById(R.id.recurringDatesTextView);
         TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
+        TextView eventPriceTextview = view.findViewById(R.id.ticketPriceTextView);
+        TextView eventTotalSpotsTextview = view.findViewById(R.id.totalSpotsTextView);
 
         // Initialize Buttons
         buttonEnterNow = view.findViewById(R.id.button_enter_now);
@@ -99,9 +103,44 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
 
-            for (User user: event.getWaitingList()){
+            if (event.getWaitlistCapacity() == event.getWaitingList().size()) {
+                buttonEnterNow.setVisibility(View.GONE);
+            }
+
+            Date date = new Date();
+            if (event.getWaitlistClose().getTime() == date.getTime()) {
+                buttonEnterNow.setVisibility(View.GONE);
+            }
+
+            if (date.getTime() >= event.getWaitlistOpen().getTime()) {
+                // The current time is equal to or later than the waitlistOpen time
+                buttonEnterNow.setVisibility(View.VISIBLE);
+            } else {
+                // The current time is before the waitlistOpen time
+                buttonEnterNow.setVisibility(View.GONE);
+            }
+
+            for (User user: event.getWaitingList()){ // If the user is on the waitlist, hide the button
+                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
+                    buttonEnterNow.setVisibility(View.GONE);
+                }
+            }
+
+            for (User user: event.getEnrolledList()){ // If the user is enrolled, hide the button
+                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
+                    buttonEnterNow.setVisibility(View.GONE);
+                }
+            }
+
+            for (User user: event.getCancelledList()){ // If the user is enrolled, hide the button
+                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
+                    buttonEnterNow.setVisibility(View.GONE);
+                }
+            }
+
+            for (User user: event.getPendingList()){ // If the user has a pending event, hide the button
                 if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
                     buttonEnterNow.setVisibility(View.GONE);
                 }
@@ -115,6 +154,8 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
         return view;
     }
+
+
 
     /**
      * Shows a confirmation dialog for the entrant to join the event's waitlist.
@@ -252,17 +293,6 @@ public class EventDetailsDialogFragment extends DialogFragment {
         }, syncedEntrant.getDeviceId());
     }
 
-    private void addtoNotifications(String topic) {
-        FirebaseMessaging.getInstance().subscribeToTopic(topic)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d("Notifications", "Successfully subscribed to the topic: " + topic);
-                    } else {
-                        Log.e("Notifications", "Failed to subscribe to the topic: " + topic + ". Error: " + task.getException());
-                    }
-                });
-    }
-
     /**
      * Populates the event details in the respective text views.
      * If event details are missing, default values will be shown.
@@ -276,26 +306,29 @@ public class EventDetailsDialogFragment extends DialogFragment {
      */
     public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
                                      TextView eventDateTextView, TextView recurringDatesTextView,
-                                     TextView eventDescriptionTextView) {
+                                     TextView eventDescriptionTextView, TextView eventPriceTextview, TextView eventTotalSpotsTextview) {
+
         eventImageView.setImageBitmap(event.getPicture());
 
-        eventNameTextView.setText(event.getName());
+        eventNameTextView.setText("Event: " + event.getName());
         if (event.getFacility() != null) {
-            eventLocationTextView.setText(event.getFacility().getFacilityId());
+            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
         }
 
         // Default values for dates in case they are null
         String defaultDate = "Not Available";  // Default date if event date is null
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 
         // Assign default value if startDateTime or endDateTime is null
         String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
         String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
 
-        eventDateTextView.setText(startDate + " - " + endDate);
+        eventDateTextView.setText("⏰ Time:"+ startDate + " - " + endDate);
+        eventPriceTextview.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
+        eventTotalSpotsTextview.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
 
         // Convert abbreviations in recurrenceDays to full day names
-        ArrayList<String> recurrenceDays = event.getRecurrenceDays();
+        ArrayList<String> recurrenceDays = (event.isRecurring()) ? event.getRecurrenceDays() : null;
 
         if (recurrenceDays != null) {
             String recurrenceDaysText = recurrenceDays.stream()
@@ -304,9 +337,9 @@ public class EventDetailsDialogFragment extends DialogFragment {
                     .reduce((a, b) -> a + ", " + b) // Join with commas
                     .orElse("No recurrence");
 
-            recurringDatesTextView.setText(recurrenceDaysText);
+            recurringDatesTextView.setText("Recurring Days: " + recurrenceDaysText);
         }
-        eventDescriptionTextView.setText(event.getDescription());
+        eventDescriptionTextView.setText("Description: " + event.getDescription());
 
     }
 
@@ -328,6 +361,18 @@ public class EventDetailsDialogFragment extends DialogFragment {
             case "S": return "Saturday";
             default: return ""; // Handle invalid abbreviations
         }
+    }
+
+
+    private void addtoNotifications(String topic) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Notifications", "Successfully subscribed to the topic: " + topic);
+                    } else {
+                        Log.e("Notifications", "Failed to subscribe to the topic: " + topic + ". Error: " + task.getException());
+                    }
+                });
     }
 
     public void addLocationtoDatabase() {

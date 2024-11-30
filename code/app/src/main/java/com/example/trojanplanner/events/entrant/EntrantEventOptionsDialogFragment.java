@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * A DialogFragment for entrants to manage event options.
+ * A DialogFragment for entrants to manage event options. This is not used in the app but can be used to extend the use case.
  */
 public class EntrantEventOptionsDialogFragment extends DialogFragment {
 
@@ -70,96 +70,14 @@ public class EntrantEventOptionsDialogFragment extends DialogFragment {
                 .setItems(R.array.entrant_event_options, (dialog, which) -> {
                     switch (which){
                         case 0:
-                            toggleNotificationPreference();
+                            viewStatus();
                             break;
-                        case 1:
-                            leaveWaitlist();
                     }
                 });
-
         return builder.create();
     }
 
-    private void leaveWaitlist(){
-        if (event.getWaitingList() == null || event.getWaitingList().isEmpty()
-                || ((Entrant)App.currentUser).getCurrentWaitlistedEvents() == null
-                || ((Entrant)App.currentUser).getCurrentWaitlistedEvents().isEmpty())
-        {
-            Toast.makeText(getContext(), "No waitlist found", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    private void viewStatus() {
 
-        ArrayList<User> waitlist = event.getWaitingList();
-        ArrayList<Event> waitlistEvents = ((Entrant)App.currentUser).getCurrentWaitlistedEvents();
-        boolean userRemoved = false;
-        boolean eventRemoved = false;
-        for (User entrant: waitlist) {
-            if (entrant.getDeviceId().equals(App.deviceId)){
-                waitlist.remove((entrant));
-                event.setWaitingList(waitlist);
-                Database.getDB().insertEvent(event);
-                userRemoved = true;
-                break;
-            }
-        }
-
-        for (Event waitlistedEvent: waitlistEvents){
-            if (waitlistedEvent.getEventId().equals(event.getEventId())){
-                waitlistEvents.remove(waitlistedEvent);
-                Database.getDB().insertUserDocument(App.currentUser);
-                eventRemoved = true;
-                break;
-            }
-        }
-
-        if (userRemoved && eventRemoved) {
-            Toast.makeText(getContext(), "You have left the waitlist.", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(getContext(), "Failed to leave the waitlist.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        App.sendAnnouncement(App.currentUser.getDeviceId(), event.getName(), "You have left the waitlist.");
-        // Dismiss the dialog and navigate up
-        dismiss();
-        requireActivity().getSupportFragmentManager().popBackStack();
-    }
-
-    /**
-     * Toggles the notification subscription for the event.
-     */
-    private void toggleNotificationPreference() {
-        if (event == null) {
-            Toast.makeText(getContext(), "Event data is missing.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String eventId = event.getEventId();
-
-        if (isSubscribed) {
-            // Unsubscribe from the event's topic
-            FirebaseMessaging.getInstance().unsubscribeFromTopic(eventId)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            isSubscribed = false;
-                            Log.d("Notifications", "Successfully unsubscribed from notifications for event: " + eventId);
-                        } else {
-                            Log.e("Notifications", "Failed to unsubscribe from notifications: " + task.getException());
-                            Toast.makeText(getContext(), "Failed to unsubscribe.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        } else {
-            // Subscribe to the event's topic
-            FirebaseMessaging.getInstance().subscribeToTopic(eventId)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            isSubscribed = true;
-                            Log.d("Notifications", "Successfully subscribed for event: " + eventId);
-                        } else {
-                            Log.e("Notifications", "Failed to subscribe to notifications: " + task.getException());
-                            Toast.makeText(getContext(), "Failed to subscribe.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        }
     }
 }

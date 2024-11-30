@@ -39,6 +39,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -56,8 +57,7 @@ public class EventDetailsFragment extends Fragment {
     private Database database;
     private Button buttonLeaveWaitlist;
     private Button manageButton;
-    private Button optionsButton;
-    private Button acceptButton, declineButton;
+    private Button acceptButton, declineButton, edit_poster;
     private TextView invitationText;
     private boolean isEventInWaitlist = false;
     boolean isEventInPendingList = false;
@@ -88,27 +88,29 @@ public class EventDetailsFragment extends Fragment {
      */
     public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
                                      TextView eventDateTextView, TextView recurringDatesTextView,
-                                     TextView eventDescriptionTextView) {
+                                     TextView eventDescriptionTextView, TextView eventPriceTextview, TextView eventTotalSpotsTextview) {
 
         eventImageView.setImageBitmap(event.getPicture());
 
         eventNameTextView.setText("Event: " + event.getName());
         if (event.getFacility() != null) {
-            eventLocationTextView.setText("Facility: " + event.getFacility().getFacilityId());
+            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
         }
 
         // Default values for dates in case they are null
         String defaultDate = "Not Available";  // Default date if event date is null
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 
         // Assign default value if startDateTime or endDateTime is null
         String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
         String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
 
-        eventDateTextView.setText("Start Date" + startDate + " - " + endDate);
+        eventDateTextView.setText("⏰ Time:"+ startDate + " - " + endDate);
+        eventPriceTextview.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
+        eventTotalSpotsTextview.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
 
         // Convert abbreviations in recurrenceDays to full day names
-        ArrayList<String> recurrenceDays = event.getRecurrenceDays();
+        ArrayList<String> recurrenceDays = (event.isRecurring()) ? event.getRecurrenceDays() : null;
 
         if (recurrenceDays != null) {
             String recurrenceDaysText = recurrenceDays.stream()
@@ -474,19 +476,20 @@ public class EventDetailsFragment extends Fragment {
         TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
         TextView recurringDatesTextView = view.findViewById(R.id.recurringDatesTextView);
         TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
+        TextView eventPriceTextview = view.findViewById(R.id.ticketPriceTextView);
+        TextView eventTotalSpotsTextview = view.findViewById(R.id.totalSpotsTextView);
 
         // Initialize Buttons
         buttonLeaveWaitlist = view.findViewById(R.id.button_leave_waitlist);
         manageButton = view.findViewById(R.id.ManageEvents);
-        optionsButton = view.findViewById(R.id.EntrantManageEvents);
-
+        edit_poster = view.findViewById(R.id.edit_poster);
         invitationText = view.findViewById(R.id.invitationText);
         acceptButton = view.findViewById(R.id.Accept);
         declineButton = view.findViewById(R.id.Decline);
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
             // Print the current waitlist for debugging purposes
             Log.d("EventDetailsFragment", "updateButton Event Waiting List: " + event.getWaitingList());
         } else {
@@ -497,7 +500,8 @@ public class EventDetailsFragment extends Fragment {
             checkCreatedEventsFromDatabase(event.getEventId(), exists -> {
                 if (exists && manageButton != null) {
                     manageButton.setVisibility(View.VISIBLE);
-                    optionsButton.setVisibility(View.GONE);
+                    edit_poster.setVisibility(View.VISIBLE);
+                    invitationText.setVisibility(View.GONE);
 
                     // Hide Leave Waitlist buttons
                     buttonLeaveWaitlist.setVisibility(View.GONE);
@@ -508,24 +512,14 @@ public class EventDetailsFragment extends Fragment {
                             dialogFragment.show(getChildFragmentManager(), "EventOptionsDialog");
                         }
                     });
+
+                    edit_poster.setOnClickListener(v -> {
+                        // Handle edit poster button click
+                    });
                 } else {
                     assert manageButton != null;
                     manageButton.setVisibility(View.GONE);
-                    optionsButton.setVisibility(View.VISIBLE);
-                    optionsButton.setOnClickListener(v -> {
-                        if (event != null) {
-                            EntrantEventOptionsDialogFragment dialogFragment = EntrantEventOptionsDialogFragment.newInstance(event);
-                            dialogFragment.show(getChildFragmentManager(), "EntrantEventOptionsDialog");
-                        }
-                    });
-                }
-            });
-        } else if (App.currentUser != null && optionsButton != null) {
-            optionsButton.setVisibility(View.VISIBLE);
-            optionsButton.setOnClickListener(v -> {
-                if (event != null) {
-                    EntrantEventOptionsDialogFragment dialogFragment = EntrantEventOptionsDialogFragment.newInstance(event);
-                    dialogFragment.show(getChildFragmentManager(), "EntrantEventOptionsDialog");
+                    edit_poster.setVisibility(View.GONE);
                 }
             });
         }

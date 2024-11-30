@@ -1,13 +1,7 @@
 package com.example.trojanplanner.view;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,16 +11,14 @@ import com.example.trojanplanner.ProfileUtils.ProfileFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
-import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
-    public PhotoPicker photoPicker;
+    public PhotoPicker userPhotoPicker;
     public ProfileFragment profileFragment;
+
+    public PhotoPicker facilityPhotoPicker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +27,11 @@ public class ProfileActivity extends AppCompatActivity {
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Init a photopicker
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker();
+        // Init a photopicker for the user as well as the facility
+        userPhotoPicker = new PhotoPicker();
+        userPhotoPicker.initPhotoPicker();
+        facilityPhotoPicker = new PhotoPicker();
+        facilityPhotoPicker.initPhotoPicker();
 
         // Display ProfileFragment in the fragment container
         if (savedInstanceState == null) {
@@ -53,13 +47,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Future code will be written in onStart to make sure the fragment fully loads properly
 
-    }
-
-    // Call future things from here because in onCreate the fragment container is not fully set up yet
-    @Override
-    protected void onStart() {
-        super.onStart();
-        profileFragment.resetState(App.currentUser);
     }
 
 

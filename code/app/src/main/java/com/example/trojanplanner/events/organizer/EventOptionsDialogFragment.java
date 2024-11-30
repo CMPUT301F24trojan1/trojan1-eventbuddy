@@ -503,10 +503,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
             case 7: // Initiate Lottery
                 initiateLottery();
                 break;
-            case 8: // edit the event information and the poster
-                editEvent();
-                break;
-            case 9:
+            case 8:
                 viewMap(event);
                 break;
             default:

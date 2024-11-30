@@ -7,7 +7,7 @@ import java.util.List;
  * Admin class extends the User class and provides additional responsibilities
  * and permissions specific to an administrator role.
  */
-public class Admin extends User {
+public class Admin extends User { // Admin class was not used, logic was replaced instead to use hasAdmin() directly
 
     /**
      * Constructor for the Admin class, inheriting from User.
