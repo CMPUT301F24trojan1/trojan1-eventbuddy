@@ -497,6 +497,7 @@ public class EventDetailsFragment extends Fragment {
             checkCreatedEventsFromDatabase(event.getEventId(), exists -> {
                 if (exists && manageButton != null) {
                     manageButton.setVisibility(View.VISIBLE);
+                    invitationText.setVisibility(View.GONE);
                     optionsButton.setVisibility(View.GONE);
 
                     // Hide Leave Waitlist buttons

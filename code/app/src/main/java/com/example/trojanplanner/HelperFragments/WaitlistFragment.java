@@ -4,12 +4,14 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,7 +31,6 @@ public class WaitlistFragment extends Fragment {
     private ListView waitlistListView;
     private WaitlistAdapter waitlistAdapter;
     private String listType;
-    private Button sendNotificationButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -97,7 +98,7 @@ public class WaitlistFragment extends Fragment {
                 // If no list type matches or the list is empty, return
                 if (users.isEmpty()) {
                     Log.d("WaitlistFragment", listType + "is empty.");
-                    requireActivity().onBackPressed();
+                    showEmptyListMessage();
                     return;
                 }
 
@@ -131,5 +132,16 @@ public class WaitlistFragment extends Fragment {
 
         // Fetch event data from the database
         Database.getDB().getEvent(successAction, failureAction, event.getEventId());
+    }
+
+    private void showEmptyListMessage() {
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Notice")
+                .setMessage("No Users found in the list.")
+                .setPositiveButton("I Understand", (dialog, which) -> {
+                    dialog.dismiss(); // Dismiss the dialog when the button is clicked
+                })
+                .setCancelable(false) // Prevent dialog from being dismissed by tapping outside
+                .show();
     }
 }

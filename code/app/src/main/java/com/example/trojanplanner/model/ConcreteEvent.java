@@ -14,4 +14,3 @@ public class ConcreteEvent extends Event {
         super("", name, description, 0, facility, startDateTime, endDateTime, 0, 100L, 100L); // Default values for the last three parameters
     }
 }
-

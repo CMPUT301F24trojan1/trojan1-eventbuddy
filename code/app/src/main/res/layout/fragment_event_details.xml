@@ -109,16 +109,6 @@
                 android:lineSpacingExtra="4dp"
                 android:layout_marginTop="8dp" />
 
-            <!-- Lottery Entries -->
-            <TextView
-                android:id="@+id/lotteryEntriesTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎟️ Lottery Entries: "
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:layout_marginTop="8dp" />
-
             <!-- Total Spots -->
             <TextView
                 android:id="@+id/totalSpotsTextView"

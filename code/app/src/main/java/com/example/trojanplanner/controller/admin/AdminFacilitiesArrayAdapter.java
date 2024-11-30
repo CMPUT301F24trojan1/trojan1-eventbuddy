@@ -49,19 +49,19 @@ public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacil
         // Bind the name, location, and owner with null checks
         if (facility != null) {
             if (facility.getName() != null) {
-                holder.facilityName.setText(facility.getName());
+                holder.facilityName.setText("Name: "+facility.getName());
             } else {
                 holder.facilityName.setText("");
             }
 
             if (facility.getLocation() != null) {
-                holder.facilityLocation.setText(facility.getLocation());
+                holder.facilityLocation.setText("Location: " + facility.getLocation());
             } else {
                 holder.facilityLocation.setText("");
             }
 
             if (facility.getOwner() != null && facility.getOwner().getFirstName() != null) {
-                holder.facilityOwner.setText(facility.getOwner().getFirstName());
+                holder.facilityOwner.setText("Owner: " + facility.getOwner().getFirstName());
             } else {
                 holder.facilityOwner.setText("");
             }

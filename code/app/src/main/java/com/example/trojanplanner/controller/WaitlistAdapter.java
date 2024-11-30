@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 import android.app.AlertDialog;
 import android.widget.ImageView;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 
 import java.util.ArrayList;
@@ -82,6 +84,7 @@ public class WaitlistAdapter extends ArrayAdapter<Entrant> {
         TextView lastNameTextView = popupView.findViewById(R.id.lastNameTextView);
         TextView emailTextView = popupView.findViewById(R.id.emailTextView);
         TextView phoneNumberView = popupView.findViewById(R.id.phone_number_View);
+        Button deleteButton = popupView.findViewById(R.id.deleteButton);
 
         // Populate popup fields with entrant data
         deviceIdView.setText("DeviceID: " + entrant.getDeviceId());
@@ -89,7 +92,30 @@ public class WaitlistAdapter extends ArrayAdapter<Entrant> {
         lastNameTextView.setText("Last Name: " +entrant.getLastName());
         emailTextView.setText("Email: " +entrant.getEmail());
         phoneNumberView.setText("contact: " + entrant.getPhoneNumber());
-        profilePicture.setImageBitmap(entrant.getPfpBitmap());  // Assuming you have a valid Bitmap for the profile picture
+        profilePicture.setImageBitmap(entrant.getPfpBitmap());
+
+        deleteButton.setOnClickListener(v -> {
+            AlertDialog.Builder builder2 = new AlertDialog.Builder(getContext());
+
+            // Set the title and message of the dialog
+            builder.setTitle("Delete Entry")
+                    .setMessage("Are you sure you want to remove this Entrant from your event?\nThey will not be able to join again\n\n This action cannot be undone.")
+                    .setCancelable(false) // Prevents the dialog from being canceled when touched outside
+
+                    // Set the "Yes" button and its action
+                    .setPositiveButton("Yes", (dialog, id) -> {
+                        cancelEntrant(entrant);
+                    })
+
+                    // Set the "No" button and its action
+                    .setNegativeButton("No", (dialog, id) -> {
+                        dialog.dismiss();
+                    });
+
+            // Show the dialog
+            AlertDialog alert = builder.create();
+            alert.show();
+        });
 
         // Set up the dialog and show it
         builder.setView(popupView);
@@ -97,6 +123,10 @@ public class WaitlistAdapter extends ArrayAdapter<Entrant> {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void cancelEntrant(Entrant entrant) {
+        Database.getDB().deleteUser(entrant.getDeviceId());
     }
 
     // ViewHolder pattern for performance optimization
