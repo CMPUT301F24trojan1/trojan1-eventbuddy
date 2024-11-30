@@ -289,11 +289,11 @@ public class ProfileFragment extends Fragment {
     /**
      * Resets profile picture to the current profile picture of the user.
      * If user is null, reset to default
-     * @param user
+     * @param user The user (or null) to get the pfp from and display on the screen again
      */
     public void resetPFP(User user) {
         changedPfp = false;
-        if (user != null && user.getPfpBitmap() != null) {
+        if (user != null && user.getPfpFilePath() != null) {
             profileImageBitmap = user.getPfpBitmap();
             profileImageView.setImageBitmap(profileImageBitmap);
         }
@@ -301,7 +301,8 @@ public class ProfileFragment extends Fragment {
             // If 'remove pfp' button was pressed, we are actually changing it if user pfp was not null before
             if (profileImageBitmap != null) {changedPfp = true; };
             profileImageBitmap = null;
-            profileImageView.setImageBitmap(User.getDefaultPicture());
+            String userName = (user != null) ? user.getUserName() : "";
+            profileImageView.setImageBitmap(User.getDefaultPicture(userName));
         }
 
     }
@@ -343,13 +344,14 @@ public class ProfileFragment extends Fragment {
 
         // Reset profile image to current profile image
         changedPfp = false;
-        if (App.currentUser != null && App.currentUser.getPfpBitmap() != null) {
+        if (App.currentUser != null && App.currentUser.getPfpFilePath() != null) {
             profileImageBitmap = App.currentUser.getPfpBitmap();
             profileImageView.setImageBitmap(profileImageBitmap);
         }
         else {
             profileImageBitmap = null;
-            profileImageView.setImageBitmap(User.getDefaultPicture());
+            String userName = (App.currentUser != null) ? App.currentUser.getUserName() : "";
+            profileImageView.setImageBitmap(User.getDefaultPicture(userName));
         }
     }
 

@@ -131,6 +131,15 @@ public abstract class User implements Serializable {
     }
 
     /**
+     * Gets the value of firstName + " " + lastName. This is the 'username' of the user which is used
+     * to generate a profile picture
+     * @return The username of the user
+     */
+    public String getUserName() {
+        return firstName + " " + lastName;
+    }
+
+    /**
      * String method for User name
      * @author Madelaine Dalangin
      * @return email string

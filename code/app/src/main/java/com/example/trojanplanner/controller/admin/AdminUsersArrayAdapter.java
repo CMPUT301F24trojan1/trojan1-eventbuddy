@@ -75,18 +75,12 @@ public class AdminUsersArrayAdapter extends RecyclerView.Adapter<AdminUsersArray
             }
 
             // Handle profile picture with null and validity checks
-            if (user.getPfpFilePath() != null && !user.getPfpFilePath().isEmpty()) {
-                // Assuming pfpFilePath is a valid file path or URI
-                File imgFile = new File(user.getPfpFilePath());
-                if (imgFile.exists()) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    holder.profileImageView.setImageBitmap(bitmap);
-                } else {
-                    holder.profileImageView.setImageBitmap(User.getDefaultPicture());  // Use default image if file does not exist
-                }
+            if (user.getPfpFilePath() != null) {
+                holder.profileImageView.setImageBitmap(user.getPfpBitmap());
             } else {
-                holder.profileImageView.setImageBitmap(User.getDefaultPicture());  // Use default image if pfpFilePath is null or empty
+                holder.profileImageView.setImageBitmap(User.getDefaultPicture(user.getUserName()));  // Use default image if pfpFilePath is null or empty
             }
+
         } else {
             // Handle the case where the user object is null (though this should be rare if data is consistent)
             holder.firstNameTextView.setText("Unknown First Name");
