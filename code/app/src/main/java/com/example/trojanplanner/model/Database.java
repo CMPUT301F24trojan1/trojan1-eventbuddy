@@ -3384,11 +3384,44 @@ public class Database {
     }
 
 
+    /**
+     * Deletes an image from Firebase Storage, and also nulls all photo attributes that were using it.
+     * @param imagePath The path of the image to delete.
+     * @author Jared Gourley
+     */
     public void deleteImage(String imagePath) {
         System.out.println("DELETE_IMAGE_" + imagePath + ": Requesting to delete image");
         StorageReference storageRef = storage.getReference();
         StorageReference pathReference = storageRef.child(imagePath);
 
+        // We need to check every collection that has image attributes and nullify any attributes that match our picture
+        Map<String, String> collectionsToSearch = Map.of(
+                "users", "pfp",
+                "events", "eventPhoto",
+                "facilities", "facilityPhoto"
+        );
+        
+        // Perform the updating logic for each collection specified above
+        for (Map.Entry<String, String> entry : collectionsToSearch.entrySet()) {
+            String collectionName = entry.getKey();
+            String imageAttributeName = entry.getValue();
+
+            Query query = db.collection(collectionName).whereEqualTo(imageAttributeName, imagePath);
+            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    // For every returned document, get the DocumentReference and nullify the image attribute
+                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                        System.out.println("DELETE_IMAGE_" + imagePath + ": Deleting reference to image in document '" + docSnapshot.getId() + "' in collection " + collectionName);
+                        DocumentReference docRefToUpdate = docSnapshot.getReference();
+                        docRefToUpdate.update(imageAttributeName, null);
+                    }
+                }
+            });
+
+        }
+
+        // Finally, delete the image itself.
         pathReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
