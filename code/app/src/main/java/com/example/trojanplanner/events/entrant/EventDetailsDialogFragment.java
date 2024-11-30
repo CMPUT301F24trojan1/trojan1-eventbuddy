@@ -104,6 +104,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
         // Populate event details
         if (event != null) {
             populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
+
             for (User user: event.getWaitingList()){
                 if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
                     buttonEnterNow.setVisibility(View.GONE);

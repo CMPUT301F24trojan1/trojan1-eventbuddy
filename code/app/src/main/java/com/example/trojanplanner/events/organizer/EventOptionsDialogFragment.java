@@ -254,6 +254,10 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 }
             }
 
+            for (User user : Lottery_waitlist){
+                App.sendAnnouncement(user.getDeviceId(), event.getName(), "You lost the lottery for the event, however you're still on the waitlist");
+            }
+
             // Debugging: Show the selected attendees after lottery
             StringBuilder selectedAttendeesDebug = new StringBuilder("Selected Attendees:\n");
             for (User selectedUser : selectedAttendees) {
@@ -330,7 +334,7 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 // Loop through the pending list and send the announcement to each user
                 for (User user : event.getPendingList()) {
                     App.sendAnnouncement(user.getDeviceId(), event.getName(),
-                            "CONGRATS!! You've won, accept/decline your invitation in the app");
+                            "CONGRATS!! You've won the lottery, accept/decline your invitation in the app");
                 }
 
             }).start();
