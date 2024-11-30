@@ -39,7 +39,6 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -80,19 +79,22 @@ public class EventDetailsFragment extends Fragment {
      * Populates the event details in the respective text views.
      * If event details are missing, default values will be shown.
      *
+     * @param eventImageView
      * @param eventNameTextView        The TextView to display the event's name.
      * @param eventLocationTextView    The TextView to display the event's location.
      * @param eventDateTextView        The TextView to display the event's start and end date.
      * @param recurringDatesTextView   The TextView to display the event's recurrence days.
      * @param eventDescriptionTextView The TextView to display the event's description.
      */
-    public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView,
+    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
                                      TextView eventDateTextView, TextView recurringDatesTextView,
                                      TextView eventDescriptionTextView) {
 
-        eventNameTextView.setText(event.getName());
+        eventImageView.setImageBitmap(event.getPicture());
+
+        eventNameTextView.setText("Event: " + event.getName());
         if (event.getFacility() != null) {
-            eventLocationTextView.setText(event.getFacility().getFacilityId());
+            eventLocationTextView.setText("Facility: " + event.getFacility().getFacilityId());
         }
 
         // Default values for dates in case they are null
@@ -103,7 +105,7 @@ public class EventDetailsFragment extends Fragment {
         String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
         String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
 
-        eventDateTextView.setText(startDate + " - " + endDate);
+        eventDateTextView.setText("Start Date" + startDate + " - " + endDate);
 
         // Convert abbreviations in recurrenceDays to full day names
         ArrayList<String> recurrenceDays = event.getRecurrenceDays();
@@ -115,9 +117,9 @@ public class EventDetailsFragment extends Fragment {
                     .reduce((a, b) -> a + ", " + b) // Join with commas
                     .orElse("No recurrence");
 
-            recurringDatesTextView.setText(recurrenceDaysText);
+            recurringDatesTextView.setText("Recurring Days: " + recurrenceDaysText);
         }
-        eventDescriptionTextView.setText(event.getDescription());
+        eventDescriptionTextView.setText("Description: " + event.getDescription());
 
     }
 
@@ -485,7 +487,7 @@ public class EventDetailsFragment extends Fragment {
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
             // Print the current waitlist for debugging purposes
             Log.d("EventDetailsFragment", "updateButton Event Waiting List: " + event.getWaitingList());
         } else {
@@ -547,11 +549,11 @@ public class EventDetailsFragment extends Fragment {
         }
 
         ArrayList<Event> currentWaitlist = ((Entrant) App.currentUser).getCurrentWaitlistedEvents();
-        currentWaitlist.removeIf(pendingEvent -> pendingEvent.getEventId().equals(event.getEventId()));
-        ((Entrant) App.currentUser).setCurrentPendingEvents(currentWaitlist);
+        currentWaitlist.removeIf(waitingEvent -> waitingEvent.getEventId().equals(event.getEventId()));
+        ((Entrant) App.currentUser).setCurrentWaitlistedEvents(currentWaitlist);
 
-        ArrayList<User> currentEventWaitingList = event.getPendingList();
-        currentEventWaitingList.removeIf(pendingUser -> pendingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
+        ArrayList<User> currentEventWaitingList = event.getWaitingList();
+        currentEventWaitingList.removeIf(waitingUser -> waitingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
         event.setPendingList(currentEventWaitingList);
 
         // Now move only the database operations to the background thread
@@ -563,7 +565,6 @@ public class EventDetailsFragment extends Fragment {
         });
         buttonLeaveWaitlist.setVisibility(View.GONE);
     }
-
 
     private void acceptEvent() {
         ArrayList<Event> currentPending = ((Entrant) App.currentUser).getCurrentPendingEvents();
