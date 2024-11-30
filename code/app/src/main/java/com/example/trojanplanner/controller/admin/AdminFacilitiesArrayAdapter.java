@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Facility;
+import com.example.trojanplanner.model.User;
+
 import java.util.List;
 
 public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacilitiesArrayAdapter.FacilityViewHolder> {
@@ -64,18 +66,15 @@ public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacil
                 holder.facilityOwner.setText("");
             }
 
-            if (facility.getPfpFacilityBitmap() != null) {
-                // If we have a bitmap, load it into the ImageView
-                holder.facilityImage.setImageBitmap(facility.getPfpFacilityBitmap());
-            } else {
-                holder.facilityImage.setImageResource(R.drawable.default_facility_pic);
-            }
+            // Load the bitmap into the ImageView
+            holder.facilityImage.setImageBitmap(facility.getPfpFacilityBitmap());
+
         } else {
             // Handle null facility object gracefully
             holder.facilityName.setText(""); // or placeholder text
             holder.facilityLocation.setText(""); // or placeholder text
             holder.facilityOwner.setText(""); // or placeholder text
-            holder.facilityImage.setImageResource(R.drawable.default_facility_pic); // Set default image if facility is null
+            holder.facilityImage.setImageBitmap(Facility.getDefaultPicture()); // Set default image if facility is null
         }
 
         // Set click listener for the entire item

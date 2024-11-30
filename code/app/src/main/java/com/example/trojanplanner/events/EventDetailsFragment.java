@@ -59,6 +59,8 @@ public class EventDetailsFragment extends Fragment {
     private Button optionsButton;
     private Button acceptButton, declineButton;
     private TextView invitationText;
+    private boolean isEventInWaitlist = false;
+    boolean isEventInPendingList = false;
 
     @NonNull
     public static EventDetailsFragment newInstance(Event event, Entrant entrant) {
@@ -77,19 +79,22 @@ public class EventDetailsFragment extends Fragment {
      * Populates the event details in the respective text views.
      * If event details are missing, default values will be shown.
      *
+     * @param eventImageView
      * @param eventNameTextView        The TextView to display the event's name.
      * @param eventLocationTextView    The TextView to display the event's location.
      * @param eventDateTextView        The TextView to display the event's start and end date.
      * @param recurringDatesTextView   The TextView to display the event's recurrence days.
      * @param eventDescriptionTextView The TextView to display the event's description.
      */
-    public void populateEventDetails(TextView eventNameTextView, TextView eventLocationTextView,
+    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
                                      TextView eventDateTextView, TextView recurringDatesTextView,
                                      TextView eventDescriptionTextView) {
 
-        eventNameTextView.setText(event.getName());
+        eventImageView.setImageBitmap(event.getPicture());
+
+        eventNameTextView.setText("Event: " + event.getName());
         if (event.getFacility() != null) {
-            eventLocationTextView.setText(event.getFacility().getFacilityId());
+            eventLocationTextView.setText("Facility: " + event.getFacility().getFacilityId());
         }
 
         // Default values for dates in case they are null
@@ -100,7 +105,7 @@ public class EventDetailsFragment extends Fragment {
         String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
         String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
 
-        eventDateTextView.setText(startDate + " - " + endDate);
+        eventDateTextView.setText("Start Date" + startDate + " - " + endDate);
 
         // Convert abbreviations in recurrenceDays to full day names
         ArrayList<String> recurrenceDays = event.getRecurrenceDays();
@@ -112,9 +117,9 @@ public class EventDetailsFragment extends Fragment {
                     .reduce((a, b) -> a + ", " + b) // Join with commas
                     .orElse("No recurrence");
 
-            recurringDatesTextView.setText(recurrenceDaysText);
+            recurringDatesTextView.setText("Recurring Days: " + recurrenceDaysText);
         }
-        eventDescriptionTextView.setText(event.getDescription());
+        eventDescriptionTextView.setText("Description: " + event.getDescription());
 
     }
 
@@ -383,6 +388,61 @@ public class EventDetailsFragment extends Fragment {
         }
         database = Database.getDB();
 
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        // Perform the database operation asynchronously using the Executor
+        executorService.execute(() -> {
+            // Perform the database query in the background thread
+            database.getEvent(object -> {
+                event = (Event) object;
+                // Update UI or handle event here
+                getActivity().runOnUiThread(() -> {
+                    for (Event pendingEvent : ((Entrant) App.currentUser).getCurrentPendingEvents()) {
+                        if (pendingEvent.getEventId().equals(event.getEventId())) {
+                            // If event IDs match, set isEventInPendingList to true
+                            isEventInPendingList = true;
+                            break;
+                        }
+                    }
+                    if (isEventInPendingList) {
+                        acceptButton.setVisibility(View.VISIBLE);
+                        declineButton.setVisibility(View.VISIBLE);
+                        acceptButton.setOnClickListener(v -> {
+                            acceptEvent();
+                        });
+                        declineButton.setOnClickListener(v -> {
+                            declineEvent();
+                        });
+                        invitationText.setText("You've been selected from the wishlist!");
+                    } else {
+                        acceptButton.setVisibility(View.GONE);
+                        declineButton.setVisibility(View.GONE);
+                    }
+
+                    for (Event waitlistedEvent : ((Entrant) App.currentUser).getCurrentWaitlistedEvents()) {
+                        if (waitlistedEvent.getEventId().equals(event.getEventId())) {
+                            isEventInWaitlist = true;
+                            break;
+                        }
+                    }
+
+                    if (isEventInWaitlist) {
+                        buttonLeaveWaitlist.setVisibility(View.VISIBLE);
+                    } else {
+                        buttonLeaveWaitlist.setVisibility(View.GONE);
+                    }
+                });
+            }, () -> {
+                // Handle failure or empty response
+                getActivity().runOnUiThread(() -> {
+                    // Handle failure here (show error message, etc.)
+                });
+            }, event.getEventId());
+        });
+
+        // Make sure to shut down the executor when done
+        executorService.shutdown();
+
         // Ensure the activity is AppCompatActivity
         if (getActivity() instanceof AppCompatActivity) {
             AppCompatActivity appCompatActivity = (AppCompatActivity) getActivity();
@@ -426,7 +486,7 @@ public class EventDetailsFragment extends Fragment {
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView);
             // Print the current waitlist for debugging purposes
             Log.d("EventDetailsFragment", "updateButton Event Waiting List: " + event.getWaitingList());
         } else {
@@ -470,43 +530,6 @@ public class EventDetailsFragment extends Fragment {
             });
         }
 
-        boolean isEventInPendingList = false;
-        for (Event pendingEvent : ((Entrant) App.currentUser).getCurrentPendingEvents()) {
-            if (pendingEvent.getEventId().equals(event.getEventId())) {
-                // If event IDs match, set isEventInPendingList to true
-                isEventInPendingList = true;
-                break;
-            }
-        }
-        if (isEventInPendingList) {
-            acceptButton.setVisibility(View.VISIBLE);
-            declineButton.setVisibility(View.VISIBLE);
-            acceptButton.setOnClickListener(v -> {
-                acceptEvent();
-            });
-            declineButton.setOnClickListener(v -> {
-                declineEvent();
-            });
-            invitationText.setText("You've been selected from the wishlist!");
-        } else {
-            acceptButton.setVisibility(View.GONE);
-            declineButton.setVisibility(View.GONE);
-        }
-
-        boolean isEventInWaitlist = false;
-        for (Event waitlistedEvent : ((Entrant) App.currentUser).getCurrentWaitlistedEvents()) {
-            if (waitlistedEvent.getEventId().equals(event.getEventId())) {
-                // If event IDs match, set isEventInWaitlist to true
-                isEventInWaitlist = true;
-                break;
-            }
-        }
-
-        if (isEventInWaitlist) {
-            buttonLeaveWaitlist.setVisibility(View.VISIBLE);
-        } else {
-            buttonLeaveWaitlist.setVisibility(View.GONE);
-        }
         buttonLeaveWaitlist.setOnClickListener(v -> {
             leaveWaitlist();
         });
@@ -525,11 +548,11 @@ public class EventDetailsFragment extends Fragment {
         }
 
         ArrayList<Event> currentWaitlist = ((Entrant) App.currentUser).getCurrentWaitlistedEvents();
-        currentWaitlist.removeIf(pendingEvent -> pendingEvent.getEventId().equals(event.getEventId()));
-        ((Entrant) App.currentUser).setCurrentPendingEvents(currentWaitlist);
+        currentWaitlist.removeIf(waitingEvent -> waitingEvent.getEventId().equals(event.getEventId()));
+        ((Entrant) App.currentUser).setCurrentWaitlistedEvents(currentWaitlist);
 
-        ArrayList<User> currentEventWaitingList = event.getPendingList();
-        currentEventWaitingList.removeIf(pendingUser -> pendingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
+        ArrayList<User> currentEventWaitingList = event.getWaitingList();
+        currentEventWaitingList.removeIf(waitingUser -> waitingUser.getDeviceId().equals(App.currentUser.getDeviceId()));
         event.setPendingList(currentEventWaitingList);
 
         // Now move only the database operations to the background thread
@@ -541,7 +564,6 @@ public class EventDetailsFragment extends Fragment {
         });
         buttonLeaveWaitlist.setVisibility(View.GONE);
     }
-
 
     private void acceptEvent() {
         ArrayList<Event> currentPending = ((Entrant) App.currentUser).getCurrentPendingEvents();
@@ -684,98 +706,3 @@ public class EventDetailsFragment extends Fragment {
     }
 
 }
-//    private void checkEntrantStatus() {
-//        if (App.currentUser instanceof Entrant && event != null) {
-//            Entrant currentEntrant = (Entrant) App.currentUser;
-//            ArrayList<User> waitingList = event.getWaitingList();
-//
-//            // Compare using unique identifiers
-//            boolean isOnWaitlist = false;
-//            for (DocumentReference doc: waitingList) {
-//                if (user.getDeviceId().equals(currentEntrant.getDeviceId())) {
-//                    isOnWaitlist = true;
-//                    break;
-//                }
-//            }
-//
-//            // Update button visibility
-//            if (isOnWaitlist) {
-//                buttonEnterNow.setVisibility(View.GONE);
-//                buttonLeaveWaitlist.setVisibility(View.VISIBLE);
-//                Log.d("EventDetailsFragment", "User is on the waitlist. Showing 'Leave Waitlist' button.");
-//            } else {
-//                buttonEnterNow.setVisibility(View.VISIBLE);
-//                buttonLeaveWaitlist.setVisibility(View.GONE);
-//                Log.d("EventDetailsFragment", "User is not on the waitlist. Showing 'Enter Now' button.");
-//            }
-//        }
-//    }
-
-
-//    public void joinWaitlist() {
-//        if (event != null && App.currentUser != null) {
-//            // Cast the current user to Entrant
-//            Entrant currentEntrant = (Entrant) App.currentUser;
-//
-//            // Ensure the event's waiting list is initialized
-//            if (event.getWaitingList() == null) {
-//                event.setWaitingList(new ArrayList<>());
-//            }
-//            Log.d("EventDetails", "Current Event Waitlist before changes " + event.getWaitingList());
-//
-//            ArrayList<User> waitingList = event.getWaitingList();
-//
-//            // Add the entrant to the waiting list if not already present
-//            if (!waitingList.contains(currentEntrant)) {
-//                waitingList.add(currentEntrant);
-//                event.setWaitingList(waitingList);
-//
-//
-//                // TO FIX
-//                /*
-//                that "event" argument, needs to have a synced waitlist with the db and then .add("melonapopus")
-//                then db.insertEvent("event")
-//                it's not updating the CURRENTWaitlist
-//                its rewriting it with your local waitlist
-//                but the local waitlist isn't synced up
-//
-//                the enter now upload working from eventdetailsdialog fragment AND eventdetailsfragment->
-//                 meaning on db both user will have a ref to waitlisted events of theirs and events have one to
-//                 the users and that should fix the button displaying
-//                 right now is that the waitlist is being added to user on the database correctly
-//                 but user isn't being added to the database correctly
-//                 this causes the button toggle to fail
-//                 */
-//                ArrayList<Event> eventList = currentEntrant.getCurrentWaitlistedEvents();
-//                eventList.add(event);
-//                currentEntrant.setCurrentWaitlistedEvents(eventList);
-//
-//                // Log the addition
-//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
-//                        " successfully added to the waitlist for event " + event.getEventId());
-//                Log.d("EventDetails", "Current Event Waitlist: " + waitingList);
-//                Log.d("EventDetails", "Current Entrant Waitlisted Events: " + currentEntrant.getCurrentWaitlistedEvents());
-//
-//
-//                //TO FIX: currently it displays,
-////                Current Event Waitlist before changes [com.google.firebase.firestore.DocumentReference@310f0fb4]
-////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Entrant d0c6ba9291492596 successfully added to the waitlist for event 19cd6a862b96402f-1732064463678
-////                2024-11-20 19:04:15.841  5176-5176  EventDetails            com.example.trojanplanner            D  Current Event Waitlist: [com.google.firebase.firestore.DocumentReference@310f0fb4, Jennifer Wang (d0c6ba9291492596)]
-//// we want to do the code that extracts just the useres, ths is the case when the waitlist already has someone and it displays weirdly
-//                // Update the database
-//                database.insertEvent(event); // Save the updated event
-//                database.insertUserDocument(currentEntrant); // Save the updated entrant
-//
-//                // Notify the user and update UI
-//                Toast.makeText(getContext(), "Added to waitlist", Toast.LENGTH_SHORT).show();
-//                addtoNotifications();
-//                checkEntrantStatus(); // Refresh the UI
-//            } else {
-//                Log.d("EventDetails", "Entrant " + currentEntrant.getDeviceId() +
-//                        " is already on the waitlist for event " + event.getEventId());
-//                Toast.makeText(getContext(), "You are already on the waitlist.", Toast.LENGTH_SHORT).show();
-//            }
-//        } else {
-//            Toast.makeText(getContext(), "Event or User data is missing.", Toast.LENGTH_SHORT).show();
-//        }
-//    }

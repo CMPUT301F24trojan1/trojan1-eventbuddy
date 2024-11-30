@@ -4,10 +4,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.BitmapGenerator;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Contains and stores information tied to a user.
@@ -127,6 +131,15 @@ public abstract class User implements Serializable {
     }
 
     /**
+     * Gets the value of firstName + " " + lastName. This is the 'username' of the user which is used
+     * to generate a profile picture
+     * @return The username of the user
+     */
+    public String getUserName() {
+        return firstName + " " + lastName;
+    }
+
+    /**
      * String method for User name
      * @author Madelaine Dalangin
      * @return email string
@@ -237,6 +250,7 @@ public abstract class User implements Serializable {
      * returns it to avoid null errors
      * @return The current bitmap for the user or the default bitmap
      */
+    @NonNull
     public Bitmap getPfpBitmap() {
         if (this.pfpBitmap == null) {
             // Assign a default picture if the provided one is null
@@ -254,11 +268,23 @@ public abstract class User implements Serializable {
         }
     }
 
-    // Helper method to load a default picture
+    /**
+     * Returns the default user bitmap for the app. This is used by any user that doesn't
+     * have a photo of its own set yet.
+     * @return The default user bitmap
+     */
+    @NonNull
     public static Bitmap getDefaultPicture() {
-        // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.profile_avatar);
+        return getDefaultPicture("");
     }
 
+    public static Bitmap getDefaultPicture(String name) {
+        String deviceID = name;
+
+        Bitmap defaultPicture = BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.profile_avatar);
+
+        BitmapGenerator generator = new BitmapGenerator(deviceID, defaultPicture);
+        return generator.generate();
+    }
 }
 

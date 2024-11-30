@@ -1,49 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/DeviceIDView"
-        android:layout_width="wrap_content"
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Device ID" />
+        android:layout_margin="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
 
-    <ImageView
-        android:id="@+id/profilePicture"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <TextView
-        android:id="@+id/firstNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="First Name" />
+            <TextView
+                android:id="@+id/DeviceIDView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Device ID"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
 
+            <ImageView
+                android:id="@+id/profilePicture"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/ic_profile_placeholder" />
 
-    <TextView
-        android:id="@+id/lastNameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Last Name" />
+            <TextView
+                android:id="@+id/firstNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="First Name"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
 
-    <TextView
-        android:id="@+id/emailTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Email" />
+            <TextView
+                android:id="@+id/lastNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Last Name"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
 
-    <TextView
-        android:id="@+id/phone_number_View"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="phone number " />
+            <TextView
+                android:id="@+id/emailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Email"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+
+            <TextView
+                android:id="@+id/phone_number_View"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Phone Number"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+
+            <Button
+                android:id="@+id/deleteButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="@color/design_default_color_error"
+                android:text="Cancel From Event"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
 </LinearLayout>

@@ -89,7 +89,7 @@ public class FacilitySetupFragment extends Fragment {
                 // Clear the input fields
                 facilityNameEditText.setText("");
                 facilityLocationEditText.setText("");
-                facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Reset to a default image
+                facilityPhoto.setImageBitmap(Facility.getDefaultPicture()); // Reset to a default image
             });
 
             // Override default photo picker callback function
@@ -253,11 +253,7 @@ public class FacilitySetupFragment extends Fragment {
         facilityLocationEditText.setText(facility.getLocation());
 
         // Load facility photo
-        if (facility.getPfpFacilityBitmap() != null) {
-            facilityPhoto.setImageBitmap(facility.getPfpFacilityBitmap());
-            Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility photo loaded");
-        } else {
-            facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Default image if no photo
-        }
+        facilityPhoto.setImageBitmap(facility.getPfpFacilityBitmap());
+        Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility photo loaded");
     }
 }
