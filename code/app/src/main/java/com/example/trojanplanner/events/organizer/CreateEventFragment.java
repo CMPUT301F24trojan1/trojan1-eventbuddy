@@ -175,8 +175,8 @@ public class CreateEventFragment extends Fragment {
         String eventendDateStr = eventendDateEditText.getText().toString().trim();
         String waitlistOpenDateStr = signupOpenDateEditText.getText().toString().trim();
         String waitlistCloseDateStr = signupCloseDateEditText.getText().toString().trim();
-        long eventCapacity = spotsAvailableStr.isEmpty() ? 0 : Long.parseLong(spotsAvailableStr);
-        long waitlistCapacity = waitlistCapacityStr.isEmpty() ? 10000 : Long.parseLong(waitlistCapacityStr);
+        long eventCapacity = spotsAvailableStr.isEmpty() ? 0L : Long.parseLong(spotsAvailableStr);
+        long waitlistCapacity = waitlistCapacityStr.isEmpty() ? 100000L : Long.parseLong(waitlistCapacityStr);
         float price = priceStr.isEmpty() ? 0f : Float.parseFloat(priceStr);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
@@ -206,7 +206,10 @@ public class CreateEventFragment extends Fragment {
                 int daysLeftToRegister = (int) ((eventDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
 
                 Event newEvent = new Event(newEventId, name, description, price, facility, eventDate, eventendDate,
-                        daysLeftToRegister, eventCapacity, waitlistCapacity);
+                        daysLeftToRegister, eventCapacity, eventCapacity);
+                newEvent.setWaitlistCapacity(waitlistCapacity);
+                newEvent.setDaysLeftToRegister(daysLeftToRegister);
+                newEvent.setAvailableSpots(eventCapacity);
                 newEvent.setWaitlistOpen(waitlistOpenDate);
                 newEvent.setWaitlistClose(waitlistCloseDate);
                 newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation

@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
+import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.User;
 
 import java.util.ArrayList;
 
@@ -23,11 +25,15 @@ public class WaitlistAdapter extends ArrayAdapter<Entrant> {
 
     private final Context context;
     private final ArrayList<Entrant> entrants;
+    private final Event event;
+    private final String listType;
 
-    public WaitlistAdapter(Context context, ArrayList<Entrant> entrants) {
+    public WaitlistAdapter(Context context, ArrayList<Entrant> entrants, Event event, String listType) {
         super(context, R.layout.item_waitlist, entrants);  // Add the entrants list here
         this.context = context;
         this.entrants = entrants != null ? entrants : new ArrayList<>();
+        this.event = event;
+        this.listType = listType;
     }
 
     @NonNull
@@ -94,28 +100,15 @@ public class WaitlistAdapter extends ArrayAdapter<Entrant> {
         phoneNumberView.setText("contact: " + entrant.getPhoneNumber());
         profilePicture.setImageBitmap(entrant.getPfpBitmap());
 
-        deleteButton.setOnClickListener(v -> {
-            AlertDialog.Builder builder2 = new AlertDialog.Builder(getContext());
-
-            // Set the title and message of the dialog
-            builder.setTitle("Delete Entry")
-                    .setMessage("Are you sure you want to remove this Entrant from your event?\nThey will not be able to join again\n\n This action cannot be undone.")
-                    .setCancelable(false) // Prevents the dialog from being canceled when touched outside
-
-                    // Set the "Yes" button and its action
-                    .setPositiveButton("Yes", (dialog, id) -> {
-                        cancelEntrant(entrant);
-                    })
-
-                    // Set the "No" button and its action
-                    .setNegativeButton("No", (dialog, id) -> {
-                        dialog.dismiss();
-                    });
-
-            // Show the dialog
-            AlertDialog alert = builder.create();
-            alert.show();
-        });
+        if (listType != null) {
+            if (listType.equals("cancelled")) {
+                deleteButton.setVisibility(View.GONE);
+            } else if (!listType.equals("cancelled")){
+                deleteButton.setOnClickListener(v -> {
+                    showDeleteConfirmationDialog(entrant);
+                });
+            }
+        }
 
         // Set up the dialog and show it
         builder.setView(popupView);
@@ -125,8 +118,64 @@ public class WaitlistAdapter extends ArrayAdapter<Entrant> {
         dialog.show();
     }
 
+    private void showDeleteConfirmationDialog(Entrant entrant) {
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+
+        // Set the title and message of the dialog
+        builder1.setTitle("Delete Entry")
+                .setMessage("Are you sure you want to remove this Entrant from your event?\nThey will not be able to join again\n\nThis action cannot be undone.")
+                .setCancelable(false) // Prevents the dialog from being canceled when touched outside
+
+                // Set the "Yes" button and its action
+                .setPositiveButton("Yes", (dialog, id) -> {
+                    cancelEntrant(entrant); // Perform deletion action
+                    dialog.dismiss(); // Dismiss the confirmation dialog
+                })
+
+                // Set the "No" button and its action
+                .setNegativeButton("No", (dialog, id) -> {
+                    dialog.dismiss(); // Simply dismiss the dialog if "No" is clicked
+                });
+
+        // Show the confirmation dialog
+        AlertDialog alert = builder1.create();
+        alert.show();
+    }
+
     private void cancelEntrant(Entrant entrant) {
-        Database.getDB().deleteUser(entrant.getDeviceId());
+        if (event != null) {
+            if (listType != null) {
+                switch (listType) {
+                    case "waiting": {
+                        ArrayList<User> waitingList = event.getWaitingList();
+                        waitingList.removeIf(user -> user.getDeviceId().equals(entrant.getDeviceId()));
+                        event.setWaitingList(waitingList);
+                        ArrayList<User> cancelledList = event.getCancelledList();
+                        cancelledList.add(entrant);
+                        event.setCancelledList(cancelledList);
+                        break;
+                    }
+                    case "pending": {
+                        ArrayList<User> pendingList = event.getPendingList();
+                        pendingList.removeIf(user -> user.getDeviceId().equals(entrant.getDeviceId()));
+                        event.setWaitingList(pendingList);
+                        ArrayList<User> cancelledList = event.getCancelledList();
+                        cancelledList.add(entrant);
+                        event.setCancelledList(cancelledList);
+                        break;
+                    }
+                    case "enrolled": {
+                        ArrayList<User> enrolledList = event.getEnrolledList();
+                        enrolledList.removeIf(user -> user.getDeviceId().equals(entrant.getDeviceId()));
+                        event.setWaitingList(enrolledList);
+                        ArrayList<User> cancelledList = event.getCancelledList();
+                        cancelledList.add(entrant);
+                        event.setCancelledList(cancelledList);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     // ViewHolder pattern for performance optimization

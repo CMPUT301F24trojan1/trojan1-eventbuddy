@@ -133,7 +133,7 @@ public class WaitlistFragment extends Fragment {
 
                 // Now set the adapter with the converted entrants
                 if (!entrants.isEmpty()) {
-                    waitlistAdapter = new WaitlistAdapter(requireContext(), entrants);
+                    waitlistAdapter = new WaitlistAdapter(requireContext(), entrants, event, listType);
                     waitlistListView.setAdapter(waitlistAdapter);
                     waitlistAdapter.notifyDataSetChanged();  // Ensure the adapter is notified
                     Log.d("WaitlistFragment", "Adapter has been set with " + entrants.size() + " entrants.");

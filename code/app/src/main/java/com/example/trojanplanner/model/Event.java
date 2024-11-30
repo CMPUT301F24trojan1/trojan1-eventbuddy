@@ -347,7 +347,7 @@ public class Event implements Serializable {
         this.price = price;
     }
 
-    // fuck you java
+    // you suck java
     public void setPriceDouble(Double price) {
         this.price = price.floatValue();
     }

@@ -34,6 +34,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 public class EventDetailsDialogFragment extends DialogFragment {
@@ -104,7 +105,42 @@ public class EventDetailsDialogFragment extends DialogFragment {
         if (event != null) {
             populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
 
-            for (User user: event.getWaitingList()){
+            if (event.getWaitlistCapacity() == event.getWaitingList().size()) {
+                buttonEnterNow.setVisibility(View.GONE);
+            }
+
+            Date date = new Date();
+            if (event.getWaitlistClose().getTime() == date.getTime()) {
+                buttonEnterNow.setVisibility(View.GONE);
+            }
+
+            if (date.getTime() >= event.getWaitlistOpen().getTime()) {
+                // The current time is equal to or later than the waitlistOpen time
+                buttonEnterNow.setVisibility(View.VISIBLE);
+            } else {
+                // The current time is before the waitlistOpen time
+                buttonEnterNow.setVisibility(View.GONE);
+            }
+
+            for (User user: event.getWaitingList()){ // If the user is on the waitlist, hide the button
+                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
+                    buttonEnterNow.setVisibility(View.GONE);
+                }
+            }
+
+            for (User user: event.getEnrolledList()){ // If the user is enrolled, hide the button
+                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
+                    buttonEnterNow.setVisibility(View.GONE);
+                }
+            }
+
+            for (User user: event.getCancelledList()){ // If the user is enrolled, hide the button
+                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
+                    buttonEnterNow.setVisibility(View.GONE);
+                }
+            }
+
+            for (User user: event.getPendingList()){ // If the user has a pending event, hide the button
                 if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
                     buttonEnterNow.setVisibility(View.GONE);
                 }
@@ -118,6 +154,8 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
         return view;
     }
+
+
 
     /**
      * Shows a confirmation dialog for the entrant to join the event's waitlist.
