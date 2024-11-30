@@ -64,7 +64,7 @@ public class AdminEventArrayAdapter extends RecyclerView.Adapter<AdminEventArray
         if (picture != null) {
             holder.eventImage.setImageBitmap(picture);
         } else {
-            holder.eventImage.setImageResource(R.drawable.default_event_pic);
+            holder.eventImage.setImageBitmap(Event.getDefaultPicture());
         }
 
         // Handle click event

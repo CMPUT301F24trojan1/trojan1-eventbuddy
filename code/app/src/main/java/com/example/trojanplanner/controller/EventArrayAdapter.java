@@ -57,11 +57,7 @@ public class EventArrayAdapter extends RecyclerView.Adapter<EventArrayAdapter.Ev
 
         // Use context to get the picture, providing default if necessary
         Bitmap picture = event.getPicture();
-        if (picture != null) {
-            holder.eventImage.setImageBitmap(picture);
-        } else {
-            holder.eventImage.setImageResource(R.drawable.default_event_pic); // Default image
-        }
+        holder.eventImage.setImageBitmap(picture);
 
         holder.itemView.setOnClickListener(v -> {
             // When an event is clicked, call the onEventClick method
