@@ -33,7 +33,6 @@ import java.util.Objects;
  *     <li>{@link QRActivity} for scanning QR codes.</li>
  *     <li>{@link ProfileActivity} for managing user profile.</li>
  * </ul>
- * </p>
  *
  * <p>
  * It uses {@link NavController} for navigation between fragments and activities, and

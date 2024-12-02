@@ -29,7 +29,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  *     <li>{@link QRActivity} - Navigates to the QR activity</li>
  *     <li>Stays in the current activity - when the user selects the profile tab</li>
  * </ul>
- * </p>
  *
  */
 public class ProfileActivity extends AppCompatActivity {
