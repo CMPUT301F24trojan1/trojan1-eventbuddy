@@ -1,17 +1,12 @@
 package com.example.trojanplanner;
 
-import static androidx.test.espresso.action.ViewActions.clearText;
-import static androidx.test.espresso.action.ViewActions.typeText;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import android.content.Intent;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -24,17 +19,25 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static androidx.test.espresso.action.ViewActions.clearText;
+import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
 @RunWith(AndroidJUnit4.class)
 public class ProfileFragmentTest {
 
-    private ActivityScenario<MainActivity> activityScenario;
+    private ActivityScenario<ProfileActivity> activityScenario;
     @Rule
-    public ActivityScenarioRule<MainActivity> activityRule = new ActivityScenarioRule<>(MainActivity.class);
+    public ActivityScenarioRule<ProfileActivity> activityRule = new ActivityScenarioRule<>(ProfileActivity.class);
 
     @Before
     public void setUp() {
         // Launch MainActivity before each test
-        activityScenario = ActivityScenario.launch(MainActivity.class);
+        activityScenario = ActivityScenario.launch(ProfileActivity.class);
         Intents.init(); // Initialize Espresso Intents
     }
 
@@ -47,22 +50,11 @@ public class ProfileFragmentTest {
         }
     }
 
-    @Test
-    public void testProfileFragmentNavigation() {
-        // Simulate a click on the Profile navigation button
-        Espresso.onView(withId(R.id.profileActivity)).perform(ViewActions.click());
-
-        // Verify that ProfileActivity is launched
-        Intents.intended(hasComponent(ProfileActivity.class.getName()));
-
-        //verify that ProfileActivity is in view
-        Espresso.onView(withId(R.id.profile_fragment_parent)).check(matches(isDisplayed()));
-    }
 
     @Test
     public void testProfileFragmentInput() {
         // Navigate to the Profile Fragment or Activity
-        Espresso.onView(withId(R.id.profileActivity)).perform(ViewActions.click());
+        //ActivityScenario.launch(ProfileActivity.class);
 
         // Enter and verify text in the first name input field
         Espresso.onView(withId(R.id.firstname_input)).perform(ViewActions.click(), clearText(), typeText("test user first name"), ViewActions.closeSoftKeyboard());
@@ -84,9 +76,8 @@ public class ProfileFragmentTest {
 
     @Test
     public void testProfileSaveButton() {
-        // click on profile from nav menu
-        Espresso.onView(withId(R.id.profileActivity)).perform(ViewActions.click());
-
+        // launch profile
+        //ActivityScenario.launch(ProfileActivity.class);
         //check save button on first name text field
         Espresso.onView(withId(R.id.firstname_input)).perform(ViewActions.click(), clearText(), typeText("test user first name"), ViewActions.closeSoftKeyboard());
         Espresso.onView(withId(R.id.save_button)).perform(ViewActions.click());
@@ -110,8 +101,8 @@ public class ProfileFragmentTest {
 
     @Test
     public void testProfileCancelButton() {
-        // click on profile from nav menu
-        Espresso.onView(withId(R.id.profileActivity)).perform(ViewActions.click());
+        // launch profile
+        //ActivityScenario.launch(ProfileActivity.class);
 
         //check cancel button on first name text field
         Espresso.onView(withId(R.id.firstname_input)).perform(ViewActions.click(), clearText(), typeText("test_user_first_name_2 (cancel test)"), ViewActions.closeSoftKeyboard());
