@@ -1,128 +1,15 @@
 package com.example.trojanplanner;
-import androidx.fragment.app.testing.FragmentScenario;
-
-
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
-import com.example.trojanplanner.R;
-import com.example.trojanplanner.events.EventDetailsFragment;
-import com.example.trojanplanner.model.ConcreteEvent;
-import com.example.trojanplanner.model.Entrant;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertEquals;
-
-// this is for testing US 01.01.01 - As an entrant, I want to join the waiting list for a specific event.
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
-import com.example.trojanplanner.events.EventDetailsFragment;
-import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Entrant;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-
-import java.util.Date;
-
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-
-import android.os.Bundle;
-import android.view.View;
-
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.MediumTest;
-
-import com.example.trojanplanner.events.EventDetailsFragment;
-import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Facility;
-
-
-
-import android.os.Bundle;
-import android.view.View;
-
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.MediumTest;
-
-import com.example.trojanplanner.events.EventDetailsFragment;
-import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Facility;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-
-import java.util.Date;
-import java.util.HashSet;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.MediumTest;
-
-import com.example.trojanplanner.events.EventDetailsFragment;
-import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Facility;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-
-import java.util.Date;
-import java.util.HashSet;
-
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 
 import android.os.Bundle;
+
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.MediumTest;
@@ -141,44 +28,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Date;
-import java.util.HashSet;
-
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-
-import android.os.Bundle;
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.MediumTest;
-
-import com.example.trojanplanner.events.EventDetailsFragment;
-import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.model.Facility;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import java.util.Date;
-import java.util.HashSet;
-
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
 
 @RunWith(AndroidJUnit4.class)
 @MediumTest
