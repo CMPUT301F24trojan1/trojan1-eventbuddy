@@ -39,7 +39,8 @@
         <activity
             android:name=".view.WelcomeActivity"
             android:exported="true"
-            android:theme="@style/Theme.TrojanPlanner.Splash">
+            android:theme="@style/Theme.TrojanPlanner.Splash"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
