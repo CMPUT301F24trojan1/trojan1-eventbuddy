@@ -3,6 +3,11 @@
     <string-array name="entrant_event_options">
         <item>View your status</item>
     </string-array>
+    <string-array name="recurrence_types">
+        <item>Never</item>
+        <item>Until_Date</item>
+        <item>After_Occurrences</item>
+    </string-array>
 
 </resources>
 

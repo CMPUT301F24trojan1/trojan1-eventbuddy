@@ -11,8 +11,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -35,6 +37,7 @@ import com.example.trojanplanner.model.Organizer;
 import com.example.trojanplanner.view.MainActivity;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
@@ -58,6 +61,17 @@ public class CreateEventFragment extends Fragment {
     private Button cancelEventButton;
     private Database database;
     private Switch eventGeolocationSwitch;
+
+    //for recurrence
+    private Switch recurrenceSwitch;
+    private LinearLayout recurrenceOptionsLayout;
+    private EditText recurrenceEndDateEditText;
+    private CheckBox mondayCheckbox, tuesdayCheckbox, wednesdayCheckbox, thursdayCheckbox, fridayCheckbox, saturdayCheckbox, sundayCheckbox;
+    private Date recurrenceEndDate;
+    private ArrayList<String> recurrenceDays = new ArrayList<>();
+
+
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -88,6 +102,43 @@ public class CreateEventFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        recurrenceSwitch = view.findViewById(R.id.recurrenceSwitch);
+        recurrenceOptionsLayout = view.findViewById(R.id.recurrenceOptionsLayout);
+        recurrenceEndDateEditText = view.findViewById(R.id.recurrenceEndDateEditText);
+        mondayCheckbox = view.findViewById(R.id.mondayCheckbox);
+        tuesdayCheckbox = view.findViewById(R.id.tuesdayCheckbox);
+        wednesdayCheckbox = view.findViewById(R.id.wednesdayCheckbox);
+        thursdayCheckbox = view.findViewById(R.id.thursdayCheckbox);
+        fridayCheckbox = view.findViewById(R.id.fridayCheckbox);
+        saturdayCheckbox = view.findViewById(R.id.saturdayCheckbox);
+        sundayCheckbox = view.findViewById(R.id.sundayCheckbox);
+
+        LinearLayout recurrenceOptionsLayout = view.findViewById(R.id.recurrenceOptionsLayout);
+        EditText recurrenceEndDateEditText = view.findViewById(R.id.recurrenceEndDateEditText);
+
+        // Handle recurrence visibility
+        recurrenceSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                recurrenceOptionsLayout.setVisibility(View.VISIBLE);
+            } else {
+                recurrenceOptionsLayout.setVisibility(View.GONE);
+                recurrenceEndDate = null;
+            }
+        });
+
+        // handle recurrence with the open calendar (hope this works)
+        recurrenceEndDateEditText.setOnClickListener(v -> {
+            DatePickerDialog datePicker = new DatePickerDialog(getContext(), (view1, year, month, dayOfMonth) -> {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(year, month, dayOfMonth);
+                Date selectedDate = calendar.getTime();
+                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+                recurrenceEndDateEditText.setText(sdf.format(selectedDate));
+            }, Calendar.getInstance().get(Calendar.YEAR), Calendar.getInstance().get(Calendar.MONTH), Calendar.getInstance().get(Calendar.DAY_OF_MONTH));
+            datePicker.show();
+        });
+
 
         // Create and register a callback for the photoPicker
         photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
@@ -180,6 +231,50 @@ public class CreateEventFragment extends Fragment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
         Date eventDate, eventendDate, waitlistOpenDate, waitlistCloseDate;
 
+        // Initialize views for recurrence functionality
+        recurrenceSwitch = view.findViewById(R.id.recurrenceSwitch);
+        recurrenceOptionsLayout = view.findViewById(R.id.recurrenceOptionsLayout);
+        recurrenceEndDateEditText = view.findViewById(R.id.recurrenceEndDateEditText);
+        mondayCheckbox = view.findViewById(R.id.mondayCheckbox);
+        tuesdayCheckbox = view.findViewById(R.id.tuesdayCheckbox);
+        wednesdayCheckbox = view.findViewById(R.id.wednesdayCheckbox);
+        thursdayCheckbox = view.findViewById(R.id.thursdayCheckbox);
+        fridayCheckbox = view.findViewById(R.id.fridayCheckbox);
+        saturdayCheckbox = view.findViewById(R.id.saturdayCheckbox);
+        sundayCheckbox = view.findViewById(R.id.sundayCheckbox);
+
+        // Handle recurrence details
+        boolean isRecurring = recurrenceSwitch.isChecked();
+        recurrenceEndDate = null;
+        recurrenceDays = new ArrayList<>();
+
+        if (isRecurring) {
+            String recurrenceEndDateStr = recurrenceEndDateEditText.getText().toString().trim();
+            if (!recurrenceEndDateStr.isEmpty()) {
+                try {
+                    recurrenceEndDate = dateFormat.parse(recurrenceEndDateStr);
+                } catch (ParseException e) {
+                    Toast.makeText(getContext(), "Invalid recurrence end date", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }
+
+            if (mondayCheckbox.isChecked()) recurrenceDays.add("Monday");
+            if (tuesdayCheckbox.isChecked()) recurrenceDays.add("Tuesday");
+            if (wednesdayCheckbox.isChecked()) recurrenceDays.add("Wednesday");
+            if (thursdayCheckbox.isChecked()) recurrenceDays.add("Thursday");
+            if (fridayCheckbox.isChecked()) recurrenceDays.add("Friday");
+            if (saturdayCheckbox.isChecked()) recurrenceDays.add("Saturday");
+            if (sundayCheckbox.isChecked()) recurrenceDays.add("Sunday");
+
+            if (recurrenceDays.isEmpty()) {
+                Toast.makeText(getContext(), "Please select at least one day for recurrence", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+
+
+
         try {
             eventDate = dateFormat.parse(eventDateStr);
             eventendDate = dateFormat.parse(eventendDateStr);
@@ -211,6 +306,14 @@ public class CreateEventFragment extends Fragment {
                 newEvent.setWaitlistOpen(waitlistOpenDate);
                 newEvent.setWaitlistClose(waitlistCloseDate);
                 newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation
+
+                //added for recurrence
+                // Add recurrence data
+//                newEvent.setRecurring(true);
+            // this by default is never ^ so we don't want to display that probably
+            // we also aren't using the enum types anymore
+                newEvent.setRecurrenceEndDate(recurrenceEndDate);
+                newEvent.setRecurrenceDays(recurrenceDays); // this needs to be an arraylist of string
 
                 if (changedPfp) {
                     if (eventImageBitmap != null) {
@@ -319,4 +422,18 @@ public class CreateEventFragment extends Fragment {
 
         new PfpClickPopupFragment(popupFunctions).show(((AppCompatActivity) App.activity).getSupportFragmentManager(), "Change Event Picture");
     }
+
+    private Date parseRecurrenceEndDate(String recurrenceEndDateStr) {
+        if (recurrenceEndDateStr == null || recurrenceEndDateStr.trim().isEmpty()) {
+            return null; // No recurrence end date provided
+        }
+        try {
+            return new SimpleDateFormat("MM/dd/yyyy", Locale.US).parse(recurrenceEndDateStr);
+        } catch (ParseException e) {
+            Log.e("CreateEventFragment", "Invalid recurrence end date format", e);
+            Toast.makeText(getContext(), "Invalid recurrence end date format. Please use MM/DD/YYYY.", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
 }

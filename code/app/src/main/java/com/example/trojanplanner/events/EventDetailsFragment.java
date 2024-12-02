@@ -83,7 +83,44 @@ public class EventDetailsFragment extends Fragment {
 
     // Required empty constructor
     public EventDetailsFragment() {}
-
+//    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
+//                                     TextView eventDateTextView, TextView recurringDatesTextView,
+//                                     TextView eventDescriptionTextView, TextView eventPriceTextview, TextView eventTotalSpotsTextview) {
+//
+//        eventImageView.setImageBitmap(event.getPicture());
+//
+//        eventNameTextView.setText("Event: " + event.getName());
+//        if (event.getFacility() != null) {
+//            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
+//        }
+//
+//        // Default values for dates in case they are null
+//        String defaultDate = "Not Available";  // Default date if event date is null
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+//
+//        // Assign default value if startDateTime or endDateTime is null
+//        String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
+//        String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
+//
+//        eventDateTextView.setText("⏰ Time:"+ startDate + " - " + endDate);
+//        eventPriceTextview.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
+//        eventTotalSpotsTextview.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
+//
+//        // Convert abbreviations in recurrenceDays to full day names
+//        ArrayList<String> recurrenceDays = (event.isRecurring()) ? event.getRecurrenceDays() : null;
+//
+//        if (recurrenceDays != null) {
+//            String recurrenceDaysText = recurrenceDays.stream()
+//                    .map(this::getFullDayName) // Convert each unique abbreviation to full day name
+//                    .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
+//                    .reduce((a, b) -> a + ", " + b) // Join with commas
+//                    .orElse("No recurrence");
+//
+//            recurringDatesTextView.setText("Recurring Days: " + recurrenceDaysText);
+//        }
+//        eventDescriptionTextView.setText("Description: " + event.getDescription());
+//
+//    }
     /**
      * Populates the event details in the respective text views.
      * If event details are missing, default values will be shown.
@@ -92,46 +129,69 @@ public class EventDetailsFragment extends Fragment {
      * @param eventNameTextView        The TextView to display the event's name.
      * @param eventLocationTextView    The TextView to display the event's location.
      * @param eventDateTextView        The TextView to display the event's start and end date.
-     * @param recurringDatesTextView   The TextView to display the event's recurrence days.
+     * @param recurringDaysTextView    The TextView to display the event's recurrence days.
+     * @param recurringEndDateTextView    The TextView to display the event's recurrence end date.
      * @param eventDescriptionTextView The TextView to display the event's description.
+     * @param eventPriceTextView       The TextView to display the event's price.
+     * @param eventTotalSpotsTextView   The TextView to display the event's total capacity.
      */
-    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
-                                     TextView eventDateTextView, TextView recurringDatesTextView,
-                                     TextView eventDescriptionTextView, TextView eventPriceTextview, TextView eventTotalSpotsTextview) {
 
+    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
+                                     TextView eventDateTextView, TextView recurringDaysTextView,
+                                     TextView recurringEndDateTextView, TextView eventDescriptionTextView,
+                                     TextView eventPriceTextView, TextView eventTotalSpotsTextView) {
+
+        // Set the event image
         eventImageView.setImageBitmap(event.getPicture());
 
+        // Set the event name
         eventNameTextView.setText("Event: " + event.getName());
+
+        // Set the event location
         if (event.getFacility() != null) {
             eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
         }
 
-        // Default values for dates in case they are null
-        String defaultDate = "Not Available";  // Default date if event date is null
+        // Default values for dates
+        String defaultDate = "Not Available";
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 
-        // Assign default value if startDateTime or endDateTime is null
         String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
         String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
 
-        eventDateTextView.setText("⏰ Time:"+ startDate + " - " + endDate);
-        eventPriceTextview.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
-        eventTotalSpotsTextview.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
+        eventDateTextView.setText("⏰ Time: " + startDate + " - " + endDate);
 
-        // Convert abbreviations in recurrenceDays to full day names
-        ArrayList<String> recurrenceDays = (event.isRecurring()) ? event.getRecurrenceDays() : null;
+        // Set the price and total spots
+        eventPriceTextView.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
+        eventTotalSpotsTextView.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
 
-        if (recurrenceDays != null) {
-            String recurrenceDaysText = recurrenceDays.stream()
-                    .map(this::getFullDayName) // Convert each unique abbreviation to full day name
-                    .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
-                    .reduce((a, b) -> a + ", " + b) // Join with commas
-                    .orElse("No recurrence");
+        // Set the recurring days
+        if (event.isRecurring()) {
+            List<String> recurrenceDays = event.getRecurrenceDays();
+            if (recurrenceDays != null && !recurrenceDays.isEmpty()) {
+                String recurringDays = recurrenceDays.stream()
+                        .map(day -> day.substring(0, 1).toUpperCase()) // Convert to shorthand
+                        .reduce((a, b) -> a + " " + b)
+                        .orElse("None");
+                recurringDaysTextView.setText("🔄 Recurring Days: " + recurringDays);
+            } else {
+                recurringDaysTextView.setText("🔄 Recurring Days: None");
+            }
 
-            recurringDatesTextView.setText("Recurring Days: " + recurrenceDaysText);
+            // Set the recurring end date
+            if (event.getRecurrenceEndDate() != null) {
+                String recurrenceEndDate = dateFormat.format(event.getRecurrenceEndDate());
+                recurringEndDateTextView.setText("📅 Recurrence End Date: " + recurrenceEndDate);
+            } else {
+                recurringEndDateTextView.setText("📅 Recurrence End Date: None");
+            }
+        } else {
+            recurringDaysTextView.setText("🔄 Recurring Days: None");
+            recurringEndDateTextView.setText("📅 Recurrence End Date: None");
         }
-        eventDescriptionTextView.setText("Description: " + event.getDescription());
 
+        // Set the event description
+        eventDescriptionTextView.setText("Description: " + event.getDescription());
     }
 
     /**
@@ -483,7 +543,8 @@ public class EventDetailsFragment extends Fragment {
         TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
         TextView eventLocationTextView = view.findViewById(R.id.eventLocationTextView);
         TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
-        TextView recurringDatesTextView = view.findViewById(R.id.recurringDatesTextView);
+        TextView recurringDaysTextView = view.findViewById(R.id.recurringDaysTextView);
+        TextView recurringEndDateTextView = view.findViewById(R.id.recurringEndDateTextView); // initalized
         TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
         TextView eventPriceTextview = view.findViewById(R.id.ticketPriceTextView);
         TextView eventTotalSpotsTextview = view.findViewById(R.id.totalSpotsTextView);
@@ -509,7 +570,7 @@ public class EventDetailsFragment extends Fragment {
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDaysTextView, recurringEndDateTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
             // Print the current waitlist for debugging purposes
             Log.d("EventDetailsFragment", "updateButton Event Waiting List: " + event.getWaitingList());
         } else {

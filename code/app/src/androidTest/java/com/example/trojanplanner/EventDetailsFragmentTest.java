@@ -13,7 +13,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.events.EventDetailsFragment;
-import com.example.trojanplanner.model.ConcreteEvent;
 import com.example.trojanplanner.model.Entrant;
 
 import org.junit.Before;
