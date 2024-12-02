@@ -1,7 +1,5 @@
 package com.example.trojanplanner.model;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -14,10 +12,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 // facilities can have .... multiple events (facility isn't implemented yet)
 public class Event implements Serializable {
@@ -715,7 +711,7 @@ public class Event implements Serializable {
     @NonNull
     public static Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_event_pic);
+        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_event_pic2);
     }
 
     public List<Date> getOccurrenceDates() {
