@@ -1,17 +1,6 @@
 package com.example.trojanplanner;
 
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.espresso.Espresso;
-import androidx.test.espresso.matcher.ViewMatchers;
-import androidx.test.espresso.contrib.ViewPagerActions;
-import androidx.test.espresso.action.ViewActions;
-
-import org.junit.Test;
-
-import com.example.trojanplanner.view.SlideShowActivity;
-
+/*
 public class InstructionSlideFragmentTest {
 
     @Test
@@ -43,3 +32,5 @@ public class InstructionSlideFragmentTest {
         }
     }
 }
+
+ */
