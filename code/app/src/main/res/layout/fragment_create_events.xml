@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,166 +7,269 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Event Image -->
-    <ImageView
-        android:id="@+id/eventImageView"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:contentDescription="Event Image"
-        android:src="@drawable/event_placeholder"
-        android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Event Name -->
-    <EditText
-        android:id="@+id/eventNameEditText"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Event Name"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventImageView"
-        android:layout_marginBottom="8dp" />
+        android:paddingBottom="100dp">
 
-    <!-- Spots Available -->
-    <EditText
-        android:id="@+id/eventSpotsAvailableEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Choose Spots Available"
-        android:inputType="number"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventNameEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Event Image -->
+        <ImageView
+            android:id="@+id/eventImageView"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:contentDescription="Event Image"
+            android:src="@drawable/event_placeholder"
+            android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="16dp" />
 
-    <!-- Event Description -->
-    <EditText
-        android:id="@+id/eventDescriptionEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Event Description"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventSpotsAvailableEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Event Name -->
+        <EditText
+            android:id="@+id/eventNameEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Event Name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/eventImageView"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Event Start Date -->
-    <EditText
-        android:id="@+id/eventDateEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Event Start Date (MM/DD/YYYY)"
-        android:focusable="false"
-        android:clickable="true"
-        android:inputType="none"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventDescriptionEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Spots Available -->
+        <EditText
+            android:id="@+id/eventSpotsAvailableEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Choose Spots Available"
+            android:inputType="number"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/eventNameEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Event End Date -->
-    <EditText
-        android:id="@+id/eventendDateEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Event End Date (MM/DD/YYYY)"
-        android:focusable="false"
-        android:clickable="true"
-        android:inputType="none"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventDateEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Event Description -->
+        <EditText
+            android:id="@+id/eventDescriptionEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Event Description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/eventSpotsAvailableEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Ticket Price -->
-    <EditText
-        android:id="@+id/eventPriceEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Ticket Price"
-        android:inputType="numberDecimal"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventendDateEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Event Start Date -->
+        <EditText
+            android:id="@+id/eventDateEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Event Start Date (MM/DD/YYYY)"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/eventDescriptionEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Sign-up Open Date -->
-    <EditText
-        android:id="@+id/signupOpenDateEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Sign-up Open (MM/DD/YYYY)"
-        android:focusable="false"
-        android:clickable="true"
-        android:inputType="none"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventPriceEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Event End Date -->
+        <EditText
+            android:id="@+id/eventendDateEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Event End Date (MM/DD/YYYY)"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/eventDateEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Sign-up Close Date -->
-    <EditText
-        android:id="@+id/signupCloseDateEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Sign-up Close (MM/DD/YYYY)"
-        android:focusable="false"
-        android:clickable="true"
-        android:inputType="none"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/signupOpenDateEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Ticket Price -->
+        <EditText
+            android:id="@+id/eventPriceEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Ticket Price"
+            android:inputType="numberDecimal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/eventendDateEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Waitlist Capacity -->
-    <EditText
-        android:id="@+id/waitlistCapacityEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Waitlist Capacity (optional)"
-        android:inputType="number"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/signupCloseDateEditText"
-        android:layout_marginBottom="8dp" />
+        <!-- Sign-up Open Date -->
+        <EditText
+            android:id="@+id/signupOpenDateEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Sign-up Open (MM/DD/YYYY)"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/eventPriceEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Geolocation Switch -->
-    <Switch
-        android:id="@+id/eventGeolocationSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Enable Geolocation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/waitlistCapacityEditText" />
+        <!-- Sign-up Close Date -->
+        <EditText
+            android:id="@+id/signupCloseDateEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Sign-up Close (MM/DD/YYYY)"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/signupOpenDateEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Create Button -->
+        <!-- Waitlist Capacity -->
+        <EditText
+            android:id="@+id/waitlistCapacityEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Waitlist Capacity (optional)"
+            android:inputType="number"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/signupCloseDateEditText"
+            android:layout_marginBottom="8dp" />
 
-    <!-- Cancel Button -->
+        <!-- Geolocation Switch -->
+        <Switch
+            android:id="@+id/eventGeolocationSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Enable Geolocation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/waitlistCapacityEditText" />
 
-    <Button
-        android:id="@+id/createEventButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/rounded_button"
-        android:text="Create Event"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventGeolocationSwitch" />
+        <Switch
+            android:id="@+id/recurrenceSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Enable Recurrence"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/waitlistCapacityEditText" />
 
-    <Button
-        android:id="@+id/cancelEventButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="52dp"
-        android:background="@drawable/rounded_button"
-        android:text="Cancel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/eventGeolocationSwitch" />
+        <!-- Recurrence Options -->
+        <LinearLayout
+            android:id="@+id/recurrenceOptionsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/recurrenceSwitch"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- Recurrence End Date -->
+            <EditText
+                android:id="@+id/recurrenceEndDateEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Recurrence End Date (MM/DD/YYYY)"
+                android:focusable="false"
+                android:clickable="true"
+                android:inputType="none"
+                android:layout_marginTop="8dp" />
+
+            <!-- Days of the Week -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Days of the Week"
+                android:layout_marginTop="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <CheckBox
+                    android:id="@+id/mondayCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="M" />
+
+                <CheckBox
+                    android:id="@+id/tuesdayCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T" />
+
+                <CheckBox
+                    android:id="@+id/wednesdayCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="W" />
+
+                <CheckBox
+                    android:id="@+id/thursdayCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="R" />
+
+                <CheckBox
+                    android:id="@+id/fridayCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="F" />
+
+                <CheckBox
+                    android:id="@+id/saturdayCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="S" />
+
+                <CheckBox
+                    android:id="@+id/sundayCheckbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="U" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Buttons -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/recurrenceOptionsLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <Button
+                android:id="@+id/createEventButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Create Event" />
+
+            <Button
+                android:id="@+id/cancelEventButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Cancel" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
