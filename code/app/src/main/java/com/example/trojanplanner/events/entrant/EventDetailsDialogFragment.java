@@ -312,7 +312,7 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
         eventNameTextView.setText("Event: " + event.getName());
         if (event.getFacility() != null) {
-            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
+            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getName());
         }
 
         // Default values for dates in case they are null

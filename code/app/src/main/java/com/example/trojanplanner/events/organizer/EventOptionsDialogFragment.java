@@ -198,14 +198,14 @@ public class EventOptionsDialogFragment extends DialogFragment {
     // Event capacity - (Enrolled + Pending List) size is the ammount of Attendees possible to select
     private void initiateLottery() {
         // Event's starting date isn't <= current Date
-        if (event.getStartDateTime().getDate() <= new Date().getDate()) {
+        if (event.getStartDateTime().getDate() > new Date().getDate()) {
             String errorMessage = "The event has started already, you can't initiate a lottery.";
             displayError(errorMessage);
             return;
         }
 
-        // Waitlist Close date isn't >= current Date
-        if (event.getWaitlistClose().getDate() <= new Date().getDate()) {
+        // Waitlist Close date isn't <= current Date
+        if (event.getWaitlistClose().getDate() > new Date().getDate()) {
             String errorMessage = "The event sign up has not closed yet, you can't initiate a lottery.";
             displayError(errorMessage);
             return;
@@ -218,6 +218,11 @@ public class EventOptionsDialogFragment extends DialogFragment {
             return;
         }
 
+        if (event.getStatus().equals("finished")) {
+            String errorMessage = "You can't initiate a lottery for a finished event.";
+            displayError(errorMessage);
+            return;
+        }
 
         Context context = getContext(); // Capture context at the start
         if (context == null) {

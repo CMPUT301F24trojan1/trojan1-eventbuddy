@@ -270,7 +270,7 @@ public class ProfileFragment extends Fragment {
                     .addOnCompleteListener(task -> {
                         String msg = task.isSuccessful() ? "Successfully subscribed to Organizer notifications." : "Subscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
-                        App.sendAnnouncement(App.currentUser.getDeviceId(), "Trojan Planner", "You have been subscribed to notifications!");
+                        App.sendAnnouncement(App.currentUser.getDeviceId(), "Trojan Planner", "Dric testing notifications");
                     });
             FirebaseMessaging.getInstance().subscribeToTopic("admin" + App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {

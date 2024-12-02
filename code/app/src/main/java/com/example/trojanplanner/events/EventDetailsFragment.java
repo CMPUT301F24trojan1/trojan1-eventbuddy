@@ -6,6 +6,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -26,16 +28,13 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.ProfileUtils.PfpClickPopupFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.entrant.EntrantEventOptionsDialogFragment;
 import com.example.trojanplanner.events.organizer.EventOptionsDialogFragment;
-
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.MainActivity;
-import com.example.trojanplanner.view.ProfileActivity;
-import com.example.trojanplanner.view.QRActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
@@ -71,16 +70,6 @@ public class EventDetailsFragment extends Fragment {
     private boolean isEventInWaitlist = false;
     boolean isEventInPendingList = false;
 
-    @NonNull
-    public static EventDetailsFragment newInstance(Event event, Entrant entrant) {
-        EventDetailsFragment fragment = new EventDetailsFragment();
-        Bundle args = new Bundle();
-        args.putSerializable("event", event);
-        args.putSerializable("entrant", entrant);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     // Required empty constructor
     public EventDetailsFragment() {}
 
@@ -102,9 +91,44 @@ public class EventDetailsFragment extends Fragment {
         eventImageView.setImageBitmap(event.getPicture());
 
         eventNameTextView.setText("Event: " + event.getName());
-        if (event.getFacility() != null) {
-            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
-        }
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+
+        executorService.execute(() -> {
+            // Background thread: Database operations
+            Database.getDB().getFacilityByEventID(event.getEventId(), facilityID -> {
+                Database.getDB().getFacility(object -> {
+                    Facility facility = (Facility) object;
+
+                    // Switch to the main thread for UI updates
+                    mainHandler.post(() -> {
+                        Toast.makeText(getContext(), "Facility: " + facility.getName(), Toast.LENGTH_SHORT).show();
+                        event.setFacility(facility);
+
+                        // Update UI elements
+                        eventNameTextView.setText("Event: " + event.getName());
+
+                        if (event.getFacility() != null && event.getFacility().getName() != null) {
+                            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getName());
+                        } else {
+                            eventLocationTextView.setText("\uD83D\uDCCD Facility: Not Available");
+                        }
+                    });
+                }, () -> {
+                    // Handle failure case (Facility not found)
+                    mainHandler.post(() -> {
+                        eventLocationTextView.setText("\uD83D\uDCCD Facility: Not Available");
+                    });
+                }, (String) facilityID);
+            }, () -> {
+                // Handle failure case (Event not found)
+                mainHandler.post(() -> {
+                    eventLocationTextView.setText("\uD83D\uDCCD Facility: Not Available");
+                });
+            });
+        });
+
 
         // Default values for dates in case they are null
         String defaultDate = "Not Available";  // Default date if event date is null
