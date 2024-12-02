@@ -44,6 +44,16 @@ public class EventDetailsDialogFragment extends DialogFragment {
     private Database database;
     private Button buttonEnterNow;
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Get the dialog and adjust the width/height
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+    }
+
+
     @NonNull
     public static EventDetailsDialogFragment newInstance(Event event, Entrant entrant) {
         EventDetailsDialogFragment fragment = new EventDetailsDialogFragment();
@@ -113,22 +123,16 @@ public class EventDetailsDialogFragment extends DialogFragment {
             }
 
             Date date = new Date();
-            if (event.getWaitlistClose() != null && event.getWaitlistClose().getTime() == date.getTime()) {
+            if (event.getWaitlistClose() != null && event.getWaitlistClose().getDate() <= date.getDate()) {
                 buttonEnterNow.setVisibility(View.GONE);
             }
 
-            if (event.getWaitlistOpen() != null && date.getTime() >= event.getWaitlistOpen().getTime()) {
+            if (event.getWaitlistOpen() != null && date.getDate() >= event.getWaitlistOpen().getDate()) {
                 // The current time is equal to or later than the waitlistOpen time
                 buttonEnterNow.setVisibility(View.VISIBLE);
             } else {
                 // The current time is before the waitlistOpen time
                 buttonEnterNow.setVisibility(View.GONE);
-            }
-
-            for (User user: event.getWaitingList()){ // If the user is on the waitlist, hide the button
-                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
-                    buttonEnterNow.setVisibility(View.GONE);
-                }
             }
 
             checkUserInList(event.getWaitingList(), buttonEnterNow);
