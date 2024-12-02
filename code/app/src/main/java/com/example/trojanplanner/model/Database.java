@@ -2674,13 +2674,18 @@ public class Database {
         }).addOnSuccessListener(unused -> {
             // Transaction successful
             Log.d("FirestoreInsert", "Location successfully updated/inserted for event: " + eventID);
-            successAction.OnSuccess(null); // Pass null or any relevant result as needed
+            if (successAction != null) {
+                successAction.OnSuccess(null); // Pass null or any relevant result as needed
+            }
         }).addOnFailureListener(e -> {
             // Transaction failed
             Log.e("FirestoreInsert", "Error updating/inserting location: " + e.getMessage(), e);
-            failureAction.OnFailure();
+            if (failureAction != null) {
+                failureAction.OnFailure();
+            }
         });
     }
+
 
     /**
      * Removes the given user's location from a given event.
