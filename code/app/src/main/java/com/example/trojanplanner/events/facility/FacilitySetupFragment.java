@@ -99,7 +99,7 @@ public class FacilitySetupFragment extends Fragment {
 
         // Get the photoPicker (the one we borrow depends on what activity we're in)
         if (getActivity() instanceof MainActivity) {
-            //photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
+            photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
         }
         else { // The activity is ProfileActivity in this case
             photoPicker = ((ProfileActivity) App.activity).profileActivityPhotoPicker;
