@@ -274,6 +274,14 @@ public class ProfileFragment extends Fragment {
         database.insertUserDocument(App.currentUser);
     }
 
+    /**
+     * Handles subscription and unsubscription to notification topics for the current user.
+     * If the user is not logged in, it prompts them to log in before proceeding.
+     * It also ensures that the necessary notification permissions are granted before subscribing.
+     *
+     * @param isSubscribed If true, the user will be unsubscribed from notification topics.
+     *                     If false, the user will be subscribed to the topics.
+     */
     private void handleNotifications(boolean isSubscribed) {
         if (App.currentUser == null){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -396,6 +404,12 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Subscribes the current user to a specified notification topic using Firebase Cloud Messaging.
+     * Logs success or failure based on the outcome of the subscription attempt.
+     *
+     * @param topic The topic to which the user will subscribe for receiving notifications.
+     */
     private void addtoNotifications(String topic) {
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnCompleteListener(task -> {

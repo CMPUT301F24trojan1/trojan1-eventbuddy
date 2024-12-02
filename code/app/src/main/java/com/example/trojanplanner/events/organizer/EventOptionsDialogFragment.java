@@ -20,6 +20,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.trojanplanner.App;
+import com.example.trojanplanner.HelperFragments.MarkedMapFragment;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
@@ -108,11 +109,6 @@ public class EventOptionsDialogFragment extends DialogFragment {
         return builder.create();
     }
 
-    //TO DO
-    private void editEvent() {
-        Toast.makeText(getContext(), "We're sorry this feature is not available yet :(", Toast.LENGTH_SHORT).show();
-    }
-
     /**
      * Handles sending Announcements to different user lists
      *
@@ -127,6 +123,13 @@ public class EventOptionsDialogFragment extends DialogFragment {
         navController.navigate(R.id.NotificationSenderFragment, args);
     }
 
+    /**
+     * Navigates to the waitlist fragment to display the list of people who have been invited
+     * to the event but have not yet accepted or declined the invitation.
+     *
+     * @param event The event for which the pending invitation list will be viewed.
+     *              It is passed as a Serializable object to the next fragment.
+     */
     private void viewPendingList(Event event) {
         Bundle args = new Bundle();
         args.putSerializable("event", event);
@@ -138,7 +141,10 @@ public class EventOptionsDialogFragment extends DialogFragment {
     }
 
     /**
-     * Logic to view waitlists of the event.
+     * Navigates to the waitlist fragment to display the waiting list of an event.
+     *
+     * @param event The event for which the waiting list will be viewed.
+     *              It is passed as a Serializable object to the next fragment.
      */
     private void viewWaitlist(Event event) {
         Bundle args = new Bundle();
@@ -151,7 +157,10 @@ public class EventOptionsDialogFragment extends DialogFragment {
     }
 
     /**
-     * Logic to view enrolled attendees of the event.
+     * Navigates to the waitlist fragment to display the list of people who have enrolled in the event.
+     *
+     * @param event The event for which the enrolled list will be viewed.
+     *              It is passed as a Serializable object to the next fragment.
      */
     private void viewEnrolled(Event event) {
         Bundle args = new Bundle();
@@ -165,7 +174,10 @@ public class EventOptionsDialogFragment extends DialogFragment {
     }
 
     /**
-     * Logic to view attendees of the event.
+     * Navigates to the waitlist fragment to display the list of attendees who have cancelled their participation in the event.
+     *
+     * @param event The event for which the cancelled attendees list will be viewed.
+     *              It is passed as a Serializable object to the next fragment.
      */
     private void viewCancelled(Event event) {
         Bundle args = new Bundle();
@@ -180,6 +192,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
         navController.navigate(R.id.waitlistFragment, args);
     }
 
+    /**
+     * Displays an error message in a dialog to inform the user.
+     *
+     * @param errorMessage The error message to be displayed in the dialog.
+     *                     It provides details about the issue that occurred.
+     */
     private void displayError(String errorMessage) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Notice")
@@ -196,6 +214,26 @@ public class EventOptionsDialogFragment extends DialogFragment {
     // Event's enrolled list isn't finalized: meaning event.getStatus doesn't return 'finalized'
     // Enrolled list + pending list != event capacity
     // Event capacity - (Enrolled + Pending List) size is the ammount of Attendees possible to select
+    /**
+     * Initiates a lottery for selecting attendees for the event from the waiting list.
+     *
+     * The method ensures the lottery can only be initiated under specific conditions:
+     * 1. The event must not have started yet.
+     * 2. The event's waitlist must be closed.
+     * 3. The event's enrolled list must not be finalized.
+     * 4. The event must not be finished.
+     *
+     * If the conditions are met, the user is prompted to choose the number of attendees to select,
+     * and the lottery is performed by randomly picking users from the waiting list.
+     * The selected users are then added to the event's pending list, and the non-selected users
+     * are notified of their status. The results are shown in a dialog.
+     *
+     * The process involves several checks, such as ensuring valid inputs and removing null values from the lists.
+     * Finally, notifications are sent to both selected and non-selected users regarding the lottery result.
+     *
+     * @throws NullPointerException if event is null or context is not available.
+     * @throws NumberFormatException if the input for the number of attendees is not a valid number.
+     */
     private void initiateLottery() {
         // Event's starting date is current Date or before
         if (event.getStartDateTime().getDate() <= new Date().getDate()) {
@@ -399,11 +437,34 @@ public class EventOptionsDialogFragment extends DialogFragment {
         builder.create().show();
     }
 
+    /**
+     * Asynchronously inserts the user document into the database.
+     * <p>
+     * This method runs the database insertion on a background thread to avoid blocking the main UI thread.
+     * Once the insertion is complete, the provided {@link Runnable} callback will be executed on the main thread.
+     * </p>
+     *
+     * @param user The {@link Entrant} object representing the user to be inserted into the database.
+     * @param onComplete A {@link Runnable} callback that will be executed once the insertion is complete.
+     *                   This will run on the main thread.
+     */
     private void asyncInsertUserDocument(Entrant user, Runnable onComplete) {
         Database.getDB().insertUserDocument(user);
         new Handler(Looper.getMainLooper()).post(onComplete);
     }
 
+    /**
+     * Uploads the QR hash to the database for the specified event.
+     * <p>
+     * This method attempts to insert the QR hash associated with the event into the database. It uses
+     * {@link Database.QuerySuccessAction} and {@link Database.QueryFailureAction} to handle the success
+     * and failure scenarios. On success, a success message is logged, and a toast is displayed to the user.
+     * On failure, an error message is logged, and an error toast is displayed.
+     * </p>
+     *
+     * @param qrHash The QR hash to be uploaded to the database.
+     * @param event The {@link Event} object associated with the QR hash that is being uploaded.
+     */
     private void uploadQRHashToDatabase(String qrHash, Event event) {
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
@@ -424,6 +485,15 @@ public class EventOptionsDialogFragment extends DialogFragment {
         Database.getDB().insertQRHash(qrHash, event);
     }
 
+    /**
+     * Displays the QR code in a dialog box.
+     * <p>
+     * This method creates an {@link AlertDialog} that shows the provided QR code in an {@link ImageView}.
+     * It allows the user to close the dialog by pressing the "Close" button.
+     * </p>
+     *
+     * @param qrCodeBitmap The {@link Bitmap} object representing the QR code to be displayed in the dialog.
+     */
     private void showQRCodeInDialog(Bitmap qrCodeBitmap) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
 
@@ -443,7 +513,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
     }
 
     /**
-     * Logic for generating a QR code).
+     * Generates a unique event code by hashing the event's ID and uploading it to the database.
+     * <p>
+     * This method first checks if the event object and its ID are not null. If valid, it generates a hashed version
+     * of the event ID and uploads it to the database for further use. If any errors occur during the process,
+     * appropriate error messages are logged and displayed to the user.
+     * </p>
      */
     private void generateEventCode() {
         if (event == null || event.getEventId() == null) {
@@ -470,7 +545,13 @@ public class EventOptionsDialogFragment extends DialogFragment {
     }
 
     /**
-     * Logic to view the event location on a map.
+     * Navigates to the map view for the event location.
+     * <p>
+     * This method creates a Bundle containing the event object and uses the {@link NavController} to navigate
+     * to the {@link MarkedMapFragment}. A Toast message is also displayed when the option is selected.
+     * </p>
+     *
+     * @param event The {@link Event} object containing the details of the event to be shown on the map.
      */
     private void viewMap(Event event) {
         // Show a Toast message
@@ -486,7 +567,12 @@ public class EventOptionsDialogFragment extends DialogFragment {
     }
 
     /**
-     * Logic for showing the event's current QR code
+     * Displays the current event's QR code for check-in.
+     * <p>
+     * This method checks if the event and event ID are valid. It then hashes the event ID, generates a QR code
+     * for it, and displays the QR code in a dialog. If any of the steps fail, appropriate error messages are
+     * logged and displayed to the user.
+     * </p>
      */
     private void showCheckinCode() {
         if (event == null || event.getEventId() == null) {

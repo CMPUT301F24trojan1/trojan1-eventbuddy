@@ -12,12 +12,23 @@ import com.google.zxing.ResultPoint;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A custom View that overlays focus points on the camera preview in a barcode scanning application.
+ * It draws circles at the specified focus points on the screen, scaling them based on the camera preview size.
+ */
 public class FocusOverlayView extends View {
     private final Paint paint = new Paint();
     private final List<ResultPoint> resultPoints = new ArrayList<>();
     private int previewWidth = 1; // Default to 1 to avoid division by zero
     private int previewHeight = 1;
 
+    /**
+     * Constructor for the FocusOverlayView.
+     * Sets up the paint color, style, and anti-aliasing for the view.
+     *
+     * @param context The application context.
+     * @param attrs The attributes for the view from XML layout (if any).
+     */
     public FocusOverlayView(Context context, AttributeSet attrs) {
         super(context, attrs);
         paint.setColor(0xFFFF0000); // Red color
@@ -31,12 +42,24 @@ public class FocusOverlayView extends View {
         this.previewHeight = height;
     }
 
-    // Add focus points
+    /**
+     * Adds a list of focus points to be drawn on the view.
+     * The view is invalidated so it will be redrawn with the new focus points.
+     *
+     * @param points The list of ResultPoint objects to be displayed as focus points.
+     */
     public void addFocusPoints(List<ResultPoint> points) {
         resultPoints.clear();
         resultPoints.addAll(points);
         invalidate(); // Redraw the view
     }
+
+    /**
+     * Draws the focus points on the canvas. This method scales the coordinates of the focus points
+     * based on the current dimensions of the view and the camera preview size.
+     *
+     * @param canvas The canvas on which the view is drawn.
+     */
 
     @Override
     protected void onDraw(Canvas canvas) {

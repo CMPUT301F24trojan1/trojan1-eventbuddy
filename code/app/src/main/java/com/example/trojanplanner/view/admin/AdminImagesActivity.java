@@ -2,7 +2,6 @@ package com.example.trojanplanner.view.admin;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.admin.AdminImagesArrayAdapter;
 import com.example.trojanplanner.model.Database;
@@ -28,6 +28,10 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * AdminImagesActivity displays images uploaded to Firebase Storage in a RecyclerView.
+ * It allows the admin to navigate through directories, view images, and delete them.
+ */
 public class AdminImagesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private AdminImagesArrayAdapter adapter;
@@ -38,6 +42,11 @@ public class AdminImagesActivity extends AppCompatActivity {
     private int currentDirectoryIndex = 0; // To track the current directory index
     private Button nextButton, previousButton;
     private TextView directoryID;
+
+    /**
+     * Initializes the activity and sets up views, adapter, and event listeners.
+     * @param savedInstanceState saved instance state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,10 +94,17 @@ public class AdminImagesActivity extends AppCompatActivity {
         updateDirectoryNavigation(); // Update navigation buttons' state
     }
 
+    /**
+     * Deletes an image from the Firebase database.
+     * @param filePath the path of the image to delete.
+     */
     private void deleteImageFromDatabase(String filePath) {
         Database.getDB().deleteImage(filePath);
     }
 
+    /**
+     * Lists all directories in Firebase Storage and updates the UI accordingly.
+     */
     private void listAllDirectories() {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference rootRef = storage.getReference();
@@ -109,6 +125,10 @@ public class AdminImagesActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e("listDirectories", "Error listing directories", e));
     }
 
+    /**
+     * Lists the images in the specified directory.
+     * @param directory the directory to list images from.
+     */
     private void listImagesInDirectory(String directory) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
@@ -126,6 +146,10 @@ public class AdminImagesActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e("listImages", "Error listing images", e));
     }
 
+    /**
+     * Downloads an image from Firebase Storage and displays it in the RecyclerView.
+     * @param filePath the path of the image to download.
+     */
     private void downloadImageForDisplay(String filePath) {
         Database.getDB().downloadImage(picture -> {
             Bitmap bitmap = (Bitmap) picture;
@@ -136,6 +160,9 @@ public class AdminImagesActivity extends AppCompatActivity {
         }, () -> Log.e("ImageDownload", "Error downloading image"),  filePath);
     }
 
+    /**
+     * Toggles the visibility of the empty view depending on whether there are images.
+     */
     private void toggleEmptyView() {
         if (imagesList.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -146,6 +173,9 @@ public class AdminImagesActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the bottom navigation for the admin activity.
+     */
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.admin_bottom_nav_menu);
         navView.setSelectedItemId(R.id.navigation_images);
@@ -179,7 +209,9 @@ public class AdminImagesActivity extends AppCompatActivity {
         });
     }
 
-    // Update the `directory` navigation buttons' state
+    /**
+     * Updates the directory navigation buttons and text.
+     */
     private void updateDirectoryNavigation() {
         // Enable/Disable buttons based on the current position in directoriesList
         previousButton.setEnabled(currentDirectoryIndex > 0);
@@ -201,7 +233,10 @@ public class AdminImagesActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Handles the "Next" button click to navigate to the next directory.
+     * @param view the view that was clicked.
+     */
     public void onNextClicked(View view) {
         Log.d("DirectoryListDebug", "directoriesList: " + directoriesList.toString());
         Log.d("DirectoryListDebug", "Current directory index: " + currentDirectoryIndex);
@@ -227,6 +262,10 @@ public class AdminImagesActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the "Previous" button click to navigate to the previous directory.
+     * @param view the view that was clicked.
+     */
     public void onPreviousClicked(View view) {
         if (currentDirectoryIndex > 0) {
             currentDirectoryIndex--;

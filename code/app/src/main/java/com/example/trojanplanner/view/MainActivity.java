@@ -3,22 +3,44 @@ package com.example.trojanplanner.view;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.EventsFragment;
-import com.example.trojanplanner.R;
-import com.example.trojanplanner.model.Database;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.databinding.ActivityMainBinding;
+import com.example.trojanplanner.events.EventsFragment;
+import com.example.trojanplanner.model.Database;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Objects;
 
+/**
+ * MainActivity is the entry point of the Trojan Planner application.
+ * It serves as the main hub for navigation within the app and provides access
+ * to various features including events, QR activity, and user profile. The activity
+ * sets up the bottom navigation bar, manages the navigation between different sections,
+ * and allows users to interact with the app's features.
+ *
+ * <p>
+ * The activity initializes a {@link PhotoPicker} instance to allow the user to choose
+ * a profile photo and sets up navigation for different sections, including:
+ * <ul>
+ *     <li>{@link EventsFragment} for event management.</li>
+ *     <li>{@link QRActivity} for scanning QR codes.</li>
+ *     <li>{@link ProfileActivity} for managing user profile.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * It uses {@link NavController} for navigation between fragments and activities, and
+ * manages the bottom navigation bar through the {@link BottomNavigationView}.
+ * </p>
+ *
+ */
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
@@ -26,6 +48,17 @@ public class MainActivity extends AppCompatActivity {
 
     public PhotoPicker mainActivityPhotoPicker;
 
+    /**
+     * Called when the activity is created. Initializes the layout, database, photo picker,
+     * and sets up navigation for the app's main features.
+     * <p>
+     * This method is responsible for setting the content view, initializing the
+     * {@link Database}, and setting up the bottom navigation and navigation controller
+     * for fragment and activity transitions.
+     * </p>
+     *
+     * @param savedInstanceState The saved instance state from the previous activity (if any).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

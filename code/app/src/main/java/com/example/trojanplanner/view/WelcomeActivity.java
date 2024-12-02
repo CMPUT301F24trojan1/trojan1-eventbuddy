@@ -21,15 +21,25 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.trojanplanner.App;
+import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
-import com.example.trojanplanner.R;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-
+/**
+ * The WelcomeActivity is the initial screen displayed when the app is opened. It checks if the user is already logged in
+ * and proceeds to either the main activity or the profile activity for user registration. It also handles notification
+ * subscriptions and permissions.
+ */
 public class WelcomeActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
+    /**
+     * Called when the activity is created. Sets up the view, handles system bar padding,
+     * and animates the "funny text" after a delay. It also checks if the user is logged in.
+     *
+     * @param savedInstanceState Bundle containing activity's previously saved state, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +72,10 @@ public class WelcomeActivity extends AppCompatActivity {
         new Handler().postDelayed(this::checkUserLogin, 3000);
     }
 
+    /**
+     * Checks if the user is logged in. If a user is logged in, the main activity is started,
+     * otherwise, an attempt is made to retrieve the entrant info using the device ID.
+     */
     private void checkUserLogin() {
         // If a user is already logged in, proceed to MainActivity
         if (App.currentUser != null) {
@@ -72,6 +86,13 @@ public class WelcomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Attempts to retrieve the entrant from the database using the device ID. If successful, it
+     * sets the current user, requests notification permission, and subscribes to notifications.
+     * If no user is found, it redirects to the ProfileActivity for user registration.
+     *
+     * @param deviceId The device ID used to retrieve the entrant from the database.
+     */
     private void getEntrantFromDeviceId(String deviceId) {
         Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
             @Override
@@ -96,6 +117,9 @@ public class WelcomeActivity extends AppCompatActivity {
         database.getEntrant(successAction, failureAction, deviceId);
     }
 
+    /**
+     * Starts the MainActivity and hides the progress bar.
+     */
     private void startMainActivity() {
         progressBar.setVisibility(View.GONE); // Hide progress bar
         Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
@@ -103,6 +127,9 @@ public class WelcomeActivity extends AppCompatActivity {
         finish(); // Finish the WelcomeActivity to remove it from the back stack
     }
 
+    /**
+     * Starts the ProfileActivity for user registration and hides the progress bar.
+     */
     private void startProfileActivity() {
         progressBar.setVisibility(View.GONE); // Hide progress bar
         Intent intent = new Intent(WelcomeActivity.this, ProfileActivity.class);
@@ -111,6 +138,11 @@ public class WelcomeActivity extends AppCompatActivity {
         finish(); // Finish the WelcomeActivity to remove it from the back stack
     }
 
+    /**
+     * Subscribes the device to a topic using Firebase Cloud Messaging.
+     *
+     * @param topic The topic to which the device will subscribe for notifications.
+     */
     private void addtoNotifications(String topic) {
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnCompleteListener(task -> {
@@ -124,6 +156,10 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1;
 
+    /**
+     * Requests notification permission from the user if the app is running on Android Tiramisu (API level 33) or higher.
+     * If the permission is not granted, the user is directed to the app's notification settings.
+     */
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // Check if the app has notification permission

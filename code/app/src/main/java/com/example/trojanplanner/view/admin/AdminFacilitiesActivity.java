@@ -8,7 +8,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -22,7 +21,6 @@ import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.admin.AdminFacilitiesArrayAdapter;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Facility;
-import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -30,6 +28,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * AdminFacilitiesActivity is responsible for managing and displaying the list of facilities in an admin view.
+ * It supports pagination, facility deletion, and navigation between pages of facilities.
+ */
 public class AdminFacilitiesActivity extends AppCompatActivity {
     private TextView empty_text;
     private RecyclerView recyclerView;
@@ -42,6 +44,11 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
     private String lastFetchedFacilityDocument = null; // Track the last document for pagination
 
 
+    /**
+     * Initializes the activity. Sets up the recycler view, buttons, and loads the first page of facilities.
+     *
+     * @param savedInstanceState A bundle containing any saved state from a previous instance of the activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,6 +131,12 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Deletes a facility from the database. The operation is done in the background using an executor.
+     * Once the operation is complete, an announcement is sent and the activity is recreated.
+     *
+     * @param facility The facility to be deleted.
+     */
     private void deleteFacilityFromDatabase(Facility facility) {
         // Create an Executor with a fixed thread pool (you can adjust the number of threads)
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -149,6 +162,12 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
         executor.shutdown();
     }
 
+    /**
+     * Loads a specific page of facilities from the database.
+     *
+     * @param page The page number to load.
+     * @param lastDocumentId The ID of the last document fetched, used for pagination.
+     */
     private void loadPage(int page, String lastDocumentId) {
         facilities.clear();
         adapter.notifyDataSetChanged();
@@ -177,6 +196,9 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Updates the state of the pagination buttons (previous/next).
+     */
     private void updateButtonStates() {
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
         // Enable/Disable buttons based on the current page
@@ -202,6 +224,9 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the bottom navigation menu with listeners to switch between different admin views.
+     */
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.admin_bottom_nav_menu);
         navView.setSelectedItemId(R.id.navigation_facilities);
