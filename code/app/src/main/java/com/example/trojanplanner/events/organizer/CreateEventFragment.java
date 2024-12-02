@@ -88,6 +88,16 @@ public class CreateEventFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        AlertDialog.Builder builder =   new AlertDialog.Builder(requireContext());
+                builder
+                .setTitle("Notice")
+                .setMessage("Click on the image displayed above the input fields to choose an event poster")
+                .setPositiveButton("Yes I understand", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .create()
+                .show();
+
 
         // Create and register a callback for the photoPicker
         photoPicker = ((MainActivity) App.activity).createEventPhotoPicker;

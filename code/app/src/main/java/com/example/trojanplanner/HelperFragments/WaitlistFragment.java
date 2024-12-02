@@ -1,12 +1,8 @@
 package com.example.trojanplanner.HelperFragments;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -25,6 +21,7 @@ import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class WaitlistFragment extends Fragment {
 
@@ -87,6 +84,12 @@ public class WaitlistFragment extends Fragment {
                 if ("enrolled".equals(listType)) {
                     Button finalizeButton = requireActivity().findViewById(R.id.finalizeButton);
                     finalizeButton.setVisibility(View.VISIBLE);
+
+                    Date currentTime = new Date();
+                    if (event.getWaitlistClose() == null || event.getWaitlistClose().getDate() <= currentTime.getDate()){
+
+                    }
+
                     finalizeButton.setOnClickListener(v -> {
                         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
                         builder.setTitle("Finalize Event");
