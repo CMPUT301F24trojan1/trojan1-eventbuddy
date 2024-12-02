@@ -259,6 +259,13 @@ public class ProfileFragment extends Fragment {
     }
 
     private void handleNotifications(boolean isSubscribed) {
+        if (App.currentUser == null){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                return;
+            }
+        }
         if (!isSubscribed) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                     ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -270,7 +277,7 @@ public class ProfileFragment extends Fragment {
                     .addOnCompleteListener(task -> {
                         String msg = task.isSuccessful() ? "Successfully subscribed to Organizer notifications." : "Subscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
-                        App.sendAnnouncement(App.currentUser.getDeviceId(), "Trojan Planner", "Dric testing notifications");
+                        App.sendAnnouncement(App.currentUser.getDeviceId(), "Trojan Planner", "You have been subscribed to notifications!");
                     });
             FirebaseMessaging.getInstance().subscribeToTopic("admin" + App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
