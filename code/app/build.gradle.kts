@@ -55,7 +55,10 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.activity)
 
-    // Test dependencies
+// Test dependencies
+    testImplementation ("org.robolectric:robolectric:4.9")
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    androidTestImplementation("org.mockito:mockito-android:4.11.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
