@@ -1,22 +1,14 @@
 package com.example.trojanplanner.view;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.widget.Toast;
 
-import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -32,8 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Database database;
 
-    public PhotoPicker eventPhotoPicker; // Initialized in MainActivity, callback set in CreateEventFragment
-    public PhotoPicker facilityPhotoPicker; // Have to initialize this here in case we get directed to FacilitySetupFragment
+    public PhotoPicker mainActivityPhotoPicker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +34,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         database = Database.getDB();
-        eventPhotoPicker = new PhotoPicker();
-        eventPhotoPicker.initPhotoPicker();
-        facilityPhotoPicker = new PhotoPicker();
-        facilityPhotoPicker.initPhotoPicker();
+        mainActivityPhotoPicker = new PhotoPicker();
+        mainActivityPhotoPicker.initPhotoPicker();
 
 
 //        // If this device ID doesn't match a user on the db then force them to make a profile (switch to that activity)

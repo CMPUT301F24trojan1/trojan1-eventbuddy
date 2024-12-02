@@ -3,6 +3,7 @@ package com.example.trojanplanner.events;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +23,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
+import com.example.trojanplanner.ProfileUtils.PfpClickPopupFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.events.entrant.EntrantEventOptionsDialogFragment;
 import com.example.trojanplanner.events.organizer.EventOptionsDialogFragment;
 
@@ -30,6 +33,9 @@ import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
+import com.example.trojanplanner.view.MainActivity;
+import com.example.trojanplanner.view.ProfileActivity;
+import com.example.trojanplanner.view.QRActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
@@ -55,6 +61,9 @@ public class EventDetailsFragment extends Fragment {
     private Event event;
     private Entrant entrant;
     private Database database;
+    private PhotoPicker photoPicker;
+
+    private ImageView eventImageView;
     private Button buttonLeaveWaitlist;
     private Button manageButton;
     private Button acceptButton, declineButton, edit_poster;
@@ -470,7 +479,7 @@ public class EventDetailsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_event_details, container, false);
 
         // Initialize views
-        ImageView eventImageView = view.findViewById(R.id.eventImageView);
+        eventImageView = view.findViewById(R.id.eventImageView);
         TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
         TextView eventLocationTextView = view.findViewById(R.id.eventLocationTextView);
         TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
@@ -486,6 +495,17 @@ public class EventDetailsFragment extends Fragment {
         invitationText = view.findViewById(R.id.invitationText);
         acceptButton = view.findViewById(R.id.Accept);
         declineButton = view.findViewById(R.id.Decline);
+
+        // Initialize the photoPicker, borrowing the one from MainActivity
+        photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
+        PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) {
+                onPhotoSelected(bitmap);
+            }
+        };
+        photoPicker.setCallback(photoPickerCallback);
+
 
         // Populate event details
         if (event != null) {
@@ -515,6 +535,7 @@ public class EventDetailsFragment extends Fragment {
 
                     edit_poster.setOnClickListener(v -> {
                         // Handle edit poster button click
+                        createPfpPopup();
                     });
                 } else {
                     assert manageButton != null;
@@ -530,6 +551,77 @@ public class EventDetailsFragment extends Fragment {
 
         return view;
     }
+
+
+    /**
+     * The action taken when the 'Edit event poster' button is clicked. It creates a popup which
+     * allows either changing the event photo or removing it.
+     */
+    private void createPfpPopup() {
+        PfpClickPopupFragment.PfpPopupFunctions popupFunctions = new PfpClickPopupFragment.PfpPopupFunctions() {
+            @Override
+            public void changePFP() {
+                photoPicker.openPhotoPicker();
+            }
+            @Override
+            public void removePFP() {
+                clearPFP();
+            }
+        };
+
+        new PfpClickPopupFragment(popupFunctions).show(((AppCompatActivity) App.activity).getSupportFragmentManager(), "Change Event Poster");
+    }
+
+
+    /**
+     * The callback function triggered when the PhotoPicker selects an image. When this happens
+     * the event banner will be saved and uploaded with the new image.
+     *
+     * @param bitmap The new image to save as the event photo (unless it's null)
+     */
+    private void onPhotoSelected(Bitmap bitmap) {
+        System.out.println("EventDetailsFragment photopickercallback triggered!");
+        // As long as the bitmap isn't null (photoPicker returned an actual image), set it as the
+        // new event poster and upload
+        if (bitmap != null) {
+            // Upload the new photo, delete the old one and update the event document
+            // Assuming event is not null for this
+            String oldPfpFilepath = event.getPictureFilePath();
+            String newPfpFilepath = event.getFacility().getOwner().getDeviceId() + "/" + System.currentTimeMillis() + ".png";
+            event.setPictureFilePath(newPfpFilepath);
+            event.setPicture(bitmap);
+            eventImageView.setImageBitmap(bitmap);
+
+            if (oldPfpFilepath != null) {
+                database.deleteImage(oldPfpFilepath);
+            }
+
+            database.uploadImage(bitmap, event.getFacility().getOwner(), newPfpFilepath);
+            database.insertEvent(event);
+
+        }
+    }
+
+
+    /**
+     * Clears the photo of the event, resetting it to the default value. This change is immediately
+     * saved in the database.
+     */
+    private void clearPFP() {
+        eventImageView.setImageBitmap(Event.getDefaultPicture());
+
+        // Delete the image from Firebase Storage if there was one, otherwise just update the event
+        if (event.getPictureFilePath() != null) {
+            database.deleteImage(event.getPictureFilePath());
+        }
+
+        event.setPicture(null); // resets to default
+        event.setPictureFilePath(null);
+        database.insertEvent(event);
+
+    }
+
+
 
     /**
      * Shows a confirmation dialog for the entrant to leave the event's waitlist.

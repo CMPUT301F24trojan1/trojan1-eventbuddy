@@ -1,7 +1,6 @@
 package com.example.trojanplanner.events.organizer;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -23,7 +22,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
@@ -92,14 +90,14 @@ public class CreateEventFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Create and register a callback for the photoPicker
-        photoPicker = ((MainActivity) App.activity).eventPhotoPicker;
+        photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
         PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
             @Override
             public void OnPhotoPickerFinish(Bitmap bitmap) {
                 onSelectedPhoto(bitmap);
             }
         };
-        photoPicker.addCallback(photoPickerCallback);
+        photoPicker.setCallback(photoPickerCallback);
 
         if (requireActivity() instanceof AppCompatActivity) {
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
@@ -294,6 +292,7 @@ public class CreateEventFragment extends Fragment {
      * @param bitmap
      */
     public void onSelectedPhoto(Bitmap bitmap) {
+        System.out.println("CreateEventFragment photopickercallback triggered!");
         changedPfp = true;
         eventImageBitmap = bitmap;
         eventImageView.setImageBitmap(bitmap);
