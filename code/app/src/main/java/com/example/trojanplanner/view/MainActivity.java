@@ -1,22 +1,14 @@
 package com.example.trojanplanner.view;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.widget.Toast;
 
-import com.example.trojanplanner.App;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.events.EventsFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -32,7 +24,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Database database;
 
-    public PhotoPicker eventPhotoPicker; // Initialized in MainActivity, callback set in CreateEventFragment
+    public PhotoPicker createEventPhotoPicker; // Initialized in MainActivity, callback set in CreateEventFragment
+    public PhotoPicker eventDetailsPhotoPicker; // // Initialized in MainActivity, callback set in EventDetailsFragment
     public PhotoPicker facilityPhotoPicker; // Have to initialize this here in case we get directed to FacilitySetupFragment
 
     @Override
@@ -43,8 +36,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         database = Database.getDB();
-        eventPhotoPicker = new PhotoPicker();
-        eventPhotoPicker.initPhotoPicker();
+        createEventPhotoPicker = new PhotoPicker();
+        createEventPhotoPicker.initPhotoPicker();
+        eventDetailsPhotoPicker = new PhotoPicker();
+        eventDetailsPhotoPicker.initPhotoPicker();
         facilityPhotoPicker = new PhotoPicker();
         facilityPhotoPicker.initPhotoPicker();
 
