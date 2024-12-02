@@ -12,8 +12,8 @@ Admin Flow - https://github.com/CMPUT301F24trojan1/trojan1-eventbuddy/blob/main/
 In Projects/Issues - https://github.com/orgs/CMPUT301F24trojan1/projects/1/views/1
 
 ## CRC Cards
-In Wiki - https://github.com/CMPUT301F24trojan1/trojan1-eventbuddy/wiki/Part-2:-CRC-Cards
+[In Wiki](https://github.com/CMPUT301F24trojan1/trojan1-eventbuddy/wiki/CRC-Cards)
 
 
 # Part 3 Deliverables
-In Wiki - https://github.com/CMPUT301F24trojan1/trojan1-eventbuddy/wiki
+[In Wiki](https://github.com/CMPUT301F24trojan1/trojan1-eventbuddy/wiki)
