@@ -113,9 +113,6 @@ public class EventDetailsFragment extends Fragment {
                         Toast.makeText(getContext(), "Facility: " + facility.getName(), Toast.LENGTH_SHORT).show();
                         event.setFacility(facility);
 
-                        // Update UI elements
-                        eventNameTextView.setText("Event: " + event.getName());
-
                         if (event.getFacility() != null && event.getFacility().getName() != null) {
                             eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getName());
                         } else {

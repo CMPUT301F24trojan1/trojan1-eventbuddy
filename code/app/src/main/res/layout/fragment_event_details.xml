@@ -87,23 +87,13 @@
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
-            <!-- Recurring Days -->
+            <!-- Recurring Dates Dropdown -->
             <TextView
-                android:id="@+id/recurringDaysTextView"
+                android:id="@+id/recurringDatesTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="🔄 Recurring Days:"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-
-            <!-- Recurring End Date -->
-            <TextView
-                android:id="@+id/recurringEndDateTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="📅 Recurrence End Date: None"
+                android:text="🔄 Recurring Dates"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 

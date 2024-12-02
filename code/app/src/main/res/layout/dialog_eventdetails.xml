@@ -12,13 +12,12 @@
         android:id="@+id/eventImageCard"
         android:layout_width="0dp"
         android:layout_height="265dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="6dp"
         app:cardUseCompatPadding="false"
-        app:cardPreventCornerOverlap="false"
+        app:cardPreventCornerOverlap="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        >
 
         <!-- Overlay Layout for Close Button -->
         <android.widget.FrameLayout
@@ -52,8 +51,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="-25dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="6dp"
         app:cardUseCompatPadding="false"
         app:cardPreventCornerOverlap="false"
         app:layout_constraintTop_toBottomOf="@id/eventImageCard"
