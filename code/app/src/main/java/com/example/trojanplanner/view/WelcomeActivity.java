@@ -38,8 +38,6 @@ public class WelcomeActivity extends AppCompatActivity {
         if (App.currentUser == null) {
             String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             addtoNotifications(deviceID);
-            addtoNotifications("organizer" + deviceID);
-            addtoNotifications("admin" + deviceID);
         }
 
         progressBar = findViewById(R.id.progressBar);
@@ -82,8 +80,6 @@ public class WelcomeActivity extends AppCompatActivity {
                 requestNotificationPermission(); // Request notification permission
                 addtoNotifications(App.currentUser.getDeviceId());
                 Toast.makeText(WelcomeActivity.this, "Welcome back, " + App.currentUser.getFirstName() + "!", Toast.LENGTH_SHORT).show();
-                addtoNotifications("organizer" + App.currentUser.getDeviceId());
-                addtoNotifications("admin" + App.currentUser.getDeviceId());
                 startMainActivity();
             }
         };

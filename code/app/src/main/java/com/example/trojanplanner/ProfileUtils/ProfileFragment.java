@@ -2,7 +2,9 @@ package com.example.trojanplanner.ProfileUtils;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -93,6 +95,14 @@ public class ProfileFragment extends Fragment {
         saveButton.setOnClickListener(v -> handleSave());
 
         notificationsSwitch = view.findViewById(R.id.switch1);
+
+        // Retrieve the state from SharedPreferences
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        boolean notificationsEnabled = sharedPreferences.getBoolean("notificationsEnabled", false); // Default is false if not set
+
+        // Set the switch state based on the saved value
+        notificationsSwitch.setChecked(notificationsEnabled);
+
         // Set up switch toggle listener with proper toast notifications
         if (notificationsSwitch != null) {
             notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -103,6 +113,12 @@ public class ProfileFragment extends Fragment {
                     Toast.makeText(getContext(), "Enabling notifications...", Toast.LENGTH_SHORT).show();
                     handleNotifications(false);
                 }
+
+                // Save the state to SharedPreferences
+                SharedPreferences sharedState = getContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedState.edit();
+                editor.putBoolean("notificationsEnabled", isChecked);
+                editor.apply();  // Save the state asynchronously
             });
         } else {
             // Log an error if notificationsSwitch is null
@@ -265,6 +281,8 @@ public class ProfileFragment extends Fragment {
                 requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
                 return;
             }
+
+            Toast.makeText(getContext(), "You must be logged in to make any changes to notifications.", Toast.LENGTH_SHORT).show();
         }
         if (!isSubscribed) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -388,5 +406,4 @@ public class ProfileFragment extends Fragment {
                     }
                 });
     }
-
 }

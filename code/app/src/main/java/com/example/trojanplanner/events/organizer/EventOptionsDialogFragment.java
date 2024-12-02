@@ -205,20 +205,20 @@ public class EventOptionsDialogFragment extends DialogFragment {
         }
 
         // Waitlist Close date isn't <= current Date
-        if (event.getWaitlistClose().getDate() > new Date().getDate()) {
+        if (event.getWaitlistClose() != null && event.getWaitlistClose().getDate() > new Date().getDate()) {
             String errorMessage = "The event sign up has not closed yet, you can't initiate a lottery.";
             displayError(errorMessage);
             return;
         }
 
         // Event's enrolled list isn't finalized: meaning event.getStatus returns ''
-        if (event.getStatus().equals("finalized")) {
+        if (event.getStatus() != null && event.getStatus().equals("finalized")) {
             String errorMessage = "You have finalized this event's enrolled list, you can't initiate a lottery.";
             displayError(errorMessage);
             return;
         }
 
-        if (event.getStatus().equals("finished")) {
+        if (event.getStatus() != null && event.getStatus().equals("finished")) {
             String errorMessage = "You can't initiate a lottery for a finished event.";
             displayError(errorMessage);
             return;
@@ -246,16 +246,21 @@ public class EventOptionsDialogFragment extends DialogFragment {
             Log.d("EventOptionsDialogFragment", waitlistDebug.toString());
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Choose Number of Attendees, " + Lottery_waitlist.size() + " available in the wailtist \n\n"
-                + "Invites Available: " + (event.getPendingList().size() + event.getEnrolledList().size()) + "/" + event.getTotalSpots());
+        if (event.getTotalSpots() == null || event.getTotalSpots() == 0
+                || event.getPendingList() == null || event.getEnrolledList() == null) {
+            Toast.makeText(context, "Event data is missing, we apologize for the inconvenience", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Choose Number of Attendees, " + Lottery_waitlist.size() + " available\n\n");
+        builder.setMessage("Invites Available: " + (event.getTotalSpots() - (event.getPendingList().size() + event.getEnrolledList().size())) + "/" + event.getTotalSpots());
         FrameLayout container = new FrameLayout(requireContext());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
         );
-        params.setMargins(50, 20, 50, 20); // Left, top, right, bottom margins (adjust values as needed)
+        params.setMargins(50, 60, 50, 60); // Left, top, right, bottom margins (adjust values as needed)
 
         final EditText input = new EditText(requireContext());
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER); // Restrict input to numbers only
