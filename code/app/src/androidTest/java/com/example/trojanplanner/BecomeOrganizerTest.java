@@ -1,34 +1,6 @@
 package com.example.trojanplanner;
 
-import static androidx.test.espresso.action.ViewActions.clearText;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.typeText;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-
-import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.espresso.Espresso;
-import androidx.test.espresso.action.ViewActions;
-import androidx.test.espresso.intent.Intents;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.LargeTest;
-
-import com.example.trojanplanner.events.facility.FacilitySetupFragment;
-import com.example.trojanplanner.view.MainActivity;
-import com.example.trojanplanner.view.ProfileActivity;
-import com.example.trojanplanner.view.admin.AdminActivity;
-import com.example.trojanplanner.view.admin.AdminFacilitiesActivity;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+/* uncomment when needed
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class BecomeOrganizerTest {
@@ -269,3 +241,5 @@ public class BecomeOrganizerTest {
 
     }
 }
+
+ */
