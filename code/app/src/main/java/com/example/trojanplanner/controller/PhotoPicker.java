@@ -44,7 +44,7 @@ public class PhotoPicker {
     private boolean hasDatabase = false;
     private User user; // Just to assign a user for uploading
 
-    private ArrayList<PhotoPickerCallback> callbacks = new ArrayList<PhotoPickerCallback>();
+    private ArrayList<PhotoPickerCallback> callbacks = new ArrayList<PhotoPickerCallback>(); // Note: this is an array but can only have one callback
 
     public PhotoPicker() {
         activity = App.activity;
@@ -85,8 +85,14 @@ public class PhotoPicker {
         }
     }
 
-    public void addCallback(PhotoPickerCallback callback) {
-        if (!callbacks.contains(callback)) {
+    /**
+     * Sets the callback that will be triggered when the PhotoPicker successfully selects a photo.
+     *
+     * @param callback The callback that should be called when the PhotoPicker selects a photo.
+     */
+    public void setCallback(PhotoPickerCallback callback) {
+        callbacks.clear();
+        if (callback != null) {
             callbacks.add(callback);
         }
     }
@@ -95,16 +101,13 @@ public class PhotoPicker {
      * Method to initialize the PhotoPicker instance. This must be called before attempting to call
      * openPhotoPicker and THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD.
      * <br>
+     * On a selected photo, the photoPicker will call the callback set by setCallback().
+     * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
-     * @param callback The callback function
      * @param database The database to upload to (set to null to avoid uploading)
      * @author Jared Gourley
      */
-    public void initPhotoPicker(@NonNull PhotoPickerCallback callback, Database database) {
-        // Add callback if it isn't added already
-        if (callback != null && !callbacks.contains(callback)) {
-            callbacks.add(callback);
-        }
+    public void initPhotoPicker(Database database) {
 
         // https://developer.android.com/training/data-storage/shared/photopicker#select-single-item
         // https://developer.android.com/training/basics/intents/result#separate - needed to modify call to work from non-Activity object
@@ -157,18 +160,8 @@ public class PhotoPicker {
      * @author Jared Gourley
      */
     public void initPhotoPicker() {
-        initPhotoPicker(null, null);
+        initPhotoPicker(null);
     }
-
-    public void initPhotoPicker(PhotoPickerCallback callback) {
-        initPhotoPicker(callback, null);
-    }
-
-    public void initPhotoPicker(Database database) {
-        initPhotoPicker(null, database);
-    }
-
-
 
 
     // TODO: Is this function necessary?

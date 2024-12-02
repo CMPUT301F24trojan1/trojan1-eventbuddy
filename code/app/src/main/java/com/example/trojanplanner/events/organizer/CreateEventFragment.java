@@ -90,14 +90,14 @@ public class CreateEventFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Create and register a callback for the photoPicker
-        photoPicker = ((MainActivity) App.activity).createEventPhotoPicker;
+        photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
         PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
             @Override
             public void OnPhotoPickerFinish(Bitmap bitmap) {
                 onSelectedPhoto(bitmap);
             }
         };
-        photoPicker.addCallback(photoPickerCallback);
+        photoPicker.setCallback(photoPickerCallback);
 
         if (requireActivity() instanceof AppCompatActivity) {
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
@@ -292,6 +292,7 @@ public class CreateEventFragment extends Fragment {
      * @param bitmap
      */
     public void onSelectedPhoto(Bitmap bitmap) {
+        System.out.println("CreateEventFragment photopickercallback triggered!");
         changedPfp = true;
         eventImageBitmap = bitmap;
         eventImageView.setImageBitmap(bitmap);
