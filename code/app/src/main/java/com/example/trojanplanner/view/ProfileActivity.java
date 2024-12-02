@@ -1,13 +1,7 @@
 package com.example.trojanplanner.view;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,17 +11,13 @@ import com.example.trojanplanner.ProfileUtils.ProfileFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
-import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Entrant;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
-    public PhotoPicker photoPicker;
+    public PhotoPicker profileActivityPhotoPicker;
     public ProfileFragment profileFragment;
-    private Database database;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +25,10 @@ public class ProfileActivity extends AppCompatActivity {
 
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Init a photopicker for the user as well as the facility
+        profileActivityPhotoPicker = new PhotoPicker();
+        profileActivityPhotoPicker.initPhotoPicker();
 
         // Display ProfileFragment in the fragment container
         if (savedInstanceState == null) {
@@ -45,48 +39,12 @@ public class ProfileActivity extends AppCompatActivity {
                     .commit();
         }
 
-        // Init a photopicker which uses a callback set in ProfileFragment
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker(profileFragment.photoPickerCallback);
-
         setupNavigation();
 
 
         // Future code will be written in onStart to make sure the fragment fully loads properly
 
     }
-
-    // Call future things from here because in onCreate the fragment container is not fully set up yet
-    @Override
-    protected void onStart() {
-        super.onStart();
-        profileFragment.resetState(App.currentUser);
-    }
-
-
-//    /**
-//     * Sets an action on image retrieval to set the profile picture of the fragment.
-//     * This function is only called if the MainActivity user profile retrieval is not finished yet.
-//     * @author Jared Gourley
-//     */
-//    private void getIncomingPfp() {
-//        OnSuccessListener successListener = new OnSuccessListener<byte[]>() {
-//            @Override
-//            public void onSuccess(byte[] bytes) {
-//                // Assume that the MainActivity call set the user attribute already, we just want to reset state
-//                profileFragment.resetState(App.currentUser);
-//            }
-//        };
-//        OnFailureListener failureListener = new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                ; // Should never happen: user pfp filepath attribute should point to valid bitmap
-//            }
-//        };
-//
-//        // Add the actions to the query
-//        database.downloadImage(App.currentUser.getPfpFilePath(), successListener, failureListener);
-//    }
 
 
     /**

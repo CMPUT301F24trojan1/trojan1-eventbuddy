@@ -4,10 +4,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.BitmapGenerator;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Contains and stores information tied to a user.
@@ -127,6 +131,15 @@ public abstract class User implements Serializable {
     }
 
     /**
+     * Gets the value of firstName + " " + lastName. This is the 'username' of the user which is used
+     * to generate a profile picture
+     * @return The username of the user
+     */
+    public String getUserName() {
+        return firstName + " " + lastName;
+    }
+
+    /**
      * String method for User name
      * @author Madelaine Dalangin
      * @return email string
@@ -237,42 +250,40 @@ public abstract class User implements Serializable {
      * returns it to avoid null errors
      * @return The current bitmap for the user or the default bitmap
      */
+    @NonNull
     public Bitmap getPfpBitmap() {
         if (this.pfpBitmap == null) {
             // Assign a default picture if the provided one is null
-            this.pfpBitmap = new SerialBitmap(getDefaultPicture());
+            this.pfpBitmap = new SerialBitmap(getDefaultPicture(getUserName()));
         }
         return pfpBitmap.getBitmap();
     }
 
     public void setPfpBitmap(Bitmap pfpBitmap) {
         if (pfpBitmap == null) {
-            this.pfpBitmap = new SerialBitmap(getDefaultPicture());
+            this.pfpBitmap = new SerialBitmap(getDefaultPicture(getUserName()));
         }
         else {
             this.pfpBitmap = new SerialBitmap(pfpBitmap);
         }
     }
 
-    // Helper method to load a default picture
-    private Bitmap getDefaultPicture() {
-        // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.placeholder_avatar);
+    /**
+     * Returns the default user bitmap for the app. This is used by any user that doesn't
+     * have a photo of its own set yet.
+     * @return The default user bitmap
+     */
+    @NonNull
+    public static Bitmap getDefaultPicture() {
+        return getDefaultPicture("");
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true; // Check for reference equality
-        if (obj == null || getClass() != obj.getClass()) return false; // Check for class equality
-        User user = (User) obj;
-        return deviceId != null && deviceId.equals(user.deviceId); // Compare based on deviceId
+    public static Bitmap getDefaultPicture(String name) {
+
+        Bitmap defaultPicture = BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.profile_avatar);
+
+        BitmapGenerator generator = new BitmapGenerator(name, defaultPicture);
+        return generator.generate();
     }
-
-    @Override
-    public int hashCode() {
-        return deviceId != null ? deviceId.hashCode() : 0; // Generate hash based on deviceId
-    }
-
-
 }
 

@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -21,10 +22,13 @@ import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.admin.AdminFacilitiesArrayAdapter;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Facility;
+import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AdminFacilitiesActivity extends AppCompatActivity {
     private TextView empty_text;
@@ -56,7 +60,31 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
         nextButton = findViewById(R.id.next_button);
 
         facilities = new ArrayList<>();
-        adapter = new AdminFacilitiesArrayAdapter(this, facilities);
+        adapter = new AdminFacilitiesArrayAdapter(this, facilities, facility -> {
+            // Create an AlertDialog with a warning about the facility deletion
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Facility")
+                    .setMessage("Are you sure you want to delete this facility? \nFacility Name: "
+                            + facility.getName() + "?\n\n" +
+                            "This will potentially affect:\n" +
+                            "1. The associated events for this facility.\n" +
+                            "2. The organizer of these events.\n" +
+                            "3. The associated Entrants of these events.\n" +
+                            "4. The facility's photo and data.\n\n" +
+                            "This action cannot be undone.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // If the user clicks "Yes", proceed with deletion
+                        deleteFacilityFromDatabase(facility);  // Method to delete facility and associated data
+                        Toast.makeText(this, "Facility deleted: " + facility.getName(), Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        // If the user clicks "No", just dismiss the dialog
+                        dialog.dismiss();
+                    })
+                    .create()
+                    .show();
+        });
+
         recyclerView.setAdapter(adapter);
 
         // Fetch total documents and initialize the first page
@@ -94,6 +122,31 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
                 updateButtonStates();
             }
         });
+    }
+
+    private void deleteFacilityFromDatabase(Facility facility) {
+        // Create an Executor with a fixed thread pool (you can adjust the number of threads)
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        // Submit the task to delete the event on the background thread
+        executor.submit(() -> {
+            // Perform the database operation here (delete the event)
+            Database.getDB().deleteFacility(facility.getFacilityId());
+
+            runOnUiThread(() -> {
+                App.sendAnnouncement(App.currentUser.getDeviceId(), "Admin", "Successfully deleted facility: " + facility.getName() + ".");
+
+                // Check and send announcements for waiting list
+                if (facility.getOwner() != null) {
+                    App.sendAnnouncement(facility.getOwner().getDeviceId(), "Admin", "Facility: " + facility.getName() + "has been deleted, your profile will cease to exist");
+
+                }
+                Toast.makeText(AdminFacilitiesActivity.this, "Facility deleted: " + facility.getName(), Toast.LENGTH_SHORT).show();
+                recreate();
+            });
+        });
+
+        executor.shutdown();
     }
 
     private void loadPage(int page, String lastDocumentId) {
@@ -172,6 +225,14 @@ public class AdminFacilitiesActivity extends AppCompatActivity {
                 }
                 return true;
             } else if (item.getItemId() == R.id.navigation_users) {
+                if (App.currentUser != null) {
+                    Intent intent = new Intent(AdminFacilitiesActivity.this, AdminUsersActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+                return true;
+            } else if (item.getItemId() == R.id.navigation_qr) {
                 if (App.currentUser != null) {
                     Intent intent = new Intent(AdminFacilitiesActivity.this, AdminUsersActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -30,13 +30,19 @@
 
     <Button
         android:id="@+id/createEvent_or_become_an_organizer_button"
-        android:layout_width="380dp"
-        android:layout_height="55dp"
-        android:layout_marginBottom="15dp"
+        android:layout_width="160dp"
+        android:layout_height="52dp"
+        android:layout_marginBottom="17dp"
+        android:background="@drawable/rounded_button"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="12dp"
         android:text="Button"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
         app:layout_constraintBottom_toTopOf="@+id/nav_view"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.548"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,8 @@
 package com.example.trojanplanner.events.organizer;
 
+import android.app.DatePickerDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -9,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -18,26 +22,38 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
+import com.example.trojanplanner.ProfileUtils.PfpClickPopupFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
-
+import com.example.trojanplanner.view.MainActivity;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Calendar;
 
 /**
  * A fragment for creating a new event. It collects event information
  * from the user through input fields and creates an event in the database.
  */
 public class CreateEventFragment extends Fragment {
+    private ImageView eventImageView;
+    private Bitmap eventImageBitmap;
+    private boolean changedPfp = false;
+    private PhotoPicker photoPicker;
     private EditText eventNameEditText;
     private EditText eventDescriptionEditText;
-    private EditText eventDateEditText; // Add other fields as needed
+    private EditText eventDateEditText;
+    private EditText eventSpotsAvailableEditText;
+    private EditText waitlistCapacityEditText;
+    private EditText signupOpenDateEditText, signupCloseDateEditText, eventPriceEditText, eventendDateEditText;
     private Button createEventButton;
     private Button cancelEventButton;
     private Database database;
@@ -46,7 +62,7 @@ public class CreateEventFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);  // Ensure options menu is handled by the fragment
+        setHasOptionsMenu(true);
     }
 
     /**
@@ -73,6 +89,16 @@ public class CreateEventFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Create and register a callback for the photoPicker
+        photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
+        PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) {
+                onSelectedPhoto(bitmap);
+            }
+        };
+        photoPicker.setCallback(photoPickerCallback);
+
         if (requireActivity() instanceof AppCompatActivity) {
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
             activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);  // Enable back button
@@ -81,23 +107,41 @@ public class CreateEventFragment extends Fragment {
 
         // Initialize database
         database = Database.getDB();
+
+        // Get views on the screen
+        eventImageView = view.findViewById(R.id.eventImageView);
+        eventImageView.setImageBitmap(Event.getDefaultPicture());
+
         eventGeolocationSwitch = view.findViewById(R.id.eventGeolocationSwitch);
         eventNameEditText = view.findViewById(R.id.eventNameEditText);
         eventDescriptionEditText = view.findViewById(R.id.eventDescriptionEditText);
-        eventDateEditText = view.findViewById(R.id.eventDateEditText); // Add other fields as needed
+
+        eventDateEditText = view.findViewById(R.id.eventDateEditText);
+        eventendDateEditText = view.findViewById(R.id.eventendDateEditText);
+
+        eventSpotsAvailableEditText = view.findViewById(R.id.eventSpotsAvailableEditText);
+        waitlistCapacityEditText = view.findViewById(R.id.waitlistCapacityEditText);
+        signupOpenDateEditText = view.findViewById(R.id.signupOpenDateEditText);
+        signupCloseDateEditText = view.findViewById(R.id.signupCloseDateEditText);
+        eventPriceEditText = view.findViewById(R.id.eventPriceEditText);
+
         createEventButton = view.findViewById(R.id.createEventButton);
-        cancelEventButton = view.findViewById(R.id.cancelEventButton); // Cancel button
+        cancelEventButton = view.findViewById(R.id.cancelEventButton);
 
+        eventDateEditText.setOnClickListener(v -> openDateTimePicker(eventDateEditText));
+        eventendDateEditText.setOnClickListener(v -> openDateTimePicker(eventendDateEditText));
+        signupOpenDateEditText.setOnClickListener(v -> openDateTimePicker(signupOpenDateEditText));
+        signupCloseDateEditText.setOnClickListener(v -> openDateTimePicker(signupCloseDateEditText));
 
-        // Handle "Create Event" button click
+        eventImageView.setOnClickListener(v -> {
+            createPfpPopup();
+        });
         createEventButton.setOnClickListener(v -> {
             boolean ret = createEvent(view);
             if (ret) {
-                navigateToEventsListFragment(view);
+                navigateToEventsListFragment();
             }
-        });
-
-        // Handle "Cancel" button click
+        });// Handle "Create Event" button click
         cancelEventButton.setOnClickListener(v -> {
             new AlertDialog.Builder(requireContext())
                     .setTitle("Cancel Event Creation")
@@ -108,13 +152,7 @@ public class CreateEventFragment extends Fragment {
                     })
                     .setNegativeButton("No", null)
                     .show();
-        });
-
-        // Test button that fills up with dummy inputs for faster testing and debugging, comment this out when done
-        Button testButton = view.findViewById(R.id.testButton); // Initialize test button
-        testButton.setOnClickListener(v -> {
-            fillFieldsWithDummyData();
-        });
+        });// Handle "Cancel" button click
     }
 
     /**
@@ -125,135 +163,109 @@ public class CreateEventFragment extends Fragment {
      * @return True if the event was successfully created and uploaded, false otherwise.
      */
     private boolean createEvent(View view) {
-        // Retrieve the input fields from the UI
-        String name = eventNameEditText.getText().toString();
-        String description = eventDescriptionEditText.getText().toString();
-        String date = eventDateEditText.getText().toString();  // Handle other fields as needed
+        String spotsAvailableStr = eventSpotsAvailableEditText.getText().toString().trim();
+        String waitlistCapacityStr = waitlistCapacityEditText.getText().toString().trim();
+        String priceStr = eventPriceEditText.getText().toString().trim();
+
+        String name = eventNameEditText.getText().toString().trim();
+        String description = eventDescriptionEditText.getText().toString().trim();
+        String eventDateStr = eventDateEditText.getText().toString().trim();
+        String eventendDateStr = eventendDateEditText.getText().toString().trim();
+        String waitlistOpenDateStr = signupOpenDateEditText.getText().toString().trim();
+        String waitlistCloseDateStr = signupCloseDateEditText.getText().toString().trim();
+        long eventCapacity = spotsAvailableStr.isEmpty() ? 0L : Long.parseLong(spotsAvailableStr);
+        long waitlistCapacity = waitlistCapacityStr.isEmpty() ? 100000L : Long.parseLong(waitlistCapacityStr);
+        float price = priceStr.isEmpty() ? 0f : Float.parseFloat(priceStr);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
+        Date eventDate, eventendDate, waitlistOpenDate, waitlistCloseDate;
+
+        try {
+            eventDate = dateFormat.parse(eventDateStr);
+            eventendDate = dateFormat.parse(eventendDateStr);
+            waitlistOpenDate = dateFormat.parse(waitlistOpenDateStr);
+            waitlistCloseDate = dateFormat.parse(waitlistCloseDateStr);
+        } catch (ParseException e) {
+            Toast.makeText(getContext(), "Dates cannot be left blank", Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
         // Check for missing fields
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(description) || TextUtils.isEmpty(date)) {
+        if (TextUtils.isEmpty(spotsAvailableStr) || TextUtils.isEmpty(name) || TextUtils.isEmpty(description)) {
             Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return false;
         }
 
-        // Define the success action for getting the organizer
-        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
-            @Override
-            public void OnSuccess(Object object) {
-                if (object instanceof Organizer) {
-                    // Successfully fetched the organizer
-                    Organizer currentOrganizer = (Organizer) object;
-                    Log.d("CreateEvent", "Organizer fetched: " + currentOrganizer.getDeviceId());
+        database.getOrganizer(object -> {
+                Organizer currentOrganizer = (Organizer) object;
+                String newEventId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
+                Facility facility = currentOrganizer.getFacility();
+                Date currentDate = new Date();
+                int daysLeftToRegister = (int) ((eventDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
 
-                    currentOrganizer.setFacility(null);
-                    Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
-                        @Override
-                        public void OnSuccess(Object object) {
-                            // object will be the facilityId
-                            String facilityId = (String) object;
-                            Log.d("SUCCESS", "Facility ID retrieved: " + facilityId);
+                Event newEvent = new Event(newEventId, name, description, price, facility, eventDate, eventendDate,
+                        daysLeftToRegister, eventCapacity, eventCapacity);
+                newEvent.setWaitlistCapacity(waitlistCapacity);
+                newEvent.setDaysLeftToRegister(daysLeftToRegister);
+                newEvent.setAvailableSpots(eventCapacity);
+                newEvent.setWaitlistOpen(waitlistOpenDate);
+                newEvent.setWaitlistClose(waitlistCloseDate);
+                newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation
 
-                            // Using facilityId, retrieve the facility object
-                            database.getFacility(new Database.QuerySuccessAction() {
-                                @Override
-                                public void OnSuccess(Object object) {
-                                    // Now that we have the Facility object, handle it here
-                                    Facility facility = (Facility) object;
-                                    currentOrganizer.setFacility(facility);
-                                    Log.d("SUCCESS", "Facility retrieved: " + facility.toString());
-
-                                    // You can now use the `facility` object as needed
-                                }
-                            }, new Database.QueryFailureAction() {
-                                @Override
-                                public void OnFailure() {
-                                    Log.d("FAILURE", "Failed to retrieve the Facility.");
-                                    // Handle failure (e.g., show an error message)
-                                }
-                            }, facilityId);
-                        }
-                    };
-
-                    Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
-                        @Override
-                        public void OnFailure() {
-                            Log.d("FAILURE", "Failed to retrieve Facility ID");
-
-                        }
-                    };
-                    database.getFacilityIDbyUserID(currentOrganizer.getDeviceId(), successAction, failureAction);
-
-                    Facility facility = currentOrganizer.getFacility();
-
-                    // Create the event ID using the organizer's device ID and current timestamp
-                    String newEventId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
-
-                    // Set default values for event start and end time (you can replace these with actual values)
-                    Date startDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
-                    Date endDateTime = new Date(); // Placeholder: Replace with actual date parsing if needed
-
-                    // Create the event object
-                    Event newEvent = new Event(newEventId, name, description, 0.0f, facility, startDateTime, endDateTime,
-                            30, 100L, 100L); // Adjust parameters as needed
-
-                    newEvent.setRequiresGeolocation(eventGeolocationSwitch.isChecked()); // Enable geolocation by default for testing
-                    // Insert the new event into the database
-                    database.insertEvent(newEvent);
-
-                    // Add the event to the organizer's list of created events
-                    currentOrganizer.addEvent(newEvent);
-                    // Log the updated list of events for the current organizer
-                    Log.d("CreateEvent", "Organizer's events after addition: " + currentOrganizer.getCreatedEvents().size() + " events.");
-                    for (Event event : currentOrganizer.getCreatedEvents()) {
-                        Log.d("CreateEvent", "Organizer Event: " + event.getEventId() + ", " + event.getName());
+                if (changedPfp) {
+                    if (eventImageBitmap != null) {
+                        String newPfpFilepath = currentOrganizer.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
+                        newEvent.setPictureFilePath(newPfpFilepath);
+                        newEvent.setPicture(eventImageBitmap);
+                        database.uploadImage(eventImageBitmap, currentOrganizer, newPfpFilepath);
                     }
-
-                    // Update the organizer in the database
-                    database.insertUserDocument(currentOrganizer);
-
-                    // Notify the user and navigate to the events list fragment
-                    Toast.makeText(App.activity, "Event created successfully!", Toast.LENGTH_SHORT).show();
-                    navigateToEventsListFragment(view);
-                } else {
-                    // If the fetched object is not an organizer, log the error
-                    Log.e("CreateEvent", "Fetched object is not an instance of Organizer.");
-                    Toast.makeText(App.activity, "Unexpected error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+                    else {
+                        newEvent.setPictureFilePath(null);
+                        newEvent.setPicture(null);
+                    }
                 }
-            }
-        };
 
-        // Define the failure action for getting the organizer
-        Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
-            @Override
-            public void OnFailure() {
-                // Log the failure and notify the user
-                Log.e("CreateEvent", "Failed to fetch organizer.");
-                Toast.makeText(App.activity, "Failed to fetch organizer. Please try again.", Toast.LENGTH_SHORT).show();
-            }
-        };
+                database.insertEvent(newEvent);
+                currentOrganizer.addEvent(newEvent);
+                database.createEmptyMap(newEventId);
+                database.insertUserDocument(currentOrganizer);
+//                App.currentUser = currentOrganizer; // I have a bad feeling about this
 
-        // Call the database method to get the organizer asynchronously
-        database.getOrganizer(successAction, failureAction, App.currentUser.getDeviceId());
-
+                App.sendAnnouncement(App.currentUser.getDeviceId(), "TrojanPlanner", "New Event Created!");
+                Toast.makeText(App.activity, "Event created successfully!", Toast.LENGTH_SHORT).show();
+            }, ()-> {Log.e("CreateEvent", "Something went wrong, please try again"); Toast.makeText(App.activity, "Failed to fetch organizer. Please try again.", Toast.LENGTH_SHORT).show();
+        }, App.currentUser.getDeviceId());
         return true;
     }
 
-    private void navigateToEventsListFragment(View view) {
-        // Ensure the view is valid and the fragment is properly attached to its host activity
-        if (getView() != null) {
-            NavController navController = Navigation.findNavController(getView());
-            navController.navigate(R.id.emptyEventsFragment);
-        }
+    private void openDateTimePicker(EditText targetEditText) {
+        Calendar calendar = Calendar.getInstance();
+
+        // Open DatePickerDialog
+        new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+            // Set the date in the calendar
+            calendar.set(year, month, dayOfMonth);
+
+            // Format and set the selected date
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
+            String formattedDate = dateFormat.format(calendar.getTime());
+            targetEditText.setText(formattedDate);
+
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
-    /**
-     * Fills the event fields with dummy data for testing purposes.
-     */
-    private void fillFieldsWithDummyData() {
-        eventNameEditText.setText("Sample Event Name");
-        eventDescriptionEditText.setText("This is a sample event description for testing.");
-        eventDateEditText.setText("2024-12-25");  // Set a dummy date
-        Toast.makeText(getContext(), "Fields filled with dummy data", Toast.LENGTH_SHORT).show();
+    private void navigateToEventsListFragment() {
+        // Create an Intent to navigate to MainActivity
+        Intent intent = new Intent(getContext(), MainActivity.class);
+
+        // Optionally, you can use this to clear the current activity stack and start fresh
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        // Start the MainActivity
+        startActivity(intent);
+
+        // Optional: You can add a transition animation if needed
+        getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     @Override
@@ -273,32 +285,38 @@ public class CreateEventFragment extends Fragment {
         }
         return super.onOptionsItemSelected(item);
     }
-}
 
-
-    /*
     /**
-     * Handles options menu item selections.
+     * Action to be taken when the user successfully selects a photo for the event banner.
+     * The PhotoPicker is set up to call this function through a callback on selection.
      *
-     * @param item The menu item that was selected.
-     * @return True if the item was successfully handled, false otherwise.
-     *
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            // Show the same confirmation dialog as the Cancel button
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Cancel Event Creation")
-                    .setMessage("Are you sure you want to discard this event?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
-                        // Navigate up (equivalent to clicking Cancel)
-                        NavController navController = NavHostFragment.findNavController(this);
-                        navController.navigateUp();
-                    })
-                    .setNegativeButton("No", null)
-                    .show();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+     * @param bitmap
+     */
+    public void onSelectedPhoto(Bitmap bitmap) {
+        System.out.println("CreateEventFragment photopickercallback triggered!");
+        changedPfp = true;
+        eventImageBitmap = bitmap;
+        eventImageView.setImageBitmap(bitmap);
     }
-    */
+
+    public void resetEventPhoto() {
+        changedPfp = false;
+        eventImageBitmap = null;
+        eventImageView.setImageBitmap(Event.getDefaultPicture());
+    }
+
+    private void createPfpPopup() {
+        PfpClickPopupFragment.PfpPopupFunctions popupFunctions = new PfpClickPopupFragment.PfpPopupFunctions() {
+            @Override
+            public void changePFP() {
+                photoPicker.openPhotoPicker();
+            }
+            @Override
+            public void removePFP() {
+                resetEventPhoto();
+            }
+        };
+
+        new PfpClickPopupFragment(popupFunctions).show(((AppCompatActivity) App.activity).getSupportFragmentManager(), "Change Event Picture");
+    }
+}

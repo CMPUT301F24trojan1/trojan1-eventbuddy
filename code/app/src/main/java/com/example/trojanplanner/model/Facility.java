@@ -4,6 +4,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.NonNull;
+
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 
@@ -135,10 +137,11 @@ public class Facility implements Serializable {
     }
 
     /**
-     * Returns the bitmap picture for the event. If null, assigns the default picture and
+     * Returns the bitmap picture for the facility. If null, assigns the default picture and
      * returns it to avoid null errors
-     * @return The current bitmap for the event or the default bitmap
+     * @return The current bitmap for the facility or the default bitmap
      */
+    @NonNull
     public Bitmap getPfpFacilityBitmap() {
         // If the picture attribute is null, assign it the default value since it should have a value
         if (pfpFacilityBitmap == null) {
@@ -162,8 +165,13 @@ public class Facility implements Serializable {
     }
 
 
-    // Helper method to load a default picture
-    private Bitmap getDefaultPicture() {
+    /**
+     * Returns the default facility bitmap for the app. This is used by any facility that doesn't
+     * have a photo of its own set yet.
+     * @return The default facility bitmap
+     */
+    @NonNull
+    public static Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
         return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_facility_pic);
     }

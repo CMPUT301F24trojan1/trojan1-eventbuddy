@@ -5,6 +5,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.NonNull;
+
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 
@@ -345,7 +347,7 @@ public class Event implements Serializable {
         this.price = price;
     }
 
-    // fuck you java
+    // you suck java
     public void setPriceDouble(Double price) {
         this.price = price.floatValue();
     }
@@ -696,6 +698,7 @@ public class Event implements Serializable {
      * returns it to avoid null errors
      * @return The current bitmap for the event or the default bitmap
      */
+    @NonNull
     public Bitmap getPicture() {
         // If the picture attribute is null, assign it the default value since it should have a value
         if (picture == null) {
@@ -704,8 +707,13 @@ public class Event implements Serializable {
         return picture.getBitmap();
     }
 
-    // helper method to load a default picture
-    private Bitmap getDefaultPicture() {
+    /**
+     * Returns the default event bitmap for the app. This is used by any event that doesn't
+     * have a photo of its own set yet.
+     * @return The default event bitmap
+     */
+    @NonNull
+    public static Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
         return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_event_pic);
     }

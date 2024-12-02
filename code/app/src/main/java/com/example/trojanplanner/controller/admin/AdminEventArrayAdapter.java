@@ -17,7 +17,6 @@ import com.example.trojanplanner.model.Event;
 import java.util.List;
 
 public class AdminEventArrayAdapter extends RecyclerView.Adapter<AdminEventArrayAdapter.EventViewHolder> {
-
     private final List<Event> eventList;
     private final Context context;
     private final OnEventClickListener onEventClickListener;
@@ -42,9 +41,9 @@ public class AdminEventArrayAdapter extends RecyclerView.Adapter<AdminEventArray
         Event event = eventList.get(position);
 
         // Set event name, description, and price with null checks
-        holder.eventName.setText(event != null && event.getName() != null ? event.getName() : "No Name");
-        holder.eventDescription.setText(event != null && event.getDescription() != null ? event.getDescription() : "No Description");
-        holder.eventPrice.setText(event != null ? String.format("$%.2f", event.getPrice()) : "$0.00");
+        holder.eventName.setText(event != null && event.getName() != null ? event.getName() : "No Name Found");
+        holder.eventDescription.setText(event != null && event.getDescription() != null ? "Description: "+event.getDescription() : "No Description");
+        holder.eventPrice.setText(event != null ? String.format("Ticket Price: $%.2f", event.getPrice()) : "$0.00");
 
         // Set facility name with null checks
         if (event != null && event.getFacility() != null) {
@@ -54,18 +53,18 @@ public class AdminEventArrayAdapter extends RecyclerView.Adapter<AdminEventArray
         }
 
         // Date and other information with null checks
-        holder.eventStartDate.setText(event != null && event.getStartDateTime() != null ? event.getStartDateTime().toString() : "No Start Date");
-        holder.eventEndDate.setText(event != null && event.getEndDateTime() != null ? event.getEndDateTime().toString() : "No End Date");
-        holder.daysLeft.setText(event != null ? String.format("%d days left", event.getDaysLeftToRegister()) : "0 days left");
+        holder.eventStartDate.setText(event != null && event.getStartDateTime() != null ? "Start Time: " + event.getStartDateTime().toString() : "No Start Date");
+        holder.eventEndDate.setText(event != null && event.getEndDateTime() != null ? "End Time: "+ event.getEndDateTime().toString() : "No End Date");
+        holder.daysLeft.setText(event != null ? String.format("Days left: %d", event.getDaysLeftToRegister()) : "0 days left");
         holder.totalSpots.setText(event != null ? String.format("Total Spots: %d", event.getTotalSpots()) : "Total Spots: 0");
-        holder.availableSpots.setText(event != null ? String.format("Available: %d", event.getAvailableSpots()) : "Available: 0");
+        holder.availableSpots.setText(event != null && event.getAvailableSpots() != null ? String.format("Available: %d", event.getAvailableSpots()) : "Available: 0");
 
         // Set event image (use a default image if no picture is available)
         Bitmap picture = event != null ? event.getPicture() : null;
         if (picture != null) {
             holder.eventImage.setImageBitmap(picture);
         } else {
-            holder.eventImage.setImageResource(R.drawable.default_event_pic);
+            holder.eventImage.setImageBitmap(Event.getDefaultPicture());
         }
 
         // Handle click event

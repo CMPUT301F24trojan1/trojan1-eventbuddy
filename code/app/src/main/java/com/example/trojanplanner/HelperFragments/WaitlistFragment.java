@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.trojanplanner.R;
@@ -29,7 +31,6 @@ public class WaitlistFragment extends Fragment {
     private ListView waitlistListView;
     private WaitlistAdapter waitlistAdapter;
     private String listType;
-    private Button sendNotificationButton;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,6 +85,27 @@ public class WaitlistFragment extends Fragment {
                 ArrayList<User> users = new ArrayList<>();
 
                 if ("enrolled".equals(listType)) {
+                    Button finalizeButton = requireActivity().findViewById(R.id.finalizeButton);
+                    finalizeButton.setVisibility(View.VISIBLE);
+                    finalizeButton.setOnClickListener(v -> {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                        builder.setTitle("Finalize Event");
+                        builder.setMessage("Are you sure you want to finalize this event?");
+
+                        builder.setPositiveButton("Yes", (dialog, which) -> {
+                            ArrayList<User> listevent = event.getWaitingList();
+                            ArrayList<User> listcancelled = event.getCancelledList();
+                            listcancelled.addAll(listevent);
+                            event.setCancelledList(listcancelled);
+                            event.setWaitingList(new ArrayList<>()); // Clear the waiting List
+                            Database.getDB().insertEvent(event);
+                            requireActivity().onBackPressed();
+                        });
+                        builder.setNegativeButton("No", (dialog, which) -> {
+                            dialog.dismiss();
+                        });
+                        builder.show();
+                    });
                     users = updatedEvent.getEnrolledList(); // Assuming the event has a method to get enrolled users
                 } else if ("cancelled".equals(listType)) {
                     users = updatedEvent.getCancelledList(); // Assuming the event has a method to get cancelled users
@@ -97,7 +119,7 @@ public class WaitlistFragment extends Fragment {
                 // If no list type matches or the list is empty, return
                 if (users.isEmpty()) {
                     Log.d("WaitlistFragment", listType + "is empty.");
-                    requireActivity().onBackPressed();
+                    showEmptyListMessage();
                     return;
                 }
 
@@ -111,7 +133,7 @@ public class WaitlistFragment extends Fragment {
 
                 // Now set the adapter with the converted entrants
                 if (!entrants.isEmpty()) {
-                    waitlistAdapter = new WaitlistAdapter(requireContext(), entrants);
+                    waitlistAdapter = new WaitlistAdapter(requireContext(), entrants, event, listType);
                     waitlistListView.setAdapter(waitlistAdapter);
                     waitlistAdapter.notifyDataSetChanged();  // Ensure the adapter is notified
                     Log.d("WaitlistFragment", "Adapter has been set with " + entrants.size() + " entrants.");
@@ -131,5 +153,16 @@ public class WaitlistFragment extends Fragment {
 
         // Fetch event data from the database
         Database.getDB().getEvent(successAction, failureAction, event.getEventId());
+    }
+
+    private void showEmptyListMessage() {
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Notice")
+                .setMessage("No Users found in the list.")
+                .setPositiveButton("I Understand", (dialog, which) -> {
+                    dialog.dismiss(); // Dismiss the dialog when the button is clicked
+                })
+                .setCancelable(false) // Prevent dialog from being dismissed by tapping outside
+                .show();
     }
 }
