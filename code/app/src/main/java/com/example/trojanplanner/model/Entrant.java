@@ -48,11 +48,6 @@ public class Entrant extends User {
      * @param role        String
      * @param isOrganizer boolean
      * @param isAdmin     boolean
-     * @param currentWaitlistedEvents ArrayList<Event>
-     * @param currentEnrolledEvents ArrayList<Event>
-     * @param currentWaitlistedEvents ArrayList<Event>
-     * @param currentPendingEvents ArrayList<Event>
-     * @param currentDeclinedEvents ArrayList<Event>
      * @author Jared Gourley
      */
     public Entrant(String lastName, String firstName, String email, String phoneNumber, String deviceId, String role, boolean isOrganizer, boolean isAdmin, ArrayList<Event> currentWaitlistedEvents, ArrayList<Event> currentEnrolledEvents, ArrayList<Event> currentPendingEvents, ArrayList<Event> currentDeclinedEvents) {

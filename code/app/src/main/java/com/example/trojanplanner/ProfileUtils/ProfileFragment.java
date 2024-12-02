@@ -2,7 +2,9 @@ package com.example.trojanplanner.ProfileUtils;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -93,6 +95,14 @@ public class ProfileFragment extends Fragment {
         saveButton.setOnClickListener(v -> handleSave());
 
         notificationsSwitch = view.findViewById(R.id.switch1);
+
+        // Retrieve the state from SharedPreferences
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        boolean notificationsEnabled = sharedPreferences.getBoolean("notificationsEnabled", false); // Default is false if not set
+
+        // Set the switch state based on the saved value
+        notificationsSwitch.setChecked(notificationsEnabled);
+
         // Set up switch toggle listener with proper toast notifications
         if (notificationsSwitch != null) {
             notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -103,6 +113,12 @@ public class ProfileFragment extends Fragment {
                     Toast.makeText(getContext(), "Enabling notifications...", Toast.LENGTH_SHORT).show();
                     handleNotifications(false);
                 }
+
+                // Save the state to SharedPreferences
+                SharedPreferences sharedState = getContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedState.edit();
+                editor.putBoolean("notificationsEnabled", isChecked);
+                editor.apply();  // Save the state asynchronously
             });
         } else {
             // Log an error if notificationsSwitch is null
@@ -258,7 +274,24 @@ public class ProfileFragment extends Fragment {
         database.insertUserDocument(App.currentUser);
     }
 
+    /**
+     * Handles subscription and unsubscription to notification topics for the current user.
+     * If the user is not logged in, it prompts them to log in before proceeding.
+     * It also ensures that the necessary notification permissions are granted before subscribing.
+     *
+     * @param isSubscribed If true, the user will be unsubscribed from notification topics.
+     *                     If false, the user will be subscribed to the topics.
+     */
     private void handleNotifications(boolean isSubscribed) {
+        if (App.currentUser == null){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                return;
+            }
+
+            Toast.makeText(getContext(), "You must be logged in to make any changes to notifications.", Toast.LENGTH_SHORT).show();
+        }
         if (!isSubscribed) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                     ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -270,7 +303,7 @@ public class ProfileFragment extends Fragment {
                     .addOnCompleteListener(task -> {
                         String msg = task.isSuccessful() ? "Successfully subscribed to Organizer notifications." : "Subscription failed. Please try again.";
                         Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
-                        App.sendAnnouncement("default", "Trojan Planner", "You have been subscribed to notifications!");
+                        App.sendAnnouncement(App.currentUser.getDeviceId(), "Trojan Planner", "You have been subscribed to notifications!");
                     });
             FirebaseMessaging.getInstance().subscribeToTopic("admin" + App.currentUser.getDeviceId())
                     .addOnCompleteListener(task -> {
@@ -371,6 +404,12 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Subscribes the current user to a specified notification topic using Firebase Cloud Messaging.
+     * Logs success or failure based on the outcome of the subscription attempt.
+     *
+     * @param topic The topic to which the user will subscribe for receiving notifications.
+     */
     private void addtoNotifications(String topic) {
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnCompleteListener(task -> {

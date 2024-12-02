@@ -61,6 +61,13 @@
                 android:textStyle="bold" />
 
             <!-- Event Location -->
+            <View
+                android:id="@+id/view"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/black" />
+
             <TextView
                 android:id="@+id/eventLocationTextView"
                 android:layout_width="wrap_content"
@@ -80,13 +87,23 @@
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
-            <!-- Recurring Dates Dropdown -->
+            <!-- Recurring Days -->
             <TextView
-                android:id="@+id/recurringDatesTextView"
+                android:id="@+id/recurringDaysTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="🔄 Recurring Dates"
+                android:text="🔄 Recurring Days:"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <!-- Recurring End Date -->
+            <TextView
+                android:id="@+id/recurringEndDateTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="📅 Recurrence End Date: None"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
@@ -102,12 +119,6 @@
                 android:textSize="16sp" />
 
             <!-- Divider -->
-            <View
-                android:id="@+id/view"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="8dp"
-                android:background="@color/black" />
 
             <!-- Ticket Price -->
             <TextView
@@ -128,6 +139,7 @@
                 android:text="🪑 Total Spots: "
                 android:textColor="@color/black"
                 android:textSize="16sp" />
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

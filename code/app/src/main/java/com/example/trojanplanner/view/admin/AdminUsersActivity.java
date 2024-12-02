@@ -16,20 +16,22 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.trojanplanner.controller.admin.AdminUsersArrayAdapter;
-import com.example.trojanplanner.model.Database;
-import com.example.trojanplanner.model.Facility;
-import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.admin.AdminUsersArrayAdapter;
+import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.User;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * AdminUsersActivity allows an administrator to view and manage a list of users.
+ * The activity supports pagination, user deletion, and navigation between other admin activities.
+ */
 public class AdminUsersActivity extends AppCompatActivity {
     private TextView empty_text;
     private RecyclerView recyclerView;
@@ -122,6 +124,10 @@ public class AdminUsersActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Deletes a user from the database.
+     * @param user The user to be deleted.
+     */
     private void deleteUserFromDatabase(User user) {
         // Use ExecutorService to manage background threads
         ExecutorService executorService = Executors.newSingleThreadExecutor();  // Single thread executor for serial task execution
@@ -149,6 +155,11 @@ public class AdminUsersActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads a specific page of users.
+     * @param page The page number to load.
+     * @param lastDocumentId The ID of the last document fetched in the previous page.
+     */
     private void loadPage(int page, String lastDocumentId) {
         users.clear();
         adapter.notifyDataSetChanged();
@@ -177,6 +188,9 @@ public class AdminUsersActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Updates the state of the pagination buttons based on the current page.
+     */
     private void updateButtonStates() {
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
         // Enable/Disable buttons based on the current page
@@ -192,6 +206,9 @@ public class AdminUsersActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Toggles the visibility of the empty view based on the user list.
+     */
     private void toggleEmptyView() {
         if (users.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -202,6 +219,9 @@ public class AdminUsersActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the bottom navigation menu for admin activities.
+     */
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.admin_bottom_nav_menu);
         navView.setSelectedItemId(R.id.navigation_users);

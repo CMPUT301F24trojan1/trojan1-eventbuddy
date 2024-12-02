@@ -21,18 +21,22 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.admin.AdminEventArrayAdapter;
 import com.example.trojanplanner.model.Database;
+import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.example.trojanplanner.model.Event;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
+/**
+ * AdminActivity is the main activity that manages the admin view for event management.
+ * It handles displaying a paginated list of events, event deletion, and navigation between
+ * different admin-related pages in the application.
+ */
 public class AdminActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "com.example.trojanplanner.PREFS";
     private static final String KEY_DIALOG_SHOWN = "admin_dialog_shown";
@@ -46,6 +50,12 @@ public class AdminActivity extends AppCompatActivity {
     private long totalDocuments = 0; // Total number of documents in Firestore
     private String lastFetchedEventDocument = null; // Track the last document for pagination
 
+    /**
+     * Called when the activity is first created. Initializes the views, fetches the event data,
+     * and sets up navigation and event handling.
+     *
+     * @param savedInstanceState The saved instance state, if available.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,6 +149,11 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Deletes an event from the database and sends relevant notifications to users.
+     *
+     * @param event The event to delete.
+     */
     private void deleteEventFromDatabase(Event event) {
         // Create an Executor with a fixed thread pool (you can adjust the number of threads)
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -195,11 +210,19 @@ public class AdminActivity extends AppCompatActivity {
         executor.shutdown();
     }
 
+    /**
+     * Checks whether it is the user's first time switching to the admin view.
+     *
+     * @return True if it's the first time, false otherwise.
+     */
     private boolean isFirstTimeSwitchingToAdminView() {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         return !prefs.getBoolean(KEY_DIALOG_SHOWN, false);
     }
 
+    /**
+     * Toggles the visibility of the empty view depending on whether there are events or not.
+     */
     private void toggleEmptyView() {
         if (events.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -210,6 +233,9 @@ public class AdminActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Shows an introductory dialog for first-time admin users.
+     */
     private void showAdminIntroDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Welcome to Admin View")
@@ -223,6 +249,9 @@ public class AdminActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Sets up the bottom navigation view for navigating between different admin sections.
+     */
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.admin_bottom_nav_menu);
         navView.setSelectedItemId(R.id.navigation_home);
@@ -265,6 +294,12 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads a specific page of events from the database.
+     *
+     * @param page The page number to load.
+     * @param lastDocumentId The document to start from for pagination.
+     */
     private void loadPage(int page, String lastDocumentId) {
         events.clear();
         adapter.notifyDataSetChanged();
@@ -293,6 +328,9 @@ public class AdminActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Updates the state of the pagination buttons based on the current page and total documents.
+     */
     private void updateButtonStates() {
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
         // Enable/Disable buttons based on the current page

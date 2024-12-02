@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -28,6 +29,7 @@ import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -141,11 +143,24 @@ public class EventsFragment extends Fragment implements EventArrayAdapter.OnEven
             public void OnSuccess(Object object) {
                 // This will be triggered when the events are successfully retrieved
                 ArrayList<Event> events = (ArrayList<Event>) object;
+                for (Event event: events){
+                    if (event.getEndDateTime() != null && event.getEndDateTime().getDate() <= new Date().getDate()){
+                        events.remove(event);
+                        Database.getDB().deleteEvent(event.getEventId());
+                        Toast.makeText(getContext(), "Event has ended: " + event.getName(), Toast.LENGTH_SHORT).show();
+                    }
+                    eventsAdapter.notifyDataSetChanged();
+                }
+
                 if (events != null && !events.isEmpty()) {
                     eventList.addAll(events);
                     System.out.println("Loaded events: " + events.size());
                 } else {
                     System.out.println("No events found for this user.");
+                    Toast.makeText(getContext(), "You have no events in your list" , Toast.LENGTH_SHORT).show();
+
+                    NavController navController = NavHostFragment.findNavController(EventsFragment.this);
+                    navController.navigate(R.id.emptyEventsFragment);
                 }
                 // Notify the adapter that the event list has been updated
                 eventsAdapter.notifyDataSetChanged();

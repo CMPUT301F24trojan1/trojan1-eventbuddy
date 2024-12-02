@@ -27,6 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+
+
+/**
+ * AdminQRActivity is responsible for displaying and managing QR codes for events.
+ * This activity allows the admin to view, delete, and navigate through a paginated list of QR codes associated with events.
+ */
 public class AdminQRActivity extends AppCompatActivity {
     private TextView empty_text;
     private RecyclerView recyclerView;
@@ -38,7 +44,13 @@ public class AdminQRActivity extends AppCompatActivity {
     private long totalDocuments = 0; // Total number of documents in Firestore
     private String lastfetchedQRDocument = null; // Track the last document for pagination
 
-
+    /**
+     * Initializes the AdminQRActivity by setting up the RecyclerView,
+     * pagination buttons, and bottom navigation.
+     * It also fetches the total number of QR documents and starts loading the first page.
+     *
+     * @param savedInstanceState Saved state from a previous instance, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +130,12 @@ public class AdminQRActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Deletes the specified QR code from the database.
+     * It also sends an announcement about the deletion and refreshes the activity.
+     *
+     * @param qrModel The QRModel to be deleted.
+     */
     private void deleteQRFromDatabase(QRModel qrModel) {
         Database.getDB().getQRData(eventID->{
             Database.getDB().deleteQRCode((String) eventID);
@@ -127,6 +145,9 @@ public class AdminQRActivity extends AppCompatActivity {
         recreate();
     }
 
+    /**
+     * Toggles the visibility of the empty view based on whether there are QR codes to display.
+     */
     private void toggleEmptyView() {
         if (qr_codes.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -137,6 +158,9 @@ public class AdminQRActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the bottom navigation menu and item selection listeners.
+     */
     private void setupNavigation() {
         BottomNavigationView navView = findViewById(R.id.admin_bottom_nav_menu);
         navView.setSelectedItemId(R.id.navigation_qr);
@@ -179,6 +203,12 @@ public class AdminQRActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Loads a specific page of QR codes from the database.
+     *
+     * @param page The page number to load.
+     * @param lastDocumentId The ID of the last fetched document (used for pagination).
+     */
     private void loadPage(int page, String lastDocumentId) {
         qr_codes.clear();
         adapter.notifyDataSetChanged();
@@ -255,6 +285,9 @@ public class AdminQRActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Updates the states of the previous and next buttons based on the current page and total documents.
+     */
     private void updateButtonStates() {
         int totalPages = (int) Math.ceil((double) totalDocuments / pageSize);
         // Enable/Disable buttons based on the current page

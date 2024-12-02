@@ -86,8 +86,14 @@ public class WaitlistFragment extends Fragment {
                     finalizeButton.setVisibility(View.VISIBLE);
 
                     Date currentTime = new Date();
-                    if (event.getWaitlistClose() == null || event.getWaitlistClose().getDate() <= currentTime.getDate()){
-
+                    if (event.getWaitlistClose() == null || event.getWaitlistClose().getDate() > currentTime.getDate()){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                        builder.setTitle("Finalize Event");
+                        builder.setMessage("You cannot finalize this event until the waitlist is closed.");
+                        builder.setPositiveButton("Yes I understand", (dialog, which) -> {
+                            dialog.dismiss();
+                        });
+                        builder.show();
                     }
 
                     finalizeButton.setOnClickListener(v -> {
