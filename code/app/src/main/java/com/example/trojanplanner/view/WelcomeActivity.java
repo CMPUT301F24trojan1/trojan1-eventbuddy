@@ -35,9 +35,12 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_welcome);
-        addtoNotifications("default"); // Subscribe to the "default" topic
-        //addtoNotifications("testing"); // Subscribe to the "default" topic
-        //sendAnnouncement("testing", "Please work", "please bro");
+        if (App.currentUser.getDeviceId() == null || App.currentUser.getDeviceId().isEmpty()) {
+            String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            addtoNotifications(deviceID);
+            addtoNotifications("organizer" + App.currentUser.getDeviceId());
+            addtoNotifications("admin" + App.currentUser.getDeviceId());
+        }
 
         progressBar = findViewById(R.id.progressBar);
         View funnyTextView = findViewById(R.id.funnyTextView);
