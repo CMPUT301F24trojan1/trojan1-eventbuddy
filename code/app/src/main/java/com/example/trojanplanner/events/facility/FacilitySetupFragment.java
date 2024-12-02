@@ -1,12 +1,7 @@
 package com.example.trojanplanner.events.facility;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,34 +15,43 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.trojanplanner.App;
+import com.example.trojanplanner.ProfileUtils.PfpClickPopupFragment;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.Organizer;
+import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.MainActivity;
 import com.example.trojanplanner.view.ProfileActivity;
 
-import java.io.IOException;
 import java.util.Objects;
 
 /**
  * A fragment that handles the setup of a new facility. It allows the user to input the
- * facility's name, owner's name, and upload a photo, and then saves the facility details
+ * facility's name, facility's location, and upload a photo, and then saves the facility details
  * in the database.
  */
 public class FacilitySetupFragment extends Fragment {
-    private static final int REQUEST_IMAGE_PICK = 1;
-    private ImageView facilityPhoto;
+    private ImageView facilityImageView;
+    private Bitmap facilityImageBitmap = null;
+    private boolean changedPfp = false;
+
     private EditText facilityNameEditText;
     private EditText facilityLocationEditText;
-    private Uri facilityPhotoUri;
-    private MainActivity mainActivity;
-    private ProfileActivity profileActivity;
+
+    private PhotoPicker photoPicker; // Will borrow the photoPicker that was initialized in MainActivity or ProfileActivity depending who sent us here
+    private Database database;
+
+    private Organizer organizer;
+    private Facility facility;
+    private boolean organizerInsertNeeded = false;
 
     /**
      * Inflates the layout for this fragment and sets up the user interface components.
@@ -62,20 +66,30 @@ public class FacilitySetupFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_facility_setup, container, false);
 
-        facilityPhoto = view.findViewById(R.id.facility_photo);
+        database = Database.getDB();
+
+        facilityImageView = view.findViewById(R.id.facility_photo);
         facilityNameEditText = view.findViewById(R.id.facility_name);
         facilityLocationEditText = view.findViewById(R.id.location);
         Button uploadPhotoButton = view.findViewById(R.id.upload_photo_button);
         Button saveButton = view.findViewById(R.id.save_button);
         Button cancelButton = view.findViewById(R.id.cancel_button);
 
-        uploadPhotoButton.setOnClickListener(v -> openImagePicker());
+        uploadPhotoButton.setOnClickListener(v -> createPfpPopup());
         saveButton.setOnClickListener(v -> saveFacility());
 
+        // Set action for the "Back" button (returns to the fragment that we came from)
         cancelButton.setOnClickListener(v -> {
-            // Clear the input fields
-            facilityNameEditText.setText("");
-            facilityLocationEditText.setText("");
+            if (getActivity() instanceof MainActivity) {
+                // Navigate to emptyEventsFragment
+                NavController navController = NavHostFragment.findNavController(this);
+                navController.navigate(R.id.emptyEventsFragment);
+            }
+            else { // Otherwise we're in ProfileActivity
+                // Navigate back in the fragment stack (return to the previous fragment)
+                FragmentManager fragmentManager = getParentFragmentManager();
+                fragmentManager.popBackStack();
+            }
         });
 
         // Ensure the app bar is visible
@@ -83,69 +97,152 @@ public class FacilitySetupFragment extends Fragment {
             Objects.requireNonNull(((AppCompatActivity) getActivity()).getSupportActionBar()).show();
         }
 
+        // Get the photoPicker (the one we borrow depends on what activity we're in)
         if (getActivity() instanceof MainActivity) {
-            mainActivity = (MainActivity) getActivity();
-            cancelButton.setOnClickListener(v -> {
-                // Clear the input fields
-                facilityNameEditText.setText("");
-                facilityLocationEditText.setText("");
-                facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Reset to a default image
-            });
-
-            // Override default photo picker callback function
-            mainActivity.facilityPhotoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
-
-        } else {
-            profileActivity = (ProfileActivity) getActivity();
-
-            Database.QuerySuccessAction successAction = object -> {
-                String facilityId = (String) object;
-                Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility ID retrieved: " + facilityId);
-                Database.getDB().getFacility(object1 -> {
-                    Facility facility = (Facility) object1;
-                    populateFields(facility);
-                    Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility retrieved: " + facility.toString());
-                }, () -> {
-                    Log.d("FacilitySetupFrom Profile: FAILURE", "Failed to retrieve the Facility.");
-                }, facilityId);
-            };
-            Database.QueryFailureAction failureAction = () -> Log.d("FacilitySetupFrom Profile: FAILURE", "Failed to retrieve Facility ID");
-            Database.getDB().getFacilityIDbyUserID(App.currentUser.getDeviceId(), successAction, failureAction);
-
-            if (profileActivity != null) {
-                profileActivity.photoPicker.dummyCallback = bitmap -> facilityPhoto.setImageBitmap(bitmap);
-            }
+            //photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
         }
+        else { // The activity is ProfileActivity in this case
+            photoPicker = ((ProfileActivity) App.activity).profileActivityPhotoPicker;
+        }
+
+
+        // Get the current organizer (or turn the current entrant into an organizer if they're not one)
+        Database.QuerySuccessAction successAction = new Database.QuerySuccessAction() {
+            @Override
+            public void OnSuccess(Object object) {
+                organizerInsertNeeded = false; // deviceID was already an organizer
+                Log.d("FacilitySetupFragment", "getOrganizer succeeded: Ready to run the fragment");
+                organizer = (Organizer) object;
+                facility = organizer.getFacility();
+                resetState(facility);
+            }
+        };
+
+        // If the getOrganizer query fails, it's probably because this user isn't an organizer yet.
+        // Query them as an entrant and turn them into one.
+        Database.QueryFailureAction failureAction = new Database.QueryFailureAction() {
+            @Override
+            public void OnFailure() {
+                Log.d("FacilitySetupFragment", "getOrganizer failed: new organizer?");
+                Database.QuerySuccessAction nestedSuccessAction = new Database.QuerySuccessAction() {
+                    @Override
+                    public void OnSuccess(Object object) {
+                        organizerInsertNeeded = true; // deviceID was not yet an organizer, we will have to update that
+                        Log.d("FacilitySetupFragment", "getEntrant succeeded: Ready to run the fragment");
+                        organizer = ((Entrant) object).returnOrganizer();
+                        resetState(null);
+                    }
+                };
+                Database.QueryFailureAction nestedFailureAction = new Database.QueryFailureAction() {
+                    @Override
+                    public void OnFailure() {
+                        Log.d("FacilitySetupFragment: FAILURE", "FAILED TO GET THE ORGANIZER");
+                        Toast myToast = Toast.makeText(App.activity, "FAILED TO GET THE ORGANIZER!", Toast.LENGTH_LONG);
+                        myToast.show();
+                    }
+                };
+                database.getEntrant(nestedSuccessAction, nestedFailureAction, App.deviceId);
+            }
+        };
+
+        database.getOrganizer(successAction, failureAction, App.deviceId);
+
+
+
+        // Define and add a callback to the photopicker
+        PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) {
+                onPhotoSelected(bitmap);
+            }
+        };
+        photoPicker.setCallback(photoPickerCallback);
 
         return view;
     }
 
     /**
-     * Opens the photo picker to allow the user to select a photo for the facility.
+     * The callback action to take when the photoPicker selects a photo.
+     * (If the photoPicker returns null (didn't select), perform no action)
+     * @param bitmap The bitmap received by the PhotoPicker to set
      */
-    private void openImagePicker() {
-        if (getActivity() instanceof ProfileActivity) {
-            profileActivity.photoPicker.openPhotoPicker(App.currentUser);
-        } else {
-            mainActivity.facilityPhotoPicker.openPhotoPicker(App.currentUser);
+    private void onPhotoSelected(Bitmap bitmap) {
+        System.out.println("FacilitySetupFragment photopickercallback triggered!");
+        if (bitmap != null && bitmap != facilityImageBitmap) {
+            changedPfp = true;
+            facilityImageBitmap = bitmap;
+            facilityImageView.setImageBitmap(bitmap);
         }
     }
 
+
     /**
-     * Handles the result from the photo picker activity and sets the selected photo URI.
+     * Resets facility picture to the current picture of the facility.
+     * If facility is null, reset to the default pfp
      *
-     * @param requestCode The request code passed in startActivityForResult().
-     * @param resultCode  The result code returned by the photo picker activity.
-     * @param data        The intent containing the result data, including the selected photo URI.
+     * @param facility The facility (or null) to get the picture from and display on the screen again
+     * @author Jared Gourley
      */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_PICK && resultCode == getActivity().RESULT_OK && data != null) {
-            facilityPhotoUri = data.getData();
-            facilityPhoto.setImageURI(facilityPhotoUri);
+    private void clearFacilityPhoto(Facility facility) {
+        // If the (existing) facility's saved picture was already null, then this is not changing the picture
+        if (facility != null && facility.getPfpFacilityFilePath() == null) {
+            changedPfp = false;
+        }
+        // If the (existing) facility's saved picture was not null, then this IS changing the picture
+        else if (facility != null && facility.getPfpFacilityFilePath() != null) {
+            changedPfp = true;
+        }
+        // If there is no existing facility then this is not changing the picture (since there can't be one)
+        else {
+            changedPfp = false;
+        }
+
+        facilityImageView.setImageBitmap(Facility.getDefaultPicture());
+        facilityImageBitmap = null;
+    }
+
+
+    /**
+     * Resets all input fields and the facility photo back to the currently saved values.
+     * If the facility parameter is null, sets them to blank and a default facility picture.
+     * @param facility The facility object to reset fields to match
+     * @author Jared Gourley
+     */
+    private void resetState(Facility facility) {
+        changedPfp = false;
+
+        if (facility != null) {
+            // Assume name and location field must be non-null
+            facilityNameEditText.setText(facility.getName());
+            facilityLocationEditText.setText(facility.getLocation());
+            facilityImageView.setImageBitmap(facility.getPfpFacilityBitmap()); // Sets default if null
+        }
+        else {
+            facilityNameEditText.setText("");
+            facilityLocationEditText.setText("");
+            facilityImageView.setImageBitmap(Facility.getDefaultPicture()); // Reset to a default image
         }
     }
+
+
+    /**
+     * Creates a popup to allow either changing or removing the selected facility picture.
+     */
+    private void createPfpPopup() {
+        PfpClickPopupFragment.PfpPopupFunctions popupFunctions = new PfpClickPopupFragment.PfpPopupFunctions() {
+            @Override
+            public void changePFP() {
+                photoPicker.openPhotoPicker();
+            }
+            @Override
+            public void removePFP() {
+                clearFacilityPhoto(facility);
+            }
+        };
+
+        new PfpClickPopupFragment(popupFunctions).show(((AppCompatActivity) App.activity).getSupportFragmentManager(), "Change Facility Picture");
+    }
+
 
     /**
      * Saves the facility data to the database. If no photo is selected, a default image is used.
@@ -159,105 +256,63 @@ public class FacilitySetupFragment extends Fragment {
             Toast.makeText(getActivity(), "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (organizer == null) {
+            Toast.makeText(getActivity(), "Please wait a moment to load the organizer", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Bitmap bitmap;
-        Entrant currentUser = (Entrant) App.currentUser;
-        Organizer currentOrganizer = currentUser.returnOrganizer();
 
-        // If no photo is selected, use a default image from resources
-        if (facilityPhotoUri == null) {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.logo);
-            String defaultUriString = "1234567890/1729746211299.png"; // Default placeholder image URI
+        // Create a new facility
+        // Either create the facility here or update its attributes
+        if (facility != null) {
+            facility.setName(name);
+            facility.setLocation(location);
+        }
+        else {
+            organizerInsertNeeded = true; // Need to update the facility reference attribute
+            String facilityId = organizer.getDeviceId() + "-" + System.currentTimeMillis();
+            facility = new Facility(name, facilityId, location, organizer, null); // We'll set the pfp right away
+        }
 
-            String newFacilityId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
-            Facility facility = new Facility(
-                    name,
-                    newFacilityId,
-                    location,
-                    currentOrganizer,
-                    defaultUriString,  // Save URI string for default image
-                    bitmap);  // Store the bitmap itself (for the case of default image)
 
-            currentOrganizer.setFacility(facility);
-            App.currentUser.setIsOrganizer(true);
+        // Decide on a new image filepath and upload it if we're changing the pfp
+        String newPfpFilepath;
+        if (changedPfp) {
+            if (facilityImageBitmap != null) {
+                newPfpFilepath = organizer.getDeviceId() + "/" + System.currentTimeMillis() + ".png";
+                facility.setPfpFacilityFilePath(newPfpFilepath);
+                facility.setPfpFacilityBitmap(facilityImageBitmap);
+                database.uploadImage(facilityImageBitmap, organizer, newPfpFilepath);
+            }
+            else {
+                database.deleteImage(facility.getPfpFacilityFilePath());
+                facility.setPfpFacilityFilePath(null);
+                facility.setPfpFacilityBitmap(null);
+            }
+        }
 
-            // Insert the facility into the database
-            Database db = Database.getDB();
-            db.insertFacility(facility);
-            db.insertUserDocument(currentOrganizer);
+        // Attach the facility to the organizer and upload the facility since it's built
+        organizer.setFacility(facility);
+        database.insertFacility(facility);
 
-            Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
+        if (organizerInsertNeeded) { // Only if the user was not yet an organizer or if the facility used to be null
+            database.insertUserDocument(organizer);
+        }
+        organizerInsertNeeded = false;
 
-            // Navigate after saving with a delay
+        App.currentUser.setIsOrganizer(true); // TODO idk if this is the best idea?
+
+
+        // Navigate back to emptyEventsFragment (IF STILL ON MAINACTIVITY) after saving with a delay
+        if (App.activity.getClass() == MainActivity.class) {
             new android.os.Handler().postDelayed(() -> {
                 NavController navController = NavHostFragment.findNavController(this);
                 navController.navigate(R.id.emptyEventsFragment);
             }, 2000);  // Delay in milliseconds
-        } else {
-            // If a photo was selected, get the bitmap from the URI
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), facilityPhotoUri);
-
-                // If the bitmap is using HARDWARE config, copy it to ARGB_8888 format
-                if (bitmap.getConfig() == Bitmap.Config.HARDWARE) {
-                    bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false);  // Convert to ARGB_8888 format
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(getActivity(), "Failed to save photo", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Upload the image to Firebase Storage and get the URI
-            // Call the `uploadImage` method that you already have
-            Database.getDB().uploadImage(bitmap, currentUser); // Upload image and get URI asynchronously
-
-            // After uploading, use the returned URI (firebase storage path) to save it in the database
-            String imageUriString = currentUser.getPfpFilePath(); // Assuming the URI is saved in the pfpFilePath
-
-            String newFacilityId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();
-
-            // Now use the URI (string) instead of directly storing the Bitmap in Firestore
-            Facility facility = new Facility(
-                    name,
-                    newFacilityId,
-                    location,
-                    currentOrganizer,
-                    imageUriString,  // Use the URI string after upload
-                    bitmap);  // Optionally, store the bitmap if you need it locally
-
-            currentOrganizer.setFacility(facility);
-            App.currentUser.setIsOrganizer(true);
-
-            // Insert the facility into the database
-            Database db = Database.getDB();
-            db.insertFacility(facility);
-            db.insertUserDocument(currentOrganizer);
-
-            Toast.makeText(getActivity(), "Facility saved", Toast.LENGTH_SHORT).show();
-
-            // Navigate after saving
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.emptyEventsFragment);
         }
+
     }
 
-    /**
-     * Populates the UI fields with the existing facility's data.
-     *
-     * @param facility The existing facility to populate fields with.
-     */
-    private void populateFields(Facility facility) {
-        facilityNameEditText.setText(facility.getName());
-        facilityLocationEditText.setText(facility.getLocation());
 
-        // Load facility photo
-        if (facility.getPfpFacilityBitmap() != null) {
-            facilityPhoto.setImageBitmap(facility.getPfpFacilityBitmap());
-            Log.d("FacilitySetupFrom Profile: SUCCESS", "Facility photo loaded");
-        } else {
-            facilityPhoto.setImageResource(R.drawable.default_facility_pic); // Default image if no photo
-        }
-    }
+
 }

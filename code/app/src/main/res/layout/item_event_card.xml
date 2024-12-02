@@ -1,83 +1,74 @@
-<androidx.constraintlayout.widget.ConstraintLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:layout_margin="16dp"
+    android:elevation="4dp"
+    android:backgroundTint="@android:color/white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    app:strokeColor="#DDDDDD"
+    app:strokeWidth="1dp">
 
-    <!-- Combined Card for Image and Details -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/eventCard"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="6dp"
-        app:cardUseCompatPadding="true"
-        app:cardPreventCornerOverlap="false"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:padding="16dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!-- Event Image -->
+        <ImageView
+            android:id="@+id/event_image"
+            android:layout_width="351dp"
+            android:layout_height="207dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/event_placeholder"
+            app:layout_constraintDimensionRatio="16:9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Event Image -->
-            <ImageView
-                android:id="@+id/event_image"
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/event_placeholder"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+        <!-- Event Name -->
+        <TextView
+            android:id="@+id/event_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Event Name"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="sans-serif-medium"
+            android:paddingTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/event_image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Pending Notification -->
-            <ImageView
-                android:id="@+id/pending_notif"
-                android:layout_width="49dp"
-                android:layout_height="54dp"
-                android:visibility="visible"
-                app:layout_constraintTop_toTopOf="@id/event_image"
-                app:layout_constraintEnd_toEndOf="@id/event_image"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
-                app:srcCompat="@drawable/pending" />
+        <!-- Event Description -->
+        <TextView
+            android:id="@+id/event_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Event Description goes here with more details."
+            android:textSize="16sp"
+            android:textColor="@color/darkGray"
+            android:fontFamily="sans-serif-medium"
+            android:paddingTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/event_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Event Details -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                app:layout_constraintTop_toBottomOf="@id/event_image"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+        <!-- Notification Icon -->
+        <ImageView
+            android:id="@+id/pending_notif"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="gone"
+            android:contentDescription="Pending Notification"
+            app:layout_constraintTop_toBottomOf="@id/event_description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/pending"
+            app:tint="@color/red_primary" />
 
-                <!-- Event Name -->
-                <TextView
-                    android:id="@+id/event_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Event Name"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:paddingTop="8dp" />
-
-                <!-- Event Description -->
-                <TextView
-                    android:id="@+id/event_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Event Description"
-                    android:textSize="14sp"
-                    android:textColor="#555555"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="8dp" />
-            </LinearLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

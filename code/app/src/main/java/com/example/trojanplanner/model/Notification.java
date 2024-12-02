@@ -3,7 +3,7 @@ package com.example.trojanplanner.model;
 
 import java.util.List;
 
-// TO DO
+// TO DO - scrapped, will not be used since firebase cloud messaging created
 /**
  * Notification class to manage and send notifications to users, organizers, and admins
  * based on different event and facility triggers.

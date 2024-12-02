@@ -17,15 +17,17 @@ import androidx.lifecycle.LifecycleOwner;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.User;
+import com.example.trojanplanner.view.MainActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Class that provides the ability to open the user's photo library and select a photo
  * Refer to the selectedPhoto attribute to get the last selected photo.
  * <br>
- * - Note that if reusing the same PhotoPicker the selectedPhoto attribute could be from a
- * previous prompt if the user has not selected again yet
+ * - To use, MUST call initPhotoPicker in the onCreate function of the ACTIVITY the PhotoPicker
+ * will be used inside. Callback functions to trigger on photo selection can be registered at any time.
  */
 public class PhotoPicker {
 
@@ -42,16 +44,12 @@ public class PhotoPicker {
     private boolean hasDatabase = false;
     private User user; // Just to assign a user for uploading
 
-    public PhotoPickerCallback dummyCallback;
+    private ArrayList<PhotoPickerCallback> callbacks = new ArrayList<PhotoPickerCallback>(); // Note: this is an array but can only have one callback
 
     public PhotoPicker() {
         activity = App.activity;
         owner = (LifecycleOwner) activity;
         registry = ( (AppCompatActivity) activity).getActivityResultRegistry();
-        dummyCallback = new PhotoPickerCallback() {
-            @Override
-            public void OnPhotoPickerFinish(Bitmap bitmap) { return; }
-        };
     }
 
 
@@ -76,17 +74,41 @@ public class PhotoPicker {
         void OnPhotoPickerFinish(Bitmap bitmap);
     }
 
+    /**
+     * Notify all callbacks that the PhotoPicker has finished and selected an image. This array
+     * is important to allow adding callbacks after being the PhotoPicker is already initialized.
+     * @param bitmap
+     */
+    private void notifyCallbacks(Bitmap bitmap) {
+        for (PhotoPickerCallback callback : callbacks) {
+            callback.OnPhotoPickerFinish(bitmap);
+        }
+    }
+
+    /**
+     * Sets the callback that will be triggered when the PhotoPicker successfully selects a photo.
+     *
+     * @param callback The callback that should be called when the PhotoPicker selects a photo.
+     */
+    public void setCallback(PhotoPickerCallback callback) {
+        callbacks.clear();
+        if (callback != null) {
+            callbacks.add(callback);
+        }
+    }
 
     /**
      * Method to initialize the PhotoPicker instance. This must be called before attempting to call
      * openPhotoPicker and THIS METHOD MUST BE CALLED IN THE ACTIVITY'S ONCREATE METHOD.
      * <br>
+     * On a selected photo, the photoPicker will call the callback set by setCallback().
+     * <br>
      * If a database object is passed, the PhotoPicker will upload the photo to the database when selected.
-     * @param callback The callback function
      * @param database The database to upload to (set to null to avoid uploading)
      * @author Jared Gourley
      */
-    public void initPhotoPicker(@NonNull PhotoPickerCallback callback, Database database) {
+    public void initPhotoPicker(Database database) {
+
         // https://developer.android.com/training/data-storage/shared/photopicker#select-single-item
         // https://developer.android.com/training/basics/intents/result#separate - needed to modify call to work from non-Activity object
         photoPickerLauncher =
@@ -104,11 +126,11 @@ public class PhotoPicker {
                             Log.d("PhotoPicker", "uri invalid/no permissions");
                             selectedPhoto = null;
                             currentlyPicking = false;
-                            callback.OnPhotoPickerFinish(selectedPhoto);
+                            notifyCallbacks(selectedPhoto);
                             return;
                         }
                         // Trigger the successful callback with the photo and upload if desired
-                        callback.OnPhotoPickerFinish(selectedPhoto);
+                        notifyCallbacks(selectedPhoto);
                         if (database != null) {
                             database.uploadImage(bitmap, user);
                         }
@@ -118,7 +140,7 @@ public class PhotoPicker {
                         Log.d("PhotoPicker", "No media selected");
                         selectedPhoto = null;
                         currentlyPicking = false;
-                        callback.OnPhotoPickerFinish(selectedPhoto);
+                        notifyCallbacks(selectedPhoto);
                     }
                 });
 
@@ -138,18 +160,8 @@ public class PhotoPicker {
      * @author Jared Gourley
      */
     public void initPhotoPicker() {
-        initPhotoPicker(dummyCallback, null);
+        initPhotoPicker(null);
     }
-
-    public void initPhotoPicker(PhotoPickerCallback callback) {
-        initPhotoPicker(callback, null);
-    }
-
-    public void initPhotoPicker(Database database) {
-        initPhotoPicker(dummyCallback, database);
-    }
-
-
 
 
     // TODO: Is this function necessary?

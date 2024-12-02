@@ -12,17 +12,26 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Facility;
+import com.example.trojanplanner.model.User;
+
 import java.util.List;
 
 public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacilitiesArrayAdapter.FacilityViewHolder> {
 
     private final List<Facility> facilityList;
     private final Context context;
+    private final OnItemClickListener onItemClickListener;
 
-    // Constructor
-    public AdminFacilitiesArrayAdapter(Context context, List<Facility> facilityList) {
+    // Listener interface for click events
+    public interface OnItemClickListener {
+        void onItemClick(Facility facility);
+    }
+
+    // Constructor with listener
+    public AdminFacilitiesArrayAdapter(Context context, List<Facility> facilityList, OnItemClickListener onItemClickListener) {
         this.context = context;
         this.facilityList = facilityList;
+        this.onItemClickListener = onItemClickListener;
     }
 
     @NonNull
@@ -40,36 +49,40 @@ public class AdminFacilitiesArrayAdapter extends RecyclerView.Adapter<AdminFacil
         // Bind the name, location, and owner with null checks
         if (facility != null) {
             if (facility.getName() != null) {
-                holder.facilityName.setText(facility.getName());
+                holder.facilityName.setText("Name: "+facility.getName());
             } else {
                 holder.facilityName.setText("");
             }
 
             if (facility.getLocation() != null) {
-                holder.facilityLocation.setText(facility.getLocation());
+                holder.facilityLocation.setText("Location: " + facility.getLocation());
             } else {
                 holder.facilityLocation.setText("");
             }
 
             if (facility.getOwner() != null && facility.getOwner().getFirstName() != null) {
-                holder.facilityOwner.setText(facility.getOwner().getFirstName());
+                holder.facilityOwner.setText("Owner: " + facility.getOwner().getFirstName());
             } else {
                 holder.facilityOwner.setText("");
             }
 
-            if (facility.getPfpFacilityBitmap() != null) {
-                // If we have a bitmap, load it into the ImageView
-                holder.facilityImage.setImageBitmap(facility.getPfpFacilityBitmap());
-            } else {
-                holder.facilityImage.setImageResource(R.drawable.default_facility_pic);
-            }
+            // Load the bitmap into the ImageView
+            holder.facilityImage.setImageBitmap(facility.getPfpFacilityBitmap());
+
         } else {
             // Handle null facility object gracefully
             holder.facilityName.setText(""); // or placeholder text
             holder.facilityLocation.setText(""); // or placeholder text
             holder.facilityOwner.setText(""); // or placeholder text
-            holder.facilityImage.setImageResource(R.drawable.default_facility_pic); // Set default image if facility is null
+            holder.facilityImage.setImageBitmap(Facility.getDefaultPicture()); // Set default image if facility is null
         }
+
+        // Set click listener for the entire item
+        holder.itemView.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(facility);
+            }
+        });
     }
 
     @Override

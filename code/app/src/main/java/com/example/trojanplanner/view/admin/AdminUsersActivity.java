@@ -6,7 +6,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -24,6 +26,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AdminUsersActivity extends AppCompatActivity {
     private TextView empty_text;
@@ -53,9 +58,31 @@ public class AdminUsersActivity extends AppCompatActivity {
         previousButton = findViewById(R.id.previous_button);
         nextButton = findViewById(R.id.next_button);
 
-        // Fetch users or initialize the list (Here, we simulate an empty list)
-        users = new ArrayList<>();  // Replace this with your actual user-fetching logic
-        adapter = new AdminUsersArrayAdapter(AdminUsersActivity.this, users);
+
+        users = new ArrayList<>();
+        adapter = new AdminUsersArrayAdapter(AdminUsersActivity.this, users, user -> {
+            // Create an AlertDialog with a warning about the user's deletion
+            new AlertDialog.Builder(AdminUsersActivity.this)
+                    .setTitle("Delete User")
+                    .setMessage("Are you sure you want to delete this user?\n\n" +
+                            "This will potentially affect:\n" +
+                            "1. Events that this user is attending.\n" +
+                            "2. The facility this user owns if they own one.\n" +
+                            "3. Events created by this user if they are the organizer.\n\n" +
+                            "This action cannot be undone.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // If the user clicks "Yes", proceed with deletion
+                        deleteUserFromDatabase(user);  // Method to delete the user and their associated data
+                        Toast.makeText(AdminUsersActivity.this, "User deleted: " + user.getFirstName() + " " + user.getLastName(), Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        // If the user clicks "No", just dismiss the dialog
+                        dialog.dismiss();
+                    })
+                    .create()
+                    .show();
+        });
+
         recyclerView.setAdapter(adapter);
 
         // Fetch total documents and initialize the first page
@@ -91,6 +118,33 @@ public class AdminUsersActivity extends AppCompatActivity {
                 currentPage++;
                 loadPage(currentPage, lastFetchedFacilityDocument);
                 updateButtonStates();
+            }
+        });
+    }
+
+    private void deleteUserFromDatabase(User user) {
+        // Use ExecutorService to manage background threads
+        ExecutorService executorService = Executors.newSingleThreadExecutor();  // Single thread executor for serial task execution
+
+        // Execute the database deletion on the background thread
+        executorService.execute(() -> {
+            try {
+                // Attempt to delete the user from the database using the user's deviceId
+                Database.getDB().deleteUser(user.getDeviceId());
+                // Optionally, post success to the main thread if you need to update the UI
+                runOnUiThread(() -> {
+                    Toast.makeText(AdminUsersActivity.this, "User deleted successfully", Toast.LENGTH_SHORT).show();
+                    recreate(); // VERY VERY IMPORTANT, recreates the activity to refresh the list
+                });
+            } catch (Exception e) {
+                // Handle any errors that occur during deletion
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(AdminUsersActivity.this, "Error deleting user: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            } finally {
+                // Shut down the executor service
+                executorService.shutdown();
             }
         });
     }

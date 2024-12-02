@@ -175,11 +175,6 @@ public class Database {
         photoPicker.initPhotoPicker(this);
     }
 
-    public void initPhotoPicker(PhotoPicker.PhotoPickerCallback callback) {
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker(callback, this);
-    }
-
     // TODO: Is this function necessary?
     /**
      * A method that uninitializes the PhotoPicker if initPhotoPicker was called.
@@ -1448,11 +1443,13 @@ public class Database {
 
         // Get id of every created event document and split + make them into incomplete objects
         organizer.setCreatedEvents(new ArrayList<Event>());
-        ArrayList<DocumentReference> createdEventRefs = (ArrayList<DocumentReference>) m.get("createdEvents");
-        for (DocumentReference docRef : createdEventRefs) {
-            String[] eventIdPath = docRef.getId().split("/");
-            String eventId = eventIdPath[eventIdPath.length - 1];
-            organizer.addEvent(new Event(eventId));
+        if (m.get("createdEvents") != null) {
+            ArrayList<DocumentReference> createdEventRefs = (ArrayList<DocumentReference>) m.get("createdEvents");
+            for (DocumentReference docRef : createdEventRefs) {
+                String[] eventIdPath = docRef.getId().split("/");
+                String eventId = eventIdPath[eventIdPath.length - 1];
+                organizer.addEvent(new Event(eventId));
+            }
         }
 
         return organizer;
@@ -3248,7 +3245,7 @@ public class Database {
 
     /**
      * Deletes a facility from the database, INCLUDING ALL EVENTS AT THAT FACILITY! This method also
-     * sets the facility attribute of its owner to null as would be expected upon deletion.
+     * turns the owner of the facility into a normal entrant.
      *
      * @param facilityId The facility ID to fully delete from the database
      */
@@ -3256,16 +3253,16 @@ public class Database {
         System.out.println("DELETE_FACILITY_" + facilityId + ": Requesting to delete facility and all associated references");
         DocumentReference facilityDocRef = db.collection("facilities").document(facilityId);
 
-        // First, set the facility attribute of the owner to null.
+        // First, turn the owner into a normal entrant (including removing the facility reference).
 
         Query query = db.collection("users").whereEqualTo("facility", facilityDocRef);
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                // For every returned document, get the DocumentReference and set the facility attribute to null
+                // For every returned document, get the DocumentReference and set the facility attribute to null and hasOrganizerRights to false
                 for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
                     System.out.println("DELETE_FACILITY_"+ facilityId + " owner: organizer '" + docSnapshot.getString("firstName") + "' (" + docSnapshot.getId() + ") facility attribute being nulled");
-                    docSnapshot.getReference().update("facility", null);
+                    docSnapshot.getReference().update("facility", null, "hasOrganizerRights", false);
                 }
             }
         });
@@ -3384,11 +3381,44 @@ public class Database {
     }
 
 
+    /**
+     * Deletes an image from Firebase Storage, and also nulls all photo attributes that were using it.
+     * @param imagePath The path of the image to delete.
+     * @author Jared Gourley
+     */
     public void deleteImage(String imagePath) {
         System.out.println("DELETE_IMAGE_" + imagePath + ": Requesting to delete image");
         StorageReference storageRef = storage.getReference();
         StorageReference pathReference = storageRef.child(imagePath);
 
+        // We need to check every collection that has image attributes and nullify any attributes that match our picture
+        Map<String, String> collectionsToSearch = Map.of(
+                "users", "pfp",
+                "events", "eventPhoto",
+                "facilities", "facilityPhoto"
+        );
+        
+        // Perform the updating logic for each collection specified above
+        for (Map.Entry<String, String> entry : collectionsToSearch.entrySet()) {
+            String collectionName = entry.getKey();
+            String imageAttributeName = entry.getValue();
+
+            Query query = db.collection(collectionName).whereEqualTo(imageAttributeName, imagePath);
+            query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    // For every returned document, get the DocumentReference and nullify the image attribute
+                    for (QueryDocumentSnapshot docSnapshot : task.getResult()) {
+                        System.out.println("DELETE_IMAGE_" + imagePath + ": Deleting reference to image in document '" + docSnapshot.getId() + "' in collection " + collectionName);
+                        DocumentReference docRefToUpdate = docSnapshot.getReference();
+                        docRefToUpdate.update(imageAttributeName, null);
+                    }
+                }
+            });
+
+        }
+
+        // Finally, delete the image itself.
         pathReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {

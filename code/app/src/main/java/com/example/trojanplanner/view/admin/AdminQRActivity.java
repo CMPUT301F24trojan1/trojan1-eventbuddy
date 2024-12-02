@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -55,7 +56,29 @@ public class AdminQRActivity extends AppCompatActivity {
         nextButton = findViewById(R.id.next_button);
 
         qr_codes = new ArrayList<>();
-        adapter = new AdminQRArrayAdapter(this, qr_codes);
+        adapter = new AdminQRArrayAdapter(this, qr_codes, qrModel -> {
+            // Create an AlertDialog with a warning about the QR code deletion
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete QR Code")
+                    .setMessage("Are you sure you want to delete this QR code? \nQR Code Hash: "
+                            + qrModel.getQrHash() + "?\n\n" +
+                            "This will potentially affect:\n" +
+                            "1. Users attempting to enter using this QR code.\n" +
+                            "2. The organizer of the associated event.\n\n" +
+                            "This action cannot be undone.")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        // If the user clicks "Yes", proceed with deletion
+                        deleteQRFromDatabase(qrModel);  // Method to delete QR code and associated data
+                        Toast.makeText(this, "QR Code deleted: " + qrModel.getQrHash(), Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("No", (dialog, which) -> {
+                        // If the user clicks "No", just dismiss the dialog
+                        dialog.dismiss();
+                    })
+                    .create()
+                    .show();
+        });
+
         recyclerView.setAdapter(adapter);
 
         // Fetch total documents and initialize the first page
@@ -93,6 +116,15 @@ public class AdminQRActivity extends AppCompatActivity {
                 updateButtonStates();
             }
         });
+    }
+
+    private void deleteQRFromDatabase(QRModel qrModel) {
+        Database.getDB().getQRData(eventID->{
+            Database.getDB().deleteQRCode((String) eventID);
+        }, ()-> {}, qrModel.getQrHash());
+
+        App.sendAnnouncement(App.currentUser.getDeviceId(), "Admin", "Successfully deleted QR code: " + qrModel.getQrHash() + ".");
+        recreate();
     }
 
     private void toggleEmptyView() {

@@ -16,40 +16,47 @@ import java.util.List;
 public class AdminImagesArrayAdapter extends RecyclerView.Adapter<AdminImagesArrayAdapter.ImageViewHolder> {
     private Context context;
     private List<Bitmap> imagesList;
+    private OnImageClickListener onImageClickListener;
 
-    // Constructor to initialize the context and the list of images
-    public AdminImagesArrayAdapter(Context context, List<Bitmap> imagesList) {
+    public interface OnImageClickListener {
+        void onImageClick(int position);
+    }
+
+    public AdminImagesArrayAdapter(Context context, List<Bitmap> imagesList, OnImageClickListener onImageClickListener) {
         this.context = context;
         this.imagesList = imagesList;
+        this.onImageClickListener = onImageClickListener;
     }
 
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // Inflate the layout for each image item (you will need to create an item layout for this)
         View view = LayoutInflater.from(context).inflate(R.layout.item_image_card, parent, false);
-        return new ImageViewHolder(view);
+        return new ImageViewHolder(view, onImageClickListener);
     }
 
     @Override
     public void onBindViewHolder(ImageViewHolder holder, int position) {
         Bitmap image = imagesList.get(position);
-
-        // Set the image to the ImageView
         holder.imageView.setImageBitmap(image);
     }
 
     @Override
     public int getItemCount() {
-        return imagesList.size(); // Return the number of items (images)
+        return imagesList.size();
     }
 
-    // ViewHolder class to hold references to the image views
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
 
-        public ImageViewHolder(View itemView) {
+        public ImageViewHolder(View itemView, OnImageClickListener listener) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.image_view); // Reference to ImageView in your item layout
+            imageView = itemView.findViewById(R.id.image_view);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onImageClick(getAdapterPosition());
+                }
+            });
         }
     }
 }

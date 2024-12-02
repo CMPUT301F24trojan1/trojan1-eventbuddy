@@ -5,11 +5,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,19 +14,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.trojanplanner.App;
@@ -40,23 +33,18 @@ import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.ProfileActivity;
-import com.example.trojanplanner.view.QRActivity;
 import com.example.trojanplanner.view.admin.AdminActivity;
-import com.example.trojanplanner.view.admin.AdminUsersActivity;
 import com.google.firebase.messaging.FirebaseMessaging;
-
-import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 100;
-    private ImageView profileImage;
+    private ImageView profileImageView;
     private Bitmap profileImageBitmap = null; // Null if placeholder
     private EditText firstNameInput, lastNameInput, emailInput, phoneInput;
     private boolean changedPfp = false;
 
     private ProfileActivity profileActivity;
 
-    public PhotoPicker.PhotoPickerCallback photoPickerCallback;
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch notificationsSwitch;
     private Button switchProfileFacility;
@@ -68,14 +56,7 @@ public class ProfileFragment extends Fragment {
     }
 
     public ProfileFragment(ProfileActivity profileActivity) {
-        this.profileActivity = profileActivity; // can get the user from this object
-
-        photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
-            @Override
-            public void OnPhotoPickerFinish(Bitmap bitmap) {
-                onSelectedPhoto(bitmap);
-            }
-        };
+        this.profileActivity = profileActivity; // can get the user and photoPicker from this object
     }
 
     @Nullable
@@ -84,7 +65,7 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         // Initialize views
-        profileImage = view.findViewById(R.id.profile_image);
+        profileImageView = view.findViewById(R.id.profile_image);
         firstNameInput = view.findViewById(R.id.firstname_input);
         lastNameInput = view.findViewById(R.id.lastname_input);
         emailInput = view.findViewById(R.id.email_input);
@@ -93,8 +74,21 @@ public class ProfileFragment extends Fragment {
         Button cancelButton = view.findViewById(R.id.cancel_button);
         Button saveButton = view.findViewById(R.id.save_button);
 
+        // Set state to either fill fields blank or with the current user's values
+        resetState(App.currentUser);
+
+        // Initialize the callback for the photopicker
+        // Define and add a callback action for the photoPicker initialized in ProfileActivity
+        PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) {
+                onSelectedPhoto(bitmap);
+            }
+        };
+        profileActivity.profileActivityPhotoPicker.setCallback(photoPickerCallback);
+
         // Set up button click listeners
-        profileImage.setOnClickListener(v -> createPfpPopup());
+        profileImageView.setOnClickListener(v -> createPfpPopup());
         cancelButton.setOnClickListener(v -> handleCancel());
         saveButton.setOnClickListener(v -> handleSave());
 
@@ -116,18 +110,15 @@ public class ProfileFragment extends Fragment {
         }
 
         switchAdminView = view.findViewById(R.id.switch_admin_view);
-        if (App.currentUser != null) {
-            if (App.currentUser.isAdmin()) {
-                switchAdminView.setVisibility(View.VISIBLE);
-                switchAdminView.setOnClickListener(v -> {
-                    Intent intent = new Intent(getActivity(), AdminActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    profileActivity.finish();
-                });
-            } else {
-                switchAdminView.setVisibility(View.GONE);
-            }
+        switchAdminView.setVisibility(View.GONE); // Don't show unless isAdmin is true
+        if (App.currentUser != null && App.currentUser.isAdmin()) {
+            switchAdminView.setVisibility(View.VISIBLE);
+            switchAdminView.setOnClickListener(v -> {
+                Intent intent = new Intent(getActivity(), AdminActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                profileActivity.finish();
+            });
         }
 
         switchProfileFacility = view.findViewById(R.id.switch_profile_facility);
@@ -170,36 +161,38 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Creates a popup to allow either changing or removing the selected profile picture.
+     */
     private void createPfpPopup() {
         PfpClickPopupFragment.PfpPopupFunctions popupFunctions = new PfpClickPopupFragment.PfpPopupFunctions() {
             @Override
             public void changePFP() {
-                profileActivity.photoPicker.openPhotoPicker();
+                profileActivity.profileActivityPhotoPicker.openPhotoPicker();
             }
-
             @Override
             public void removePFP() {
-                profileActivity.profileFragment.resetPFP(null);
+                clearPFP(App.currentUser);
             }
         };
 
         new PfpClickPopupFragment(popupFunctions).show(profileActivity.getSupportFragmentManager(), "Change Profile Picture");
     }
 
+    /**
+     * The action to take when the cancel button is pressed. This resets the input fields and photo
+     * to the currently saved values of the user (or blank if there is no user profile yet)
+     */
     private void handleCancel() {
-        // Handle cancel action, e.g., clear fields or go back
-        System.out.println("Cancel!");
-        System.out.println("user: " + App.currentUser);
-        if (App.currentUser != null) {
-            System.out.println("firstname: " + App.currentUser.getFirstName() + ", lastname: " + App.currentUser.getLastName());
-        }
         resetState(App.currentUser); // for now, reset fields to current saved values
     }
 
+    /**
+     * The action to take when saving the profile to the database.
+     */
     private void handleSave() {
         // Handle save action, e.g., validate input and save to a database or API
         System.out.println("Save!");
-        // TODO: This probably should not be allowed to run if the database is currently still retrieving the current user?
 
         // Input validation
         boolean errorCaught = false;
@@ -247,18 +240,17 @@ public class ProfileFragment extends Fragment {
 
         // If pfp image was changed, explicitly choose a new filepath here
         // and use it for both the Firebase Storage upload and the database document insert
-        if (changedPfp) { // && profileImageBitmap != null
-            Bitmap bitmap = profileImageBitmap;
-            String newPfpFilepath = App.deviceId + "/" + System.currentTimeMillis() + ".png";
-            App.currentUser.setPfpFilePath(newPfpFilepath);
-            System.out.println("bitmap: " + bitmap);
-            System.out.println("filepath: " + newPfpFilepath);
-            // Upload the image if the change is a non-null image
-            if (bitmap != null) {
-                database.uploadImage(bitmap, App.currentUser, newPfpFilepath); // assume this doesn't fail??
+        if (changedPfp) {
+            if (profileImageBitmap != null) {
+                String newPfpFilepath = App.deviceId + "/" + System.currentTimeMillis() + ".png";
+                App.currentUser.setPfpFilePath(newPfpFilepath);
+                App.currentUser.setPfpBitmap(profileImageBitmap);
+                database.uploadImage(profileImageBitmap, App.currentUser, newPfpFilepath); // assume this doesn't fail??
             }
             else {
+                database.deleteImage(App.currentUser.getPfpFilePath()); // Delete the image since it's no longer being used
                 App.currentUser.setPfpFilePath(null);
+                App.currentUser.setPfpBitmap(null);
             }
         }
 
@@ -298,42 +290,54 @@ public class ProfileFragment extends Fragment {
                     });
         }
     }
+
+
     /**
-     * Resets profile picture to the current profile picture of the user.
-     * If user is null, reset to default
-     * @param user
+     * Resets profile picture to the default profile picture.
+     * @param user The user (or null) interacting with the profile
      */
-    public void resetPFP(User user) {
-        changedPfp = false;
-        if (user != null && user.getPfpBitmap() != null) {
-            profileImageBitmap = user.getPfpBitmap();
-            profileImage.setImageBitmap(profileImageBitmap);
+    public void clearPFP(User user) {
+        // If the (existing) user's saved pfp was already null, then this is not changing the pfp
+        if (user != null && user.getPfpFilePath() == null) {
+            changedPfp = false;
+            profileImageView.setImageBitmap(User.getDefaultPicture(user.getUserName()));
         }
+        // If the (existing) user's saved pfp was not null, then this IS changing the pfp
+        else if (user != null && user.getPfpFilePath() != null) {
+            changedPfp = true;
+            profileImageView.setImageBitmap(User.getDefaultPicture(user.getUserName()));
+        }
+        // If there is no existing user then this is not changing the pfp (since there can't be one)
         else {
-            // If 'remove pfp' button was pressed, we are actually changing it if user pfp was not null before
-            if (profileImageBitmap != null) {changedPfp = true; };
-            profileImageBitmap = null;
-            profileImage.setImageResource(R.drawable.profile_avatar);
+            changedPfp = false;
+            profileImageView.setImageBitmap(User.getDefaultPicture());
         }
+        profileImageBitmap = null;
 
     }
 
+    /**
+     * The callback action to take when the photoPicker selects a photo.
+     * (If the photoPicker returns null (didn't select), perform no action)
+     * @param bitmap The bitmap to use as the new photo
+     */
     public void onSelectedPhoto(Bitmap bitmap) {
+        System.out.println("ProfileFragment photopickercallback triggered!");
         if (bitmap != null && bitmap != profileImageBitmap) {
             changedPfp = true;
             profileImageBitmap = bitmap;
-            profileImage.setImageBitmap(bitmap);
+            profileImageView.setImageBitmap(bitmap);
         }
     }
 
 
     /**
-     *
-     * @param user
+     * Resets all input fields and the user pfp back to the currently saved values.
+     * If the user parameter is null, sets them to blank and a default user pfp.
+     * @param user The user object to reset fields to match
      * @author Jared Gourley
      */
     public void resetState(User user) {
-        // TODO: there's a bug here? if the user opens the app and switches to this tab before the initial query comes back, these fields don't populate (since user is still null)
         String firstName = "", lastName = "", email = "", phone = "";
         if (user != null) {
             if (user.getFirstName() != null) {
@@ -356,13 +360,14 @@ public class ProfileFragment extends Fragment {
 
         // Reset profile image to current profile image
         changedPfp = false;
-        if (App.currentUser != null && App.currentUser.getPfpBitmap() != null) {
+        if (App.currentUser != null && App.currentUser.getPfpFilePath() != null) {
             profileImageBitmap = App.currentUser.getPfpBitmap();
-            profileImage.setImageBitmap(profileImageBitmap);
+            profileImageView.setImageBitmap(profileImageBitmap);
         }
         else {
             profileImageBitmap = null;
-            profileImage.setImageResource(R.drawable.profile_avatar);
+            String userName = (App.currentUser != null) ? App.currentUser.getUserName() : "";
+            profileImageView.setImageBitmap(User.getDefaultPicture(userName));
         }
     }
 

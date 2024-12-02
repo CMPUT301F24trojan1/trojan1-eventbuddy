@@ -23,19 +23,19 @@
         <item>Show Check-In Code</item>
         <item>Generate Event Code</item>
         <item>Send Announcement</item>
-        <item>View Event Waitlist</item>
-        <item>View Selected Entrants</item>
+        <item>View Waiting List</item>
+        <item>View Enrolled Entrants</item>
         <item>View Cancelled Entrants</item>
-        <item>View Pending List</item>
+        <item>View Invited Entrants</item>
         <item>Initiate Lottery</item>
-        <item>Edit Events</item>
         <item>View Map of Entrants</item>
     </string-array>
 
     <!-- Spinner options -->
     <string-array name="notification_types">
         <item>Current Waitlist</item>
-        <item>Selected Entrants</item>
+        <item>Invited Entrants</item>
+        <item>Enrolled Entrants</item>
         <item>Cancelled Entrants</item>
     </string-array>
 </resources>

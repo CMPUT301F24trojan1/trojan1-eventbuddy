@@ -65,9 +65,9 @@
     </fragment>
 
     <!-- Define eventEditFragment and its navigation to eventsListFragment -->
+    <!-- This EventEditFragment file doesn't exist anymore but things break if I delete it, I just got rid of the name field and it works I guess -->
     <fragment
         android:id="@+id/eventEditFragment"
-        android:name="com.example.trojanplanner.events.EventEditFragment"
         android:label="Edit Event"
         tools:layout="@layout/event_edit_fragment">
 
@@ -154,13 +154,5 @@
             app:destination="@id/emptyEventsFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/PendingListFragment"
-        android:name="com.example.trojanplanner.HelperFragments.PendingListFragment"
-        android:label="Pending List">
-        <action
-            android:id="@+id/action_PendingListFragment_to_EventOptionsDialogFragment"
-            app:destination="@+id/EventOptionsDialogFragment" />
-    </fragment>
 
 </navigation>

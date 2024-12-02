@@ -272,12 +272,14 @@ public class Entrant extends User {
     /**
      * Returns the same user as an Organizer class.
      * <br>
-     * isOrganizer must be true otherwise an exception is thrown.
+     * Allows converting an entrant into an organizer even if they aren't one yet; this allows a
+     * regular entrant to become an organizer like in FacilitySetupFragment.
      * @return The equivalent organizer class for this entrant
      */
     public Organizer returnOrganizer() {
-        // TODO enforce the isOrganizer check
-        Organizer organizer = new Organizer(this.getLastName(), this.getFirstName(), this.getEmail(), this.getPhoneNumber(), this.getDeviceId(), this.getRole(), true, this.isAdmin(), new ArrayList<Event>(), null);
+        Organizer organizer = new Organizer(this.getLastName(), this.getFirstName(), this.getEmail(), this.getPhoneNumber(), this.getDeviceId(), "organizer", true, this.isAdmin(), new ArrayList<Event>(), null);
+        organizer.setPfpFilePath(this.getPfpFilePath());
+        organizer.setPfpBitmap(this.getPfpBitmap());
 
         return organizer;
     }
