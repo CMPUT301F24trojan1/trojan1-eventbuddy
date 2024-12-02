@@ -1,28 +1,39 @@
 package com.example.trojanplanner.notifications;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
-import android.content.pm.PackageManager;
 import android.widget.Toast;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
-import android.Manifest;
 
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.view.MainActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+/**
+ * Custom FirebaseMessagingService to handle incoming messages from Firebase Cloud Messaging (FCM).
+ * This service listens for new tokens and incoming notifications, and displays notifications when appropriate.
+ */
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
     private static final String CHANNEL_ID = "EventAnnouncements";
 
+    /**
+     * Called when a new token is generated for Firebase Cloud Messaging.
+     * This method can be used to send the token to your server for later use.
+     *
+     * @param token The new token generated for FCM.
+     */
     @Override
     public void onNewToken(String token) {
         super.onNewToken(token);
@@ -30,6 +41,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Send the token to your server if needed
     }
 
+    /**
+     * Called when a message is received from Firebase Cloud Messaging.
+     * This method checks if the message contains a notification payload and displays the notification if necessary.
+     *
+     * @param remoteMessage The remote message received from FCM.
+     */
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
@@ -53,6 +70,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    /**
+     * Checks if the app has permission to post notifications.
+     * This check is only relevant for Android 13 and above. For older Android versions, permission is granted by default.
+     *
+     * @return true if the app has permission to post notifications, false otherwise.
+     */
     private boolean hasNotificationPermission() {
         // Check if the app has permission to post notifications (only for Android 13 and above)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -62,6 +85,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
+    /**
+     * Sends a notification to the user with the provided title and body.
+     * This method creates a notification channel (for Android 8.0 and above), builds a notification,
+     * and then displays it to the user.
+     *
+     * @param title The title of the notification.
+     * @param body The body text of the notification.
+     */
     private void sendNotification(String title, String body) {
         // Create a notification manager
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -70,7 +101,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Event Announcements",
+                    "default",
                     NotificationManager.IMPORTANCE_HIGH
             );
             channel.setDescription("Notifications for specific event announcements.");

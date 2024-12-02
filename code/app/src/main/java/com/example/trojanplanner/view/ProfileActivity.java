@@ -13,6 +13,24 @@ import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.databinding.ActivityProfileBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+/**
+ * ProfileActivity displays the user's profile, including their photo and related information.
+ * This activity allows the user to interact with different sections of the app via a bottom navigation bar.
+ * It also initializes the profile photo picker and handles fragment display for the user profile.
+ * <p>
+ * The activity uses {@link PhotoPicker} to let the user select a profile photo and {@link ProfileFragment}
+ * to display the user's profile details.
+ * </p>
+ *
+ * <p>
+ * The bottom navigation allows the user to navigate between different activities:
+ * <ul>
+ *     <li>{@link MainActivity} - Navigates to the main activity</li>
+ *     <li>{@link QRActivity} - Navigates to the QR activity</li>
+ *     <li>Stays in the current activity - when the user selects the profile tab</li>
+ * </ul>
+ *
+ */
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
     public PhotoPicker profileActivityPhotoPicker;

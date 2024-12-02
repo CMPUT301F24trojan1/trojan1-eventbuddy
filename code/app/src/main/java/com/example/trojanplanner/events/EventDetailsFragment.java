@@ -6,6 +6,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -26,16 +28,13 @@ import com.example.trojanplanner.App;
 import com.example.trojanplanner.ProfileUtils.PfpClickPopupFragment;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.controller.PhotoPicker;
-import com.example.trojanplanner.events.entrant.EntrantEventOptionsDialogFragment;
 import com.example.trojanplanner.events.organizer.EventOptionsDialogFragment;
-
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
+import com.example.trojanplanner.model.Facility;
 import com.example.trojanplanner.model.User;
 import com.example.trojanplanner.view.MainActivity;
-import com.example.trojanplanner.view.ProfileActivity;
-import com.example.trojanplanner.view.QRActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
@@ -71,16 +70,6 @@ public class EventDetailsFragment extends Fragment {
     private boolean isEventInWaitlist = false;
     boolean isEventInPendingList = false;
 
-    @NonNull
-    public static EventDetailsFragment newInstance(Event event, Entrant entrant) {
-        EventDetailsFragment fragment = new EventDetailsFragment();
-        Bundle args = new Bundle();
-        args.putSerializable("event", event);
-        args.putSerializable("entrant", entrant);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     // Required empty constructor
     public EventDetailsFragment() {}
 
@@ -92,19 +81,58 @@ public class EventDetailsFragment extends Fragment {
      * @param eventNameTextView        The TextView to display the event's name.
      * @param eventLocationTextView    The TextView to display the event's location.
      * @param eventDateTextView        The TextView to display the event's start and end date.
-     * @param recurringDatesTextView   The TextView to display the event's recurrence days.
+     * @param recurringDaysTextView    The TextView to display the event's recurrence days.
+     * @param recurringEndDateTextView    The TextView to display the event's recurrence end date.
      * @param eventDescriptionTextView The TextView to display the event's description.
+     * @param eventPriceTextView       The TextView to display the event's price.
+     * @param eventTotalSpotsTextView   The TextView to display the event's total capacity.
      */
-    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
-                                     TextView eventDateTextView, TextView recurringDatesTextView,
-                                     TextView eventDescriptionTextView, TextView eventPriceTextview, TextView eventTotalSpotsTextview) {
 
+    public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
+                                     TextView eventDateTextView, TextView recurringDaysTextView,
+                                     TextView recurringEndDateTextView, TextView eventDescriptionTextView,
+                                     TextView eventPriceTextView, TextView eventTotalSpotsTextView) {
+
+        // Set the event image
         eventImageView.setImageBitmap(event.getPicture());
 
+        // Set the event name
         eventNameTextView.setText("Event: " + event.getName());
-        if (event.getFacility() != null) {
-            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
-        }
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+
+        executorService.execute(() -> {
+            // Background thread: Database operations
+            Database.getDB().getFacilityByEventID(event.getEventId(), facilityID -> {
+                Database.getDB().getFacility(object -> {
+                    Facility facility = (Facility) object;
+
+                    // Switch to the main thread for UI updates
+                    mainHandler.post(() -> {
+                        Toast.makeText(getContext(), "Facility: " + facility.getName(), Toast.LENGTH_SHORT).show();
+                        event.setFacility(facility);
+
+                        if (event.getFacility() != null && event.getFacility().getName() != null) {
+                            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getName());
+                        } else {
+                            eventLocationTextView.setText("\uD83D\uDCCD Facility: Not Available");
+                        }
+                    });
+                }, () -> {
+                    // Handle failure case (Facility not found)
+                    mainHandler.post(() -> {
+                        eventLocationTextView.setText("\uD83D\uDCCD Facility: Not Available");
+                    });
+                }, (String) facilityID);
+            }, () -> {
+                // Handle failure case (Event not found)
+                mainHandler.post(() -> {
+                    eventLocationTextView.setText("\uD83D\uDCCD Facility: Not Available");
+                });
+            });
+        });
+
 
         // Default values for dates in case they are null
         String defaultDate = "Not Available";  // Default date if event date is null
@@ -114,24 +142,39 @@ public class EventDetailsFragment extends Fragment {
         String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
         String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
 
-        eventDateTextView.setText("⏰ Time:"+ startDate + " - " + endDate);
-        eventPriceTextview.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
-        eventTotalSpotsTextview.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
+        eventDateTextView.setText("⏰ Time: " + startDate + " - " + endDate);
 
-        // Convert abbreviations in recurrenceDays to full day names
-        ArrayList<String> recurrenceDays = (event.isRecurring()) ? event.getRecurrenceDays() : null;
+        // Set the price and total spots
+        eventPriceTextView.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
+        eventTotalSpotsTextView.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
 
-        if (recurrenceDays != null) {
-            String recurrenceDaysText = recurrenceDays.stream()
-                    .map(this::getFullDayName) // Convert each unique abbreviation to full day name
-                    .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
-                    .reduce((a, b) -> a + ", " + b) // Join with commas
-                    .orElse("No recurrence");
+        // Set the recurring days
+        if (event.isRecurring()) {
+            List<String> recurrenceDays = event.getRecurrenceDays();
+            if (recurrenceDays != null && !recurrenceDays.isEmpty()) {
+                String recurringDays = recurrenceDays.stream()
+                        .map(day -> day.substring(0, 1).toUpperCase()) // Convert to shorthand
+                        .reduce((a, b) -> a + " " + b)
+                        .orElse("None");
+                recurringDaysTextView.setText("🔄 Recurring Days: " + recurringDays);
+            } else {
+                recurringDaysTextView.setText("🔄 Recurring Days: None");
+            }
 
-            recurringDatesTextView.setText("Recurring Days: " + recurrenceDaysText);
+            // Set the recurring end date
+            if (event.getRecurrenceEndDate() != null) {
+                String recurrenceEndDate = dateFormat.format(event.getRecurrenceEndDate());
+                recurringEndDateTextView.setText("📅 Recurrence End Date: " + recurrenceEndDate);
+            } else {
+                recurringEndDateTextView.setText("📅 Recurrence End Date: None");
+            }
+        } else {
+            recurringDaysTextView.setText("🔄 Recurring Days: None");
+            recurringEndDateTextView.setText("📅 Recurrence End Date: None");
         }
-        eventDescriptionTextView.setText("Description: " + event.getDescription());
 
+        // Set the event description
+        eventDescriptionTextView.setText("Description: " + event.getDescription());
     }
 
     /**
@@ -483,7 +526,8 @@ public class EventDetailsFragment extends Fragment {
         TextView eventNameTextView = view.findViewById(R.id.eventNameTextView);
         TextView eventLocationTextView = view.findViewById(R.id.eventLocationTextView);
         TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
-        TextView recurringDatesTextView = view.findViewById(R.id.recurringDatesTextView);
+        TextView recurringDaysTextView = view.findViewById(R.id.recurringDaysTextView);
+        TextView recurringEndDateTextView = view.findViewById(R.id.recurringEndDateTextView); // initalized
         TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
         TextView eventPriceTextview = view.findViewById(R.id.ticketPriceTextView);
         TextView eventTotalSpotsTextview = view.findViewById(R.id.totalSpotsTextView);
@@ -509,7 +553,7 @@ public class EventDetailsFragment extends Fragment {
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDaysTextView, recurringEndDateTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
             // Print the current waitlist for debugging purposes
             Log.d("EventDetailsFragment", "updateButton Event Waiting List: " + event.getWaitingList());
         } else {

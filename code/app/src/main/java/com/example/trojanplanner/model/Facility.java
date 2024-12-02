@@ -1,6 +1,5 @@
 package com.example.trojanplanner.model;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
@@ -173,7 +172,7 @@ public class Facility implements Serializable {
     @NonNull
     public static Bitmap getDefaultPicture() {
         // load a default image resource as a Bitmap
-        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_facility_pic);
+        return BitmapFactory.decodeResource(App.activity.getResources(), R.drawable.default_facility_pic2);
     }
 
 }

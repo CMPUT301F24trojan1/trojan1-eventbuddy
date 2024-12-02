@@ -10,24 +10,23 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.ActivityResultRegistry;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.User;
-import com.example.trojanplanner.view.MainActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Class that provides the ability to open the user's photo library and select a photo
- * Refer to the selectedPhoto attribute to get the last selected photo.
- * <br>
- * - To use, MUST call initPhotoPicker in the onCreate function of the ACTIVITY the PhotoPicker
- * will be used inside. Callback functions to trigger on photo selection can be registered at any time.
+ * Provides the ability to open the user's photo library and select a photo.
+ * Refer to the {@link #getSelectedPhoto()} method to get the last selected photo.
+ *
+ * <p>To use, MUST call {@link #initPhotoPicker(Database)} in the onCreate function of the
+ * Activity where the PhotoPicker will be used. Callback functions to trigger on photo selection
+ * can be registered at any time.</p>
  */
 public class PhotoPicker {
 
@@ -46,33 +45,55 @@ public class PhotoPicker {
 
     private ArrayList<PhotoPickerCallback> callbacks = new ArrayList<PhotoPickerCallback>(); // Note: this is an array but can only have one callback
 
+    /**
+     * Constructs a PhotoPicker instance.
+     */
     public PhotoPicker() {
         activity = App.activity;
         owner = (LifecycleOwner) activity;
         registry = ( (AppCompatActivity) activity).getActivityResultRegistry();
     }
 
-
+    /**
+     * Returns true if the PhotoPicker is currently in the process of picking a photo.
+     *
+     * @return True if picking, false otherwise.
+     */
     public boolean isCurrentlyPicking() {
         return currentlyPicking;
     }
 
+    /**
+     * Returns the selected photo as a Bitmap.
+     *
+     * @return The selected Bitmap photo, or null if no photo was selected.
+     */
     public Bitmap getSelectedPhoto() {
         return selectedPhoto;
     }
 
+    /**
+     * Returns whether a database has been initialized for photo uploading.
+     *
+     * @return True if the PhotoPicker is initialized with a database, false otherwise.
+     */
     public boolean hasDatabase() {
         return hasDatabase;
     }
 
 
     /**
-     * A callback so that classes can call the PhotoPicker and receive the selected photo when it
-     * is chosen.
+     * Callback interface to be implemented for receiving the selected photo.
      */
     public interface PhotoPickerCallback {
+        /**
+         * Callback method triggered when a photo is selected.
+         *
+         * @param bitmap The selected photo as a Bitmap.
+         */
         void OnPhotoPickerFinish(Bitmap bitmap);
     }
+
 
     /**
      * Notify all callbacks that the PhotoPicker has finished and selected an image. This array
