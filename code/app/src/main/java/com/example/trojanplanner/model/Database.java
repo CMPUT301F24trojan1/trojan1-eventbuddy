@@ -2615,6 +2615,24 @@ public class Database {
     }
 
 
+    /**
+     * Initializes and adds a document into Firebase for an empty map. This should be called at the
+     * same time the creation of a new event happens.
+     * <br>
+     * <strong> Note: If there already an event at this location, THIS FUNCTION WILL OVERWRITE IT
+     * AND MAKE THE MAP EMPTY! </strong>
+     *
+     * @param eventId
+     */
+    public void createEmptyMap(String eventId) {
+        Map<String, Object> emptyMap = new HashMap<String, Object>();
+        Map<String, Object> mapToInsert = new HashMap<String, Object>();
+        mapToInsert.put("locations", emptyMap);
+
+        DocumentReference newDocRef = db.collection("maps").document(eventId);
+        newDocRef.set(mapToInsert);
+    }
+
     //I added these for map - Dric
     public void insertLocation(String eventID, String userID, double latitude, double longitude, QuerySuccessAction successAction, QueryFailureAction failureAction) {
         // Reference to the Firestore document for the event location
@@ -2663,6 +2681,47 @@ public class Database {
             failureAction.OnFailure();
         });
     }
+
+    /**
+     * Removes the given user's location from a given event.
+     * <br>
+     * <strong> Note: This works well unless you try to edit the same event map a lot at the same time.
+     * In this case race conditions may affect the resulting data. </strong>
+     *
+     * @param eventID The event to remove the user location from
+     * @param userID The user whose location needs to be removed
+     */
+    public void removeLocation(String eventID, String userID) {
+
+        // Get the map document, remove the entry we care about and then reupload it
+
+        DocumentReference docRef = db.collection("maps").document(eventID);
+
+        final boolean[] querySucceeded = {true};
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    querySucceeded[0] = false;
+                    return;
+                }
+                DocumentSnapshot documentSnapshot = task.getResult();
+                if (!documentSnapshot.exists()) {
+                    querySucceeded[0] = false;
+                    return;
+                }
+
+                // Remove the key 'userID' from the map
+                Map<String, Object> locations = (Map<String, Object>) documentSnapshot.get("locations");
+                locations.remove(userID);
+
+                // Upload the edited locations
+                documentSnapshot.getReference().update("locations", locations);
+            }
+        });
+
+    }
+
 
     public void getLocation(String eventId, String userId,
                             OnSuccessListener<LatLng> onSuccessListener,
@@ -3307,7 +3366,7 @@ public class Database {
     /**
      * Deletes the user entirely from the database, including any references as well:
      * <ul>
-     *     <li> If the user is only an entrant, simply delete their reference in any event lists they were in </li>
+     *     <li> If the user is only an entrant, simply delete their reference in any event lists and maps they were in </li>
      *     <li> If the user is an organizer, delete the facility they owned (including all events at that facility), as well as the above entrant logic </li>
      *
      * </ul>
@@ -3318,7 +3377,7 @@ public class Database {
         DocumentReference userDocRef = db.collection("users").document(deviceId);
         System.out.println("DELETE_USER_" + deviceId + ": Requesting to delete user and all associated references");
 
-        // First, entrant logic. Delete the reference to the user in any event list
+        // First, entrant logic. Delete the reference to the user in any event list and map
 
         // Delete instances where the user is in an event as an entrant
         String[] arraysToSearch = {"enrolledlist", "pendinglist", "waitlist", "cancelledlist"};
@@ -3333,6 +3392,7 @@ public class Database {
                         String eventId = docSnapshot.getString("eventID");
                         DocumentReference docRefToUpdate = db.collection("events").document(eventId);
                         docRefToUpdate.update(arrayNameString, FieldValue.arrayRemove(userDocRef)); // Deletes any element from the array matching userDocRef
+                        removeLocation(eventId, deviceId); // Remove them from the event map if they're there
                         System.out.println("DELETE_USER_" + deviceId + ": Deleted user reference from " + arrayNameString + " of event " + eventId);
                     }
                 }
