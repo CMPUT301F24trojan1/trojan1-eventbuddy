@@ -35,11 +35,11 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_welcome);
-        if (App.currentUser.getDeviceId() == null || App.currentUser.getDeviceId().isEmpty()) {
+        if (App.currentUser == null) {
             String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             addtoNotifications(deviceID);
-            addtoNotifications("organizer" + App.currentUser.getDeviceId());
-            addtoNotifications("admin" + App.currentUser.getDeviceId());
+            addtoNotifications("organizer" + deviceID);
+            addtoNotifications("admin" + deviceID);
         }
 
         progressBar = findViewById(R.id.progressBar);

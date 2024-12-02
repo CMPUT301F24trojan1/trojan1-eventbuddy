@@ -206,6 +206,24 @@ public class CreateEventFragment extends Fragment {
             return false;
         }
 
+        // Event time checker: Open < Close Date, Waitlist open/Close < Event Date/Close Date
+        // Check date order logic
+        if (waitlistOpenDate != null && waitlistOpenDate.after(waitlistCloseDate)) {
+            Toast.makeText(getContext(), "Waitlist open date must be before close date", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (waitlistCloseDate != null && waitlistCloseDate.after(eventDate)) {
+            Toast.makeText(getContext(), "Waitlist close date must be before event start date", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (eventDate != null && eventDate.after(eventendDate)) {
+            Toast.makeText(getContext(), "Event start date must be before end date", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+
         database.getOrganizer(object -> {
                 Organizer currentOrganizer = (Organizer) object;
                 String newEventId = currentOrganizer.getDeviceId() + "-" + System.currentTimeMillis();

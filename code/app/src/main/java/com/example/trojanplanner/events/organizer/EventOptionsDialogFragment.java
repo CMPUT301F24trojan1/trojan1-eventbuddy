@@ -197,8 +197,8 @@ public class EventOptionsDialogFragment extends DialogFragment {
     // Enrolled list + pending list != event capacity
     // Event capacity - (Enrolled + Pending List) size is the ammount of Attendees possible to select
     private void initiateLottery() {
-        // Event's starting date isn't <= current Date
-        if (event.getStartDateTime().getDate() > new Date().getDate()) {
+        // Event's starting date is current Date or before
+        if (event.getStartDateTime().getDate() <= new Date().getDate()) {
             String errorMessage = "The event has started already, you can't initiate a lottery.";
             displayError(errorMessage);
             return;
