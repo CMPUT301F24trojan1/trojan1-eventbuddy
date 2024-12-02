@@ -227,8 +227,9 @@ public class CreateEventFragment extends Fragment {
 
                 database.insertEvent(newEvent);
                 currentOrganizer.addEvent(newEvent);
+                database.createEmptyMap(newEventId);
                 database.insertUserDocument(currentOrganizer);
-                App.currentUser = currentOrganizer;
+//                App.currentUser = currentOrganizer; // I have a bad feeling about this
 
                 App.sendAnnouncement(App.currentUser.getDeviceId(), "TrojanPlanner", "New Event Created!");
                 Toast.makeText(App.activity, "Event created successfully!", Toast.LENGTH_SHORT).show();
