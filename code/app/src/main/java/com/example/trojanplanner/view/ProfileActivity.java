@@ -15,10 +15,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class ProfileActivity extends AppCompatActivity {
     private @NonNull ActivityProfileBinding binding;
-    public PhotoPicker userPhotoPicker;
+    public PhotoPicker profileActivityPhotoPicker;
     public ProfileFragment profileFragment;
 
-    public PhotoPicker facilityPhotoPicker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +27,8 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // Init a photopicker for the user as well as the facility
-        userPhotoPicker = new PhotoPicker();
-        userPhotoPicker.initPhotoPicker();
-        facilityPhotoPicker = new PhotoPicker();
-        facilityPhotoPicker.initPhotoPicker();
+        profileActivityPhotoPicker = new PhotoPicker();
+        profileActivityPhotoPicker.initPhotoPicker();
 
         // Display ProfileFragment in the fragment container
         if (savedInstanceState == null) {

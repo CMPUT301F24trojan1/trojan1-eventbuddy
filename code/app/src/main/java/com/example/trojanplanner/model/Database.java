@@ -175,11 +175,6 @@ public class Database {
         photoPicker.initPhotoPicker(this);
     }
 
-    public void initPhotoPicker(PhotoPicker.PhotoPickerCallback callback) {
-        photoPicker = new PhotoPicker();
-        photoPicker.initPhotoPicker(callback, this);
-    }
-
     // TODO: Is this function necessary?
     /**
      * A method that uninitializes the PhotoPicker if initPhotoPicker was called.

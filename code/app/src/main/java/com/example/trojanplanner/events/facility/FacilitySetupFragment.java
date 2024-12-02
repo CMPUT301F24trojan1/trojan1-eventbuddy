@@ -99,10 +99,10 @@ public class FacilitySetupFragment extends Fragment {
 
         // Get the photoPicker (the one we borrow depends on what activity we're in)
         if (getActivity() instanceof MainActivity) {
-            photoPicker = ((MainActivity) App.activity).facilityPhotoPicker;
+            //photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
         }
         else { // The activity is ProfileActivity in this case
-            photoPicker = ((ProfileActivity) App.activity).facilityPhotoPicker;
+            photoPicker = ((ProfileActivity) App.activity).profileActivityPhotoPicker;
         }
 
 
@@ -156,7 +156,7 @@ public class FacilitySetupFragment extends Fragment {
                 onPhotoSelected(bitmap);
             }
         };
-        photoPicker.addCallback(photoPickerCallback);
+        photoPicker.setCallback(photoPickerCallback);
 
         return view;
     }
@@ -167,6 +167,7 @@ public class FacilitySetupFragment extends Fragment {
      * @param bitmap The bitmap received by the PhotoPicker to set
      */
     private void onPhotoSelected(Bitmap bitmap) {
+        System.out.println("FacilitySetupFragment photopickercallback triggered!");
         if (bitmap != null && bitmap != facilityImageBitmap) {
             changedPfp = true;
             facilityImageBitmap = bitmap;

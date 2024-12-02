@@ -497,16 +497,14 @@ public class EventDetailsFragment extends Fragment {
         declineButton = view.findViewById(R.id.Decline);
 
         // Initialize the photoPicker, borrowing the one from MainActivity
-        photoPicker = ((MainActivity) App.activity).eventDetailsPhotoPicker;
+        photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
         PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
             @Override
             public void OnPhotoPickerFinish(Bitmap bitmap) {
-                System.out.println("yooooo nice");
                 onPhotoSelected(bitmap);
             }
         };
-        photoPicker.addCallback(photoPickerCallback);
-
+        photoPicker.setCallback(photoPickerCallback);
 
 
         // Populate event details
@@ -582,6 +580,7 @@ public class EventDetailsFragment extends Fragment {
      * @param bitmap The new image to save as the event photo (unless it's null)
      */
     private void onPhotoSelected(Bitmap bitmap) {
+        System.out.println("EventDetailsFragment photopickercallback triggered!");
         // As long as the bitmap isn't null (photoPicker returned an actual image), set it as the
         // new event poster and upload
         if (bitmap != null) {

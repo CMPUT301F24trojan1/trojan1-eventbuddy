@@ -57,16 +57,6 @@ public class ProfileFragment extends Fragment {
 
     public ProfileFragment(ProfileActivity profileActivity) {
         this.profileActivity = profileActivity; // can get the user and photoPicker from this object
-
-        // Define and add a callback action for the photoPicker initialized in ProfileActivity
-        PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
-            @Override
-            public void OnPhotoPickerFinish(Bitmap bitmap) {
-                onSelectedPhoto(bitmap);
-            }
-        };
-        profileActivity.userPhotoPicker.addCallback(photoPickerCallback);
-
     }
 
     @Nullable
@@ -86,6 +76,16 @@ public class ProfileFragment extends Fragment {
 
         // Set state to either fill fields blank or with the current user's values
         resetState(App.currentUser);
+
+        // Initialize the callback for the photopicker
+        // Define and add a callback action for the photoPicker initialized in ProfileActivity
+        PhotoPicker.PhotoPickerCallback photoPickerCallback = new PhotoPicker.PhotoPickerCallback() {
+            @Override
+            public void OnPhotoPickerFinish(Bitmap bitmap) {
+                onSelectedPhoto(bitmap);
+            }
+        };
+        profileActivity.profileActivityPhotoPicker.setCallback(photoPickerCallback);
 
         // Set up button click listeners
         profileImageView.setOnClickListener(v -> createPfpPopup());
@@ -168,7 +168,7 @@ public class ProfileFragment extends Fragment {
         PfpClickPopupFragment.PfpPopupFunctions popupFunctions = new PfpClickPopupFragment.PfpPopupFunctions() {
             @Override
             public void changePFP() {
-                profileActivity.userPhotoPicker.openPhotoPicker();
+                profileActivity.profileActivityPhotoPicker.openPhotoPicker();
             }
             @Override
             public void removePFP() {
@@ -322,6 +322,7 @@ public class ProfileFragment extends Fragment {
      * @param bitmap The bitmap to use as the new photo
      */
     public void onSelectedPhoto(Bitmap bitmap) {
+        System.out.println("ProfileFragment photopickercallback triggered!");
         if (bitmap != null && bitmap != profileImageBitmap) {
             changedPfp = true;
             profileImageBitmap = bitmap;
