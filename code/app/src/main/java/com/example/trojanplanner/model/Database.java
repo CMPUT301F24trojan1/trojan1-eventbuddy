@@ -7,11 +7,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.example.trojanplanner.view.admin.AdminQRActivity;
-import com.google.android.gms.maps.model.LatLng;
 import com.example.trojanplanner.App;
-import com.example.trojanplanner.controller.PhotoPicker;
 import com.example.trojanplanner.R;
+import com.example.trojanplanner.controller.PhotoPicker;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -35,7 +34,6 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -815,9 +813,19 @@ public class Database {
 
         event.setRecurring((boolean) m.get("isRecurring"));
         if (event.isRecurring()) {
-            event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
-            event.setRecurrenceEndDate(((Timestamp) m.get("recurringEndDate")).toDate());
-            event.setRecurrenceDays((ArrayList<String>) m.get("recurringOn"));
+            if (m.containsKey("reccurrenceFormat") && m.get("reccurrenceFormat") != null) {
+                event.setRecurrenceType((Event.RecurrenceType) m.get("reccurrenceFormat"));
+            }
+
+            if (m.containsKey("recurringEndDate") && m.get("recurringEndDate") != null) {
+                Timestamp endDate = (Timestamp) m.get("recurringEndDate");
+                event.setRecurrenceEndDate(endDate != null ? endDate.toDate() : null);
+            }
+
+            if (m.containsKey("recurringOn") && m.get("recurringOn") != null) {
+                event.setRecurrenceDays((ArrayList<String>) m.get("recurringOn"));
+            }
+
         }
 
         // Create incomplete facility from document id
@@ -2764,40 +2772,68 @@ public class Database {
                 });
     }
 
-    //This WILL ONLY BE CALLED WITH THE ASSUMPTION THE ID is a organizer
-    public void getFacilityIDbyUserID(String userID, QuerySuccessAction successAction, QueryFailureAction failureAction) {
-        // Query the "users" collection for the Organizer's document using the userID
-        DocumentReference docRef = db.collection("users").document(userID);
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                // Check if the query was successful
-                if (!task.isSuccessful()) {
-                    // If the query fails, handle the failure
-                    Log.d("WARN", "getOrganizer failed with ", task.getException());
-                    failureAction.OnFailure();
-                    return;
-                }
+    public void getFacilityDocrefByEventID(String eventID, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        DocumentReference docRef = db.collection("events").document(eventID);
 
-                // Retrieve the document snapshot from the task result
-                DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
-                    // Get the facilityId from the "facility" field
-                    String facilityId = getIdFromDocRef(document.getDocumentReference("facility"));
+        docRef.get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.d("WARN", "getFacilityByEventID failed: ", task.getException());
+                failureAction.OnFailure();
+                return;
+            }
 
-                    if (facilityId != null && !facilityId.isEmpty()) {
-                        // Facility ID found, pass it to success callback
-                        successAction.OnSuccess(facilityId);
-                    } else {
-                        // If there's no facilityId, handle accordingly
-                        Log.d("WARN", "Facility ID is missing for this organizer.");
-                        failureAction.OnFailure();
-                    }
+            DocumentSnapshot document = task.getResult();
+            if (document.exists()) {
+                // Get the "facility" field as a DocumentReference
+                DocumentReference facilityRef = document.getDocumentReference("facility");
+
+                if (facilityRef != null) {
+                    // Pass the facility reference to success callback
+                    successAction.OnSuccess(facilityRef);
                 } else {
-                    // If the user document doesn't exist
-                    Log.d("WARN", "No such document for user ID: " + userID);
+                    Log.d("WARN", "Facility reference is null.");
                     failureAction.OnFailure();
                 }
+            } else {
+                Log.d("WARN", "No event document found for eventID: " + eventID);
+                failureAction.OnFailure();
+            }
+        });
+    }
+
+    public void getFacilityByEventID(String eventID, QuerySuccessAction successAction, QueryFailureAction failureAction) {
+        DocumentReference docRef = db.collection("events").document(eventID); // Adjust collection name if needed
+
+        docRef.get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.d("WARN", "getFacilityByEventID failed: ", task.getException());
+                failureAction.OnFailure();
+                return;
+            }
+
+            DocumentSnapshot document = task.getResult();
+            if (document.exists()) {
+                // Get the "facility" field as a DocumentReference
+                DocumentReference facilityRef = document.getDocumentReference("facility");
+
+                if (facilityRef != null) {
+                    // Retrieve the facility document
+                    facilityRef.get().addOnCompleteListener(facilityTask -> {
+                        if (facilityTask.isSuccessful() && facilityTask.getResult().exists()) {
+                            String facilityId = facilityTask.getResult().getId(); // Get facility document ID
+                            successAction.OnSuccess(facilityId); // Pass to success callback
+                        } else {
+                            Log.d("WARN", "Facility document not found or retrieval failed.");
+                            failureAction.OnFailure();
+                        }
+                    });
+                } else {
+                    Log.d("WARN", "Facility reference is null.");
+                    failureAction.OnFailure();
+                }
+            } else {
+                Log.d("WARN", "No event document found for eventID: " + eventID);
+                failureAction.OnFailure();
             }
         });
     }

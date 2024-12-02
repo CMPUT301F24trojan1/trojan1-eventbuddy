@@ -88,6 +88,16 @@ public class CreateEventFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        AlertDialog.Builder builder =   new AlertDialog.Builder(requireContext());
+                builder
+                .setTitle("Notice")
+                .setMessage("Click on the image displayed above the input fields to choose an event poster")
+                .setPositiveButton("Yes I understand", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .create()
+                .show();
+
 
         // Create and register a callback for the photoPicker
         photoPicker = ((MainActivity) App.activity).mainActivityPhotoPicker;
@@ -195,6 +205,24 @@ public class CreateEventFragment extends Fragment {
             Toast.makeText(getContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return false;
         }
+
+        // Event time checker: Open < Close Date, Waitlist open/Close < Event Date/Close Date
+        // Check date order logic
+        if (waitlistOpenDate != null && waitlistOpenDate.after(waitlistCloseDate)) {
+            Toast.makeText(getContext(), "Waitlist open date must be before close date", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (waitlistCloseDate != null && waitlistCloseDate.after(eventDate)) {
+            Toast.makeText(getContext(), "Waitlist close date must be before event start date", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (eventDate != null && eventDate.after(eventendDate)) {
+            Toast.makeText(getContext(), "Event start date must be before end date", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
 
         database.getOrganizer(object -> {
                 Organizer currentOrganizer = (Organizer) object;

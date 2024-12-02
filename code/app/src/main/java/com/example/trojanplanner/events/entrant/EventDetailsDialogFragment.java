@@ -18,23 +18,24 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.User;
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class EventDetailsDialogFragment extends DialogFragment {
@@ -42,6 +43,16 @@ public class EventDetailsDialogFragment extends DialogFragment {
     private Entrant entrant;
     private Database database;
     private Button buttonEnterNow;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Get the dialog and adjust the width/height
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+    }
+
 
     @NonNull
     public static EventDetailsDialogFragment newInstance(Event event, Entrant entrant) {
@@ -88,9 +99,11 @@ public class EventDetailsDialogFragment extends DialogFragment {
         TextView eventLocationTextView = view.findViewById(R.id.eventLocationTextView);
         TextView eventDateTextView = view.findViewById(R.id.eventDateTextView);
         TextView recurringDatesTextView = view.findViewById(R.id.recurringDatesTextView);
+        TextView recurringEndDateTextView = view.findViewById(R.id.recurringEndDateTextView); // initalized
         TextView eventDescriptionTextView = view.findViewById(R.id.eventDescriptionTextView);
         TextView eventPriceTextview = view.findViewById(R.id.ticketPriceTextView);
         TextView eventTotalSpotsTextview = view.findViewById(R.id.totalSpotsTextView);
+
 
         // Initialize Buttons
         buttonEnterNow = view.findViewById(R.id.button_enter_now);
@@ -103,18 +116,18 @@ public class EventDetailsDialogFragment extends DialogFragment {
 
         // Populate event details
         if (event != null) {
-            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
+            populateEventDetails(eventImageView, eventNameTextView, eventLocationTextView, eventDateTextView, recurringDatesTextView, recurringEndDateTextView, eventDescriptionTextView, eventPriceTextview, eventTotalSpotsTextview);
 
             if (event.getWaitlistCapacity() == event.getWaitingList().size()) {
                 buttonEnterNow.setVisibility(View.GONE);
             }
 
             Date date = new Date();
-            if (event.getWaitlistClose().getTime() == date.getTime()) {
+            if (event.getWaitlistClose() != null && event.getWaitlistClose().getDate() <= date.getDate()) {
                 buttonEnterNow.setVisibility(View.GONE);
             }
 
-            if (date.getTime() >= event.getWaitlistOpen().getTime()) {
+            if (event.getWaitlistOpen() != null && date.getDate() >= event.getWaitlistOpen().getDate()) {
                 // The current time is equal to or later than the waitlistOpen time
                 buttonEnterNow.setVisibility(View.VISIBLE);
             } else {
@@ -122,29 +135,10 @@ public class EventDetailsDialogFragment extends DialogFragment {
                 buttonEnterNow.setVisibility(View.GONE);
             }
 
-            for (User user: event.getWaitingList()){ // If the user is on the waitlist, hide the button
-                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
-                    buttonEnterNow.setVisibility(View.GONE);
-                }
-            }
-
-            for (User user: event.getEnrolledList()){ // If the user is enrolled, hide the button
-                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
-                    buttonEnterNow.setVisibility(View.GONE);
-                }
-            }
-
-            for (User user: event.getCancelledList()){ // If the user is enrolled, hide the button
-                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
-                    buttonEnterNow.setVisibility(View.GONE);
-                }
-            }
-
-            for (User user: event.getPendingList()){ // If the user has a pending event, hide the button
-                if (user.getDeviceId().equals(App.currentUser.getDeviceId())){
-                    buttonEnterNow.setVisibility(View.GONE);
-                }
-            }
+            checkUserInList(event.getWaitingList(), buttonEnterNow);
+            checkUserInList(event.getEnrolledList(), buttonEnterNow);
+            checkUserInList(event.getCancelledList(), buttonEnterNow);
+            checkUserInList(event.getPendingList(), buttonEnterNow);
         } else {
             Log.e("EventDetailsFragment", "Event is null in onCreateView");
         }
@@ -156,6 +150,17 @@ public class EventDetailsDialogFragment extends DialogFragment {
     }
 
 
+    private void checkUserInList(List<User> userList, Button buttonEnterNow) {
+        if (userList != null) {
+            for (User user : userList) {
+                if (user != null && user.getDeviceId() != null &&
+                        user.getDeviceId().equals(App.currentUser.getDeviceId())) {
+                    buttonEnterNow.setVisibility(View.GONE);
+                    break; // Exit loop once match is found
+                }
+            }
+        }
+    }
 
     /**
      * Shows a confirmation dialog for the entrant to join the event's waitlist.
@@ -186,8 +191,12 @@ public class EventDetailsDialogFragment extends DialogFragment {
                         Toast.makeText(getContext(), "You are already on the waitlist.", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
+                    //FIX we got to make sure the waitlist isn't full already
                     // Add the entrant to the event's waitlist
+                    if (!syncedEvent.canAddToWaitlist()) {
+                        // TO FIC: toast being like event waitlist is full or smth hmm...
+                        return;
+                    }
                     syncedEvent.getWaitingList().add(currentEntrant);
 
                     database.getEntrant(
@@ -301,46 +310,65 @@ public class EventDetailsDialogFragment extends DialogFragment {
      * @param eventNameTextView        The TextView to display the event's name.
      * @param eventLocationTextView    The TextView to display the event's location.
      * @param eventDateTextView        The TextView to display the event's start and end date.
-     * @param recurringDatesTextView   The TextView to display the event's recurrence days.
+     * @param recurringDaysTextView    The TextView to display the event's recurrence days.
+     * @param recurringEndDateTextView    The TextView to display the event's recurrence end date.
      * @param eventDescriptionTextView The TextView to display the event's description.
+     * @param eventPriceTextView       The TextView to display the event's price.
+     * @param eventTotalSpotsTextView   The TextView to display the event's total capacity.
      */
+
     public void populateEventDetails(ImageView eventImageView, TextView eventNameTextView, TextView eventLocationTextView,
-                                     TextView eventDateTextView, TextView recurringDatesTextView,
-                                     TextView eventDescriptionTextView, TextView eventPriceTextview, TextView eventTotalSpotsTextview) {
+                                     TextView eventDateTextView, TextView recurringDaysTextView,
+                                     TextView recurringEndDateTextView, TextView eventDescriptionTextView,
+                                     TextView eventPriceTextView, TextView eventTotalSpotsTextView) {
 
         eventImageView.setImageBitmap(event.getPicture());
 
         eventNameTextView.setText("Event: " + event.getName());
         if (event.getFacility() != null) {
-            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getLocation());
+            eventLocationTextView.setText("\uD83D\uDCCD Facility: " + event.getFacility().getName());
         }
 
-        // Default values for dates in case they are null
-        String defaultDate = "Not Available";  // Default date if event date is null
+        // Default values for dates
+        String defaultDate = "Not Available";
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 
-        // Assign default value if startDateTime or endDateTime is null
         String startDate = (event.getStartDateTime() != null) ? dateFormat.format(event.getStartDateTime()) : defaultDate;
         String endDate = (event.getEndDateTime() != null) ? dateFormat.format(event.getEndDateTime()) : defaultDate;
 
-        eventDateTextView.setText("⏰ Time:"+ startDate + " - " + endDate);
-        eventPriceTextview.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
-        eventTotalSpotsTextview.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
+        eventDateTextView.setText("⏰ Time: " + startDate + " - " + endDate);
 
-        // Convert abbreviations in recurrenceDays to full day names
-        ArrayList<String> recurrenceDays = (event.isRecurring()) ? event.getRecurrenceDays() : null;
+        // Set the price and total spots
+        eventPriceTextView.setText("\uD83D\uDCB5 Cost: $" + event.getPrice());
+        eventTotalSpotsTextView.setText("\uD83E\uDE91 Total Spots: " + event.getTotalSpots());
 
-        if (recurrenceDays != null) {
-            String recurrenceDaysText = recurrenceDays.stream()
-                    .map(this::getFullDayName) // Convert each unique abbreviation to full day name
-                    .filter(name -> !name.isEmpty()) // Filter out any invalid/missing conversions
-                    .reduce((a, b) -> a + ", " + b) // Join with commas
-                    .orElse("No recurrence");
+        // Set the recurring days
+        if (event.isRecurring()) {
+            List<String> recurrenceDays = event.getRecurrenceDays();
+            if (recurrenceDays != null && !recurrenceDays.isEmpty()) {
+                String recurringDays = recurrenceDays.stream()
+                        .map(day -> day.substring(0, 1).toUpperCase()) // Convert to shorthand
+                        .reduce((a, b) -> a + " " + b)
+                        .orElse("None");
+                recurringDaysTextView.setText("🔄 Recurring Days: " + recurringDays);
+            } else {
+                recurringDaysTextView.setText("🔄 Recurring Days: None");
+            }
 
-            recurringDatesTextView.setText("Recurring Days: " + recurrenceDaysText);
+            // Set the recurring end date
+            if (event.getRecurrenceEndDate() != null) {
+                String recurrenceEndDate = dateFormat.format(event.getRecurrenceEndDate());
+                recurringEndDateTextView.setText("📅 Recurrence End Date: " + recurrenceEndDate);
+            } else {
+                recurringEndDateTextView.setText("📅 Recurrence End Date: None");
+            }
+        } else {
+            recurringDaysTextView.setText("🔄 Recurring Days: None");
+            recurringEndDateTextView.setText("📅 Recurrence End Date: None");
         }
-        eventDescriptionTextView.setText("Description: " + event.getDescription());
 
+        // Set the event description
+        eventDescriptionTextView.setText("Description: " + event.getDescription());
     }
 
     /**

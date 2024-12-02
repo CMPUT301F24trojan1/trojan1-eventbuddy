@@ -35,9 +35,12 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_welcome);
-
-        //addtoNotifications("testing"); // Subscribe to the "default" topic
-        //sendAnnouncement("testing", "Please work", "please bro");
+        if (App.currentUser == null) {
+            String deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            addtoNotifications(deviceID);
+            addtoNotifications("organizer" + deviceID);
+            addtoNotifications("admin" + deviceID);
+        }
 
         progressBar = findViewById(R.id.progressBar);
         View funnyTextView = findViewById(R.id.funnyTextView);
@@ -108,7 +111,6 @@ public class WelcomeActivity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE); // Hide progress bar
         Intent intent = new Intent(WelcomeActivity.this, ProfileActivity.class);
         requestNotificationPermission(); // Request notification permission
-        addtoNotifications("default"); // Subscribe to the "default" topic
         startActivity(intent); // Start the ProfileActivity for profile creation
         finish(); // Finish the WelcomeActivity to remove it from the back stack
     }

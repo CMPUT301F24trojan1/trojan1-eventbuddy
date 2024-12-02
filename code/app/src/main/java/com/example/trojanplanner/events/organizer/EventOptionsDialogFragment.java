@@ -21,15 +21,14 @@ import androidx.navigation.Navigation;
 
 import com.example.trojanplanner.App;
 import com.example.trojanplanner.QRUtils.QRCodeUtil;
+import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.Database;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
-import com.example.trojanplanner.R;
 import com.example.trojanplanner.model.User;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
@@ -181,7 +180,50 @@ public class EventOptionsDialogFragment extends DialogFragment {
         navController.navigate(R.id.waitlistFragment, args);
     }
 
+    private void displayError(String errorMessage) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Notice")
+                .setMessage(errorMessage)
+                .setPositiveButton("Okay I understand", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+    // Note: Should allow organizer to initiate lottery,
+    // AS LONG AS THESE CONDITIONS AREN'T VIOLATED
+    // Event's starting date isn't <= current Date
+    // Waitlist Close date isn't >= current Date
+    // Event's enrolled list isn't finalized: meaning event.getStatus doesn't return 'finalized'
+    // Enrolled list + pending list != event capacity
+    // Event capacity - (Enrolled + Pending List) size is the ammount of Attendees possible to select
     private void initiateLottery() {
+        // Event's starting date is current Date or before
+        if (event.getStartDateTime().getDate() <= new Date().getDate()) {
+            String errorMessage = "The event has started already, you can't initiate a lottery.";
+            displayError(errorMessage);
+            return;
+        }
+
+        // Waitlist Close date isn't <= current Date
+        if (event.getWaitlistClose().getDate() > new Date().getDate()) {
+            String errorMessage = "The event sign up has not closed yet, you can't initiate a lottery.";
+            displayError(errorMessage);
+            return;
+        }
+
+        // Event's enrolled list isn't finalized: meaning event.getStatus returns ''
+        if (event.getStatus().equals("finalized")) {
+            String errorMessage = "You have finalized this event's enrolled list, you can't initiate a lottery.";
+            displayError(errorMessage);
+            return;
+        }
+
+        if (event.getStatus().equals("finished")) {
+            String errorMessage = "You can't initiate a lottery for a finished event.";
+            displayError(errorMessage);
+            return;
+        }
+
         Context context = getContext(); // Capture context at the start
         if (context == null) {
             return; // Exit if fragment is not attached
@@ -205,7 +247,8 @@ public class EventOptionsDialogFragment extends DialogFragment {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Choose Number of Attendees, " + Lottery_waitlist.size() + " available");
+        builder.setTitle("Choose Number of Attendees, " + Lottery_waitlist.size() + " available in the wailtist \n\n"
+                + "Invites Available: " + (event.getPendingList().size() + event.getEnrolledList().size()) + "/" + event.getTotalSpots());
 
         FrameLayout container = new FrameLayout(requireContext());
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
@@ -235,8 +278,9 @@ public class EventOptionsDialogFragment extends DialogFragment {
                 return;
             }
 
-            if (numUsersToSelect <= 0 || numUsersToSelect > Lottery_waitlist.size()) {
-                Log.d("EventOptionsDialogFragment", "Please enter a number between 1 and " + Lottery_waitlist.size());
+            if (numUsersToSelect <= 0 || numUsersToSelect > Lottery_waitlist.size()
+                    || (event.getTotalSpots() - (event.getPendingList().size() + event.getEnrolledList().size())) < numUsersToSelect) {
+
                 return;
             }
 
@@ -344,7 +388,6 @@ public class EventOptionsDialogFragment extends DialogFragment {
                     App.sendAnnouncement(user.getDeviceId(), event.getName(),
                             "CONGRATS!! You've won the lottery, accept/decline your invitation in the app");
                 }
-
             }).start();
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());

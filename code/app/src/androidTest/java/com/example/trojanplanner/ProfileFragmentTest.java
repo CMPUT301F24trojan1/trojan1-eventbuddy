@@ -56,7 +56,7 @@ public class ProfileFragmentTest {
         Intents.intended(hasComponent(ProfileActivity.class.getName()));
 
         //verify that ProfileActivity is in view
-        Espresso.onView(withId(R.id.profileFragment)).check(matches(isDisplayed()));
+        Espresso.onView(withId(R.id.profile_fragment_parent)).check(matches(isDisplayed()));
     }
 
     @Test

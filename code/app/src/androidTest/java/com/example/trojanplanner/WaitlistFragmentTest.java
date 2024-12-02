@@ -1,11 +1,20 @@
 package com.example.trojanplanner;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.containsString;
+
+import android.os.Bundle;
+
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.example.trojanplanner.HelperFragments.WaitlistFragment;
 import com.example.trojanplanner.model.Entrant;
 import com.example.trojanplanner.model.Event;
 import com.example.trojanplanner.model.Facility;
-import com.example.trojanplanner.view.MainActivity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,17 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static org.hamcrest.Matchers.containsString;
-
-import android.os.Bundle;
-
-import androidx.test.core.app.ActivityScenario;
-
-import com.example.trojanplanner.HelperFragments.WaitlistFragment;
+;
 
 @RunWith(AndroidJUnit4.class)
 public class WaitlistFragmentTest {
@@ -34,32 +33,14 @@ public class WaitlistFragmentTest {
 
     @Before
     public void setUp() {
-        // Initialize the Facility and Event with required fields
-        Facility testFacility = new Facility(
-                "Test Facility",           // name
-                "F001",                    // facilityId
-                "123 Main St",             // location
-                null,                      // owner (null if no owner needed for the test)
-                "path/to/facility/image",   // pfpFacilityFilePath
-                null                       // pfpFacilityBitmap (null if no Bitmap needed)
-        );
-
+        // Initialize the Event with required fields
+        String name = "Test Event";
+        String description = "This is a test event description.";
+        Facility facility = new Facility("Test Location", "Test Location", null, null, null, null);
         Date startDateTime = new Date();
-        Date endDateTime = new Date(startDateTime.getTime() + 3600000); // 1 hour later
+        Date endDateTime = new Date(startDateTime.getTime() + 3600000);
 
-        // Create the Event object with the Facility
-        testEvent = new Event(
-                "Test Event",
-                "This is a test event description.",
-                "",
-                10.0f,
-                testFacility,
-                startDateTime,
-                endDateTime,
-                0,
-                100L,
-                100L
-        );
+        testEvent = new Event(name, "", description, 10.0f, facility, startDateTime, endDateTime, 0, 0L, 0L);
 
         // Add sample entrants to the waitlist
         List<Entrant> waitlistEntrants = new ArrayList<>();
